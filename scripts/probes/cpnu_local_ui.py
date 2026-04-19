@@ -82,7 +82,13 @@ HTML = """<!doctype html>
         line-height: 1.5;
       }
 
-      button {
+      button,
+      select {
+        font: inherit;
+      }
+
+      button,
+      select {
         min-height: 42px;
       }
 
@@ -99,6 +105,14 @@ HTML = """<!doctype html>
       button:disabled {
         opacity: 0.55;
         cursor: wait;
+      }
+
+      select {
+        border: 1px solid #cfd7d0;
+        border-radius: 8px;
+        padding: 0 12px;
+        background: #ffffff;
+        color: #16211d;
       }
 
       .toolbar {
@@ -218,6 +232,15 @@ HTML = """<!doctype html>
 
       <div class="toolbar">
         <button id="run">Consultar CPNU</button>
+        <label>
+          Filtro actuacion:
+          <select id="actuationFilter">
+            <option value="all">Todas</option>
+            <option value="1">Ultimas 24 horas</option>
+            <option value="7">Ultima semana</option>
+            <option value="30">Ultimos 30 dias</option>
+          </select>
+        </label>
         <span id="status" class="details">Modo: Todos los procesos.</span>
       </div>
 
@@ -249,8 +272,11 @@ HTML = """<!doctype html>
 
     <script>
       const runButton = document.querySelector("#run");
+      const actuationFilter = document.querySelector("#actuationFilter");
       const statusEl = document.querySelector("#status");
       const tbody = document.querySelector("#results");
+      let latestData = null;
+
       const metrics = {
         total: document.querySelector("#total"),
         ok: document.querySelector("#ok"),
@@ -268,13 +294,44 @@ HTML = """<!doctype html>
         })[char]);
       }
 
+      function parseCpnuDate(value) {
+        if (!value) {
+          return null;
+        }
+
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+      }
+
+      function passesActuationFilter(proceso) {
+        const filterValue = actuationFilter.value;
+        if (filterValue === "all") {
+          return true;
+        }
+        if (!proceso) {
+          return false;
+        }
+
+        const date = parseCpnuDate(proceso.fechaUltimaActuacion || proceso.fechaProceso);
+        if (!date) {
+          return false;
+        }
+
+        const days = Number(filterValue);
+        const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+        return date >= cutoff;
+      }
+
       function render(data) {
+        latestData = data;
+
         metrics.total.textContent = data.total;
         metrics.ok.textContent = data.ok;
-        metrics.withRecords.textContent = data.with_records;
-        metrics.processes.textContent = data.processes_found;
 
         const rows = [];
+        let visibleResults = 0;
+        let visibleProcesses = 0;
+
         for (const result of data.results) {
           if (!result.ok) {
             rows.push(`
@@ -289,7 +346,16 @@ HTML = """<!doctype html>
           }
 
           const procesos = result.procesos.length ? result.procesos : [null];
-          for (const proceso of procesos) {
+          const visibleProcesos = procesos.filter(passesActuationFilter);
+
+          if (visibleProcesos.length > 0) {
+            visibleResults += 1;
+          }
+
+          for (const proceso of visibleProcesos) {
+            if (proceso) {
+              visibleProcesses += 1;
+            }
             rows.push(`
               <tr>
                 <td>${escapeHtml(result.radicado_masked)}</td>
@@ -309,8 +375,19 @@ HTML = """<!doctype html>
           }
         }
 
-        tbody.innerHTML = rows.join("");
+        metrics.withRecords.textContent = visibleResults;
+        metrics.processes.textContent = visibleProcesses;
+
+        tbody.innerHTML = rows.length
+          ? rows.join("")
+          : `<tr><td colspan="6" class="details">No hay procesos para el filtro de actuacion seleccionado.</td></tr>`;
       }
+
+      actuationFilter.addEventListener("change", () => {
+        if (latestData) {
+          render(latestData);
+        }
+      });
 
       runButton.addEventListener("click", async () => {
         const radicados = document.querySelector("#radicados").value
