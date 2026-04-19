@@ -1,0 +1,56 @@
+[
+  {
+    "id": "rama_judicial_cpnu",
+    "name": "Rama Judicial - Consulta Nacional Unificada",
+    "owner": "Rama Judicial Colombia",
+    "url": "https://consultaprocesos.ramajudicial.gov.co/Procesos/NumeroRadicacion",
+    "expected_strategy": "browser_or_http_api",
+    "query_keys": ["radicado", "nombre", "juzgado"],
+    "notes": "Fuente prioritaria. Primero identificar si el portal expone API interna estable o requiere automatizacion de navegador."
+  },
+  {
+    "id": "samai",
+    "name": "SAMAI",
+    "owner": "Consejo de Estado",
+    "url": "https://samai.consejodeestado.gov.co/Vistas/Casos/procesos.aspx",
+    "expected_strategy": "browser",
+    "query_keys": ["radicado"],
+    "notes": "Validar si la consulta requiere estado de sesion, viewstate o controles ASP.NET."
+  },
+  {
+    "id": "sic_tramites",
+    "name": "Superintendencia de Industria y Comercio - Tramites",
+    "owner": "Superintendencia de Industria y Comercio",
+    "url": "https://serviciospub.sic.gov.co/Sic2/Tramites/Radicacion/Radicacion/Consultas/ConsultaRadicacion.php",
+    "expected_strategy": "browser_or_redirect",
+    "query_keys": ["radicado", "numero_tramite"],
+    "notes": "Primero resolver URL final oficial del sistema de consulta y detectar CAPTCHA o redireccion."
+  },
+  {
+    "id": "sipi",
+    "name": "SIPI - Propiedad Industrial",
+    "owner": "Superintendencia de Industria y Comercio",
+    "url": "https://sipi.sic.gov.co/sipi/Extra/",
+    "expected_strategy": "browser_or_http_api",
+    "query_keys": ["expediente", "signo", "solicitante"],
+    "notes": "Sistema separado de propiedad industrial. Validar si permite consultas publicas sin autenticacion."
+  },
+  {
+    "id": "supersociedades_baranda",
+    "name": "Superintendencia de Sociedades - Baranda Virtual",
+    "owner": "Superintendencia de Sociedades",
+    "url": "https://servicios.supersociedades.gov.co/barandaVirtual/",
+    "expected_strategy": "browser_or_http_api",
+    "query_keys": ["proceso", "expediente", "nit"],
+    "notes": "Validar si es SPA con endpoints internos o requiere navegacion completa."
+  },
+  {
+    "id": "rama_judicial_portal",
+    "name": "Rama Judicial - Portal institucional",
+    "owner": "Rama Judicial Colombia",
+    "url": "https://www.ramajudicial.gov.co/",
+    "expected_strategy": "discovery_only",
+    "query_keys": [],
+    "notes": "Portal institucional para descubrir enlaces oficiales vigentes hacia consultas."
+  }
+]

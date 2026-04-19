@@ -1,4 +1,5 @@
 node_modules/
+.venv/
 dist/
 build/
 .env
@@ -8,6 +9,7 @@ build/
 coverage/
 playwright-report/
 test-results/
+tmp/
 .supabase/
 supabase/.branches/
 supabase/.temp/
