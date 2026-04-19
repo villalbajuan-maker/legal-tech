@@ -14,6 +14,7 @@ import json
 import re
 import ssl
 import time
+from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -226,9 +227,10 @@ HTML = """<!doctype html>
         <button id="run">Consultar CPNU</button>
         <label>
           Modo:
-          <select id="soloActivos">
-            <option value="false">Todos los procesos</option>
-            <option value="true">Activos / recientes</option>
+          <select id="queryMode">
+            <option value="all">Todos los procesos</option>
+            <option value="last300">Ultimos 300 dias</option>
+            <option value="recent">Activos / recientes CPNU</option>
           </select>
         </label>
         <span id="status" class="details">Listo.</span>
@@ -341,7 +343,7 @@ HTML = """<!doctype html>
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
               radicados,
-              soloActivos: document.querySelector("#soloActivos").value === "true",
+              mode: document.querySelector("#queryMode").value,
             }),
           });
 
@@ -390,7 +392,34 @@ def fetch_json(path: str, params: dict[str, str | int | bool]) -> dict:
         return json.loads(response.read().decode("utf-8"))
 
 
-def query_radicado(radicado: str, solo_activos: bool) -> dict:
+def parse_cpnu_date(value: str | None) -> datetime | None:
+    if not value:
+        return None
+
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def filter_processes_by_days(procesos: list[dict], days: int) -> list[dict]:
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    filtered = []
+
+    for proceso in procesos:
+        raw_date = proceso.get("fechaUltimaActuacion") or proceso.get("fechaProceso")
+        process_date = parse_cpnu_date(raw_date)
+        if process_date is None:
+            continue
+        if process_date.tzinfo is None:
+            process_date = process_date.replace(tzinfo=timezone.utc)
+        if process_date >= cutoff:
+            filtered.append(proceso)
+
+    return filtered
+
+
+def query_radicado(radicado: str, mode: str) -> dict:
     normalized = normalize_radicado(radicado)
     result = {
         "ok": False,
@@ -405,6 +434,8 @@ def query_radicado(radicado: str, solo_activos: bool) -> dict:
         result["error"] = "El radicado debe tener 23 digitos."
         return result
 
+    solo_activos = mode == "recent"
+
     try:
         body = fetch_json(
             "/Procesos/Consulta/NumeroRadicacion",
@@ -412,10 +443,16 @@ def query_radicado(radicado: str, solo_activos: bool) -> dict:
         )
         pagination = body.get("paginacion") or {}
         procesos = body.get("procesos") or []
+        raw_records = pagination.get("cantidadRegistros") or 0
+
+        if mode == "last300":
+            procesos = filter_processes_by_days(procesos, 300)
+
         result.update(
             {
                 "ok": True,
-                "records": pagination.get("cantidadRegistros") or 0,
+                "records": len(procesos) if mode == "last300" else raw_records,
+                "raw_records": raw_records,
                 "pages": pagination.get("cantidadPaginas") or 0,
                 "procesos": procesos,
             }
@@ -450,13 +487,16 @@ class Handler(BaseHTTPRequestHandler):
             length = int(self.headers.get("content-length", "0"))
             payload = json.loads(self.rfile.read(length).decode("utf-8"))
             radicados = payload.get("radicados") or []
-            solo_activos = bool(payload.get("soloActivos"))
+            mode = payload.get("mode") or ("recent" if payload.get("soloActivos") else "all")
         except Exception as exc:
             self.send_json({"error": f"Invalid JSON: {exc}"}, status=400)
             return
 
         if not isinstance(radicados, list):
             self.send_json({"error": "radicados must be a list"}, status=400)
+            return
+        if mode not in ("all", "recent", "last300"):
+            self.send_json({"error": "mode must be all, recent or last300"}, status=400)
             return
 
         started_at = time.perf_counter()
@@ -468,14 +508,16 @@ class Handler(BaseHTTPRequestHandler):
                 unique_radicados.append(normalized)
                 seen.add(normalized)
 
-        results = [query_radicado(radicado, solo_activos) for radicado in unique_radicados]
+        results = [query_radicado(radicado, mode) for radicado in unique_radicados]
         report = {
             "total": len(results),
             "ok": sum(1 for result in results if result.get("ok")),
             "failed": sum(1 for result in results if not result.get("ok")),
             "with_records": sum(1 for result in results if (result.get("records") or 0) > 0),
             "processes_found": sum(len(result.get("procesos") or []) for result in results),
-            "solo_activos": solo_activos,
+            "mode": mode,
+            "solo_activos": mode == "recent",
+            "local_filter_days": 300 if mode == "last300" else None,
             "elapsed_ms": int((time.perf_counter() - started_at) * 1000),
             "results": results,
         }
