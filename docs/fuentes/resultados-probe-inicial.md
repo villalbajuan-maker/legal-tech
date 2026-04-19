@@ -24,6 +24,46 @@ Siguiente paso:
 - Ejecutar `cpnu_search_probe.py` con radicados autorizados.
 - Identificar si existe endpoint JSON consultable por radicado.
 
+Resultado con radicados autorizados:
+
+- Endpoint descubierto:
+  `https://consultaprocesos.ramajudicial.gov.co:448/api/v2/Procesos/Consulta/NumeroRadicacion`
+- Parametros:
+  - `numero`: radicado de 23 digitos.
+  - `SoloActivos`: `true` para recientes/activos, `false` para consulta completa.
+  - `pagina`: numero de pagina.
+- Con `SoloActivos=true`, la prueba inicial no encontro registros recientes en los radicados probados.
+- Con `SoloActivos=false`, 14 de 16 radicados devolvieron registros.
+- Respuesta principal:
+  - `tipoConsulta`
+  - `procesos[]`
+  - `parametros`
+  - `paginacion`
+- Campos observados por proceso:
+  - `idProceso`
+  - `llaveProceso`
+  - `fechaProceso`
+  - `fechaUltimaActuacion`
+  - `despacho`
+  - `departamento`
+  - `sujetosProcesales`
+  - `esPrivado`
+  - `idConexion`
+
+Decision:
+
+- CPNU es automatizable por HTTP directo para la busqueda inicial por radicado.
+- No se necesita Playwright para la primera consulta.
+- Tambien se confirmaron endpoints directos para detalle, actuaciones y sujetos.
+
+Endpoints adicionales confirmados:
+
+- `GET /Proceso/Detalle/{idProceso}`
+- `GET /Proceso/Actuaciones/{idProceso}?pagina={pagina}`
+- `GET /Proceso/Sujetos/{idProceso}?pagina={pagina}`
+
+Para detalles del contrato inicial, ver `docs/fuentes/cpnu-api-contract.md`.
+
 ### SAMAI
 
 - URL: `https://samai.consejodeestado.gov.co/Vistas/Casos/procesos.aspx`

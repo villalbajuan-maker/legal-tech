@@ -42,6 +42,7 @@ async def run_probe(radicado: str, complete_search: bool, wait_ms: int) -> dict[
 
     requests: list[dict[str, Any]] = []
     responses: list[dict[str, Any]] = []
+    response_bodies: list[dict[str, Any]] = []
 
     async with async_playwright() as playwright:
         browser = await playwright.chromium.launch(headless=True)
@@ -63,16 +64,29 @@ async def run_probe(radicado: str, complete_search: bool, wait_ms: int) -> dict[
                 }
             ),
         )
-        page.on(
-            "response",
-            lambda response: responses.append(
-                {
-                    "status": response.status,
-                    "url": response.url,
-                    "content_type": response.headers.get("content-type"),
-                }
-            ),
-        )
+        async def capture_response(response: Any) -> None:
+            content_type = response.headers.get("content-type")
+            record = {
+                "status": response.status,
+                "url": response.url,
+                "content_type": content_type,
+            }
+            responses.append(record)
+
+            if not content_type or "google-analytics" in response.url:
+                return
+            if not any(kind in content_type for kind in ("json", "text/plain")):
+                return
+
+            try:
+                body = await response.text()
+            except Exception as exc:  # noqa: BLE001 - discovery should continue.
+                response_bodies.append({**record, "body_error": str(exc)})
+                return
+
+            response_bodies.append({**record, "body_sample": body[:5000]})
+
+        page.on("response", lambda response: asyncio.create_task(capture_response(response)))
 
         await page.goto(CPNU_URL, wait_until="domcontentloaded", timeout=45_000)
 
@@ -106,6 +120,7 @@ async def run_probe(radicado: str, complete_search: bool, wait_ms: int) -> dict[
         "final_url": final_url,
         "title": title,
         "api_candidates": api_candidates[:50],
+        "response_bodies": response_bodies[:20],
         "requests_sample": requests[:120],
         "responses_count": len(responses),
         "screenshot_path": str(screenshot_path),

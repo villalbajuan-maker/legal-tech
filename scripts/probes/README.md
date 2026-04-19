@@ -39,6 +39,24 @@ Consulta controlada de CPNU con un radicado autorizado:
 .venv/bin/python scripts/probes/cpnu_search_probe.py --radicado "11001310300120230004500" --write-report
 ```
 
+Consulta controlada por lote:
+
+```bash
+.venv/bin/python scripts/probes/cpnu_batch_probe.py --file tmp/radicados-cpnu.txt --write-report
+```
+
+Consulta directa del API de CPNU:
+
+```bash
+python3 scripts/probes/cpnu_api_probe.py --file tmp/radicados-cpnu.txt --write-report
+```
+
+Por defecto consulta todos los procesos (`SoloActivos=false`). Para replicar la opcion de procesos activos/recientes:
+
+```bash
+python3 scripts/probes/cpnu_api_probe.py --file tmp/radicados-cpnu.txt --solo-activos --write-report
+```
+
 ## Reglas
 
 - No hace bypass de CAPTCHA.
