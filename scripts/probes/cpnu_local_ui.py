@@ -247,8 +247,8 @@ HTML = """<!doctype html>
       <section class="summary" aria-label="Resumen">
         <article class="metric"><strong id="total">0</strong><span>Radicados</span></article>
         <article class="metric"><strong id="ok">0</strong><span>Consultas OK</span></article>
-        <article class="metric"><strong id="withRecords">0</strong><span>Con registros</span></article>
-        <article class="metric"><strong id="processes">0</strong><span>Procesos encontrados</span></article>
+        <article class="metric"><strong id="withRecords">0</strong><span>Radicados visibles</span></article>
+        <article class="metric"><strong id="processes">0</strong><span>Procesos visibles</span></article>
       </section>
 
       <section class="panel">
@@ -283,6 +283,16 @@ HTML = """<!doctype html>
         withRecords: document.querySelector("#withRecords"),
         processes: document.querySelector("#processes"),
       };
+
+      function getFilterLabel() {
+        const labels = {
+          all: "todas las actuaciones",
+          1: "ultimas 24 horas",
+          7: "ultima semana",
+          30: "ultimos 30 dias",
+        };
+        return labels[actuationFilter.value] || "filtro seleccionado";
+      }
 
       function escapeHtml(value) {
         return String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -331,6 +341,7 @@ HTML = """<!doctype html>
         const rows = [];
         let visibleResults = 0;
         let visibleProcesses = 0;
+        let totalProcesses = 0;
 
         for (const result of data.results) {
           if (!result.ok) {
@@ -346,6 +357,7 @@ HTML = """<!doctype html>
           }
 
           const procesos = result.procesos.length ? result.procesos : [null];
+          totalProcesses += result.procesos.length;
           const visibleProcesos = procesos.filter(passesActuationFilter);
 
           if (visibleProcesos.length > 0) {
@@ -378,14 +390,20 @@ HTML = """<!doctype html>
         metrics.withRecords.textContent = visibleResults;
         metrics.processes.textContent = visibleProcesses;
 
-        tbody.innerHTML = rows.length
-          ? rows.join("")
-          : `<tr><td colspan="6" class="details">No hay procesos para el filtro de actuacion seleccionado.</td></tr>`;
+        tbody.innerHTML = rows.length ? rows.join("") : `
+          <tr>
+            <td colspan="6" class="details">
+              No hay procesos con ultima actuacion en ${escapeHtml(getFilterLabel())}.
+              La consulta trajo ${escapeHtml(totalProcesses)} proceso(s) en total. Cambia el filtro a "Todas" para verlos.
+            </td>
+          </tr>
+        `;
       }
 
       actuationFilter.addEventListener("change", () => {
         if (latestData) {
           render(latestData);
+          statusEl.textContent = `Filtro aplicado: ${getFilterLabel()}.`;
         }
       });
 
