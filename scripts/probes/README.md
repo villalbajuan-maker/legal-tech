@@ -57,6 +57,18 @@ Por defecto consulta todos los procesos (`SoloActivos=false`). Para replicar la 
 python3 scripts/probes/cpnu_api_probe.py --file tmp/radicados-cpnu.txt --solo-activos --write-report
 ```
 
+UI local para consulta:
+
+```bash
+python3 scripts/probes/cpnu_local_ui.py
+```
+
+Luego abre:
+
+```text
+http://127.0.0.1:8765/
+```
+
 ## Reglas
 
 - No hace bypass de CAPTCHA.
