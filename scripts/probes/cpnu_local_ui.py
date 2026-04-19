@@ -82,14 +82,13 @@ HTML = """<!doctype html>
         line-height: 1.5;
       }
 
-      button,
-      select {
+      button {
         min-height: 42px;
-        border-radius: 8px;
       }
 
       button {
         border: 0;
+        border-radius: 8px;
         padding: 0 18px;
         background: #175c4c;
         color: #ffffff;
@@ -100,12 +99,6 @@ HTML = """<!doctype html>
       button:disabled {
         opacity: 0.55;
         cursor: wait;
-      }
-
-      select {
-        border: 1px solid #cfd7d0;
-        padding: 0 12px;
-        background: #ffffff;
       }
 
       .toolbar {
@@ -225,15 +218,7 @@ HTML = """<!doctype html>
 
       <div class="toolbar">
         <button id="run">Consultar CPNU</button>
-        <label>
-          Modo:
-          <select id="queryMode">
-            <option value="all">Todos los procesos</option>
-            <option value="last300">Ultimos 300 dias</option>
-            <option value="recent">Activos / recientes CPNU</option>
-          </select>
-        </label>
-        <span id="status" class="details">Listo.</span>
+        <span id="status" class="details">Modo: Todos los procesos.</span>
       </div>
 
       <section class="summary" aria-label="Resumen">
@@ -343,7 +328,7 @@ HTML = """<!doctype html>
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
               radicados,
-              mode: document.querySelector("#queryMode").value,
+              mode: "all",
             }),
           });
 
