@@ -52,6 +52,60 @@ Construir un sistema MVP que:
 
 El primer MVP se enfoca en el flujo interno de Legal Search, no en un portal para clientes.
 
+## 4.1. Que Recibe Legal Search
+
+Al finalizar el MVP, Legal Search no recibe solamente una prueba tecnica. Recibe una primera version funcional de su propia infraestructura de vigilancia judicial.
+
+Legal Search recibira:
+
+- Un sistema propio para consultar procesos por radicado.
+- Un dashboard interno para revisar resultados en una sola bandeja.
+- Consulta automatica a CPNU / Rama Judicial.
+- Registro de procesos encontrados, despacho, departamento, sujetos y ultima actuacion.
+- Consulta de actuaciones del proceso cuando la fuente lo permita.
+- Visualizacion de la actuacion textual y anotacion.
+- Filtros operativos para priorizar revision.
+- Base tecnica para detectar terminos, audiencias y movimientos relevantes.
+- Documentacion tecnica y funcional del MVP.
+- Codigo fuente del sistema desarrollado.
+- Estructura inicial de base de datos.
+- Repositorio del proyecto.
+- Conocimiento tecnico transferible para seguir evolucionando la solucion.
+
+En la practica, Fabio queda con una herramienta propia para empezar a convertir Legal Search de una operacion manual a una operacion asistida por automatizacion.
+
+## 4.2. Como Queda Legal Search Despues del MVP
+
+Despues del MVP, Legal Search queda con:
+
+- Menos dependencia de revision manual proceso por proceso.
+- Mayor visibilidad sobre procesos activos.
+- Una bandeja unica para revisar novedades.
+- Capacidad de validar automaticamente una muestra de procesos.
+- Base para escalar a mas procesos sin duplicar esfuerzo operativo.
+- Evidencia tecnica para decidir que fuentes automatizar despues.
+- Base comercial para ofrecer alertas premium, reportes y vigilancia con mayor valor agregado.
+
+El MVP no elimina la revision humana desde el primer dia. La mejora es que la revision deja de ser completamente manual y empieza a estar apoyada por una herramienta propia, medible y escalable.
+
+## 4.3. Propiedad del Sistema
+
+Legal Search sera propietario del desarrollo entregado en el marco del proyecto.
+
+Esto incluye:
+
+- Codigo fuente desarrollado para el MVP.
+- Documentacion tecnica.
+- Modelo inicial de base de datos.
+- Conectores creados para fuentes publicas.
+- Reglas iniciales de deteccion.
+- Configuracion base del dashboard.
+- Repositorio del proyecto.
+
+La solucion no se entrega como una licencia cerrada de un tercero. Se entrega como una base tecnologica propia de Legal Search, que podra mantener, ampliar, auditar o migrar en el futuro.
+
+Los servicios, licencias, servidores, APIs, proveedores cloud o herramientas externas que se usen para operar el sistema dependeran de las condiciones de cada proveedor. Sin embargo, la arquitectura, el codigo desarrollado y la logica funcional del MVP quedaran bajo control de Legal Search.
+
 ## 5. Alcance del MVP
 
 ### Incluye
@@ -270,6 +324,15 @@ Alcance:
 - Alertas basicas.
 - Piloto con 20 a 50 procesos.
 
+Que obtiene Legal Search:
+
+- Una primera version funcional del sistema.
+- Consulta automatizada de procesos en CPNU.
+- Dashboard interno para revisar resultados.
+- Base de datos inicial de procesos y movimientos.
+- Codigo fuente y repositorio del MVP.
+- Documentacion para continuar el desarrollo.
+
 Duracion estimada:
 
 - 3 a 4 semanas.
@@ -301,6 +364,17 @@ Alcance:
 - Reporte de piloto.
 - Mejoras de reglas de terminos/audiencias.
 - Mayor acompanamiento durante validacion operativa.
+
+Que obtiene Legal Search:
+
+- Una version mas completa y operativa del sistema.
+- CPNU como fuente principal automatizada.
+- SAMAI como fuente secundaria de verificacion/listado.
+- Importador desde Excel para facilitar la transicion desde la operacion actual.
+- Dashboard mas cercano al uso diario real.
+- Reglas iniciales para identificar movimientos, posibles terminos y posibles audiencias.
+- Reporte de piloto y recomendaciones de escalamiento.
+- Codigo fuente, repositorio, documentacion y estructura tecnica bajo control de Legal Search.
 
 Duracion estimada:
 
