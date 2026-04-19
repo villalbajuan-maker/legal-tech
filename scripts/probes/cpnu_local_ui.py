@@ -260,6 +260,8 @@ HTML = """<!doctype html>
               <th>Registros</th>
               <th>Despacho</th>
               <th>Ultima actuacion</th>
+              <th>Actuacion</th>
+              <th>Anotacion</th>
               <th>Detalle</th>
             </tr>
           </thead>
@@ -350,7 +352,7 @@ HTML = """<!doctype html>
                 <td>${escapeHtml(result.radicado_masked)}</td>
                 <td class="error">Error</td>
                 <td>0</td>
-                <td colspan="3">${escapeHtml(result.error)}</td>
+                <td colspan="5">${escapeHtml(result.error)}</td>
               </tr>
             `);
             continue;
@@ -375,6 +377,8 @@ HTML = """<!doctype html>
                 <td>${escapeHtml(result.records)}</td>
                 <td>${escapeHtml(proceso?.despacho || "-")}</td>
                 <td>${escapeHtml(proceso?.fechaUltimaActuacion || "-")}</td>
+                <td>${escapeHtml(proceso?.ultimaActuacion?.actuacion || "-")}</td>
+                <td>${escapeHtml(proceso?.ultimaActuacion?.anotacion || proceso?.ultimaActuacionError || "-")}</td>
                 <td class="details">
                   ${proceso ? `
                     idProceso: ${escapeHtml(proceso.idProceso)}<br />
@@ -392,7 +396,7 @@ HTML = """<!doctype html>
 
         tbody.innerHTML = rows.length ? rows.join("") : `
           <tr>
-            <td colspan="6" class="details">
+            <td colspan="8" class="details">
               No hay procesos con ultima actuacion en ${escapeHtml(getFilterLabel())}.
               La consulta trajo ${escapeHtml(totalProcesses)} proceso(s) en total. Cambia el filtro a "Todas" para verlos.
             </td>
@@ -415,7 +419,7 @@ HTML = """<!doctype html>
 
         runButton.disabled = true;
         statusEl.textContent = `Consultando ${radicados.length} radicados...`;
-        tbody.innerHTML = `<tr><td colspan="6" class="details">Consultando CPNU...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="details">Consultando CPNU...</td></tr>`;
 
         try {
           const response = await fetch("/api/cpnu", {
@@ -436,7 +440,7 @@ HTML = """<!doctype html>
           statusEl.textContent = `Consulta terminada en ${data.elapsed_ms} ms.`;
         } catch (error) {
           statusEl.textContent = error.message;
-          tbody.innerHTML = `<tr><td colspan="6" class="error">${escapeHtml(error.message)}</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="8" class="error">${escapeHtml(error.message)}</td></tr>`;
         } finally {
           runButton.disabled = false;
         }
@@ -463,8 +467,14 @@ def fetch_json(path: str, params: dict[str, str | int | bool]) -> dict:
     request = Request(
         f"{CPNU_BASE}{path}?{query}",
         headers={
-            "accept": "application/json",
-            "user-agent": "LegalSearchMVPLocalUI/0.1",
+            "accept": "application/json, text/plain, */*",
+            "origin": "https://consultaprocesos.ramajudicial.gov.co",
+            "referer": "https://consultaprocesos.ramajudicial.gov.co/Procesos/NumeroRadicacion",
+            "user-agent": (
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/145.0.0.0 Safari/537.36"
+            ),
         },
     )
 
@@ -499,6 +509,36 @@ def filter_processes_by_days(procesos: list[dict], days: int) -> list[dict]:
     return filtered
 
 
+def fetch_latest_actuation(id_proceso: int) -> dict | None:
+    body = fetch_json(f"/Proceso/Actuaciones/{id_proceso}", {"pagina": 1})
+    actuaciones = body.get("actuaciones") or []
+    if not actuaciones:
+        return None
+
+    return actuaciones[0]
+
+
+def enrich_processes_with_latest_actuation(procesos: list[dict]) -> list[dict]:
+    enriched = []
+
+    for proceso in procesos:
+        item = dict(proceso)
+        id_proceso = item.get("idProceso")
+
+        if not id_proceso:
+            enriched.append(item)
+            continue
+
+        try:
+            item["ultimaActuacion"] = fetch_latest_actuation(id_proceso)
+        except Exception as exc:  # noqa: BLE001 - keep the row visible.
+            item["ultimaActuacionError"] = f"No se pudo cargar actuacion: {exc}"
+
+        enriched.append(item)
+
+    return enriched
+
+
 def query_radicado(radicado: str, mode: str) -> dict:
     normalized = normalize_radicado(radicado)
     result = {
@@ -527,6 +567,8 @@ def query_radicado(radicado: str, mode: str) -> dict:
 
         if mode == "last300":
             procesos = filter_processes_by_days(procesos, 300)
+
+        procesos = enrich_processes_with_latest_actuation(procesos)
 
         result.update(
             {
