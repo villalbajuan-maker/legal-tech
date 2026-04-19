@@ -69,6 +69,12 @@ Luego abre:
 http://127.0.0.1:8765/
 ```
 
+Consulta publica SAMAI por radicado:
+
+```bash
+python3 scripts/probes/samai_api_probe.py --radicado 11001333603820250000100
+```
+
 ## Reglas
 
 - No hace bypass de CAPTCHA.
