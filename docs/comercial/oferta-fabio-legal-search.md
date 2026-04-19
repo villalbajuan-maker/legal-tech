@@ -257,7 +257,9 @@ Puede reducirse si el alcance se limita exclusivamente a CPNU y dashboard minimo
 
 Puede ampliarse si se agregan fuentes adicionales, WhatsApp o automatizacion de documentos.
 
-## 10. Inversion Sugerida
+## 10. Inversion Estimada
+
+La inversion se plantea como una estimacion por componentes, no como un valor rigido cerrado. El alcance puede ajustarse de acuerdo con el numero de procesos piloto, fuentes incluidas, nivel de automatizacion requerido y costos de terceros necesarios para operar la solucion.
 
 ### Opcion A - MVP Tecnico Controlado
 
@@ -268,13 +270,25 @@ Alcance:
 - Alertas basicas.
 - Piloto con 20 a 50 procesos.
 
-Duracion:
+Duracion estimada:
 
 - 3 a 4 semanas.
 
-Valor sugerido:
+Inversion estimada:
 
-> COP $8.000.000 - $12.000.000
+> COP $10.000.000
+
+Distribucion de referencia:
+
+| Concepto | Valor estimado |
+| --- | ---: |
+| Ingresos a favor de terceros: servidores, almacenamiento, dominios, herramientas tecnicas, licencias menores y servicios de prueba | COP $1.500.000 |
+| Investigacion tecnica, validacion de fuentes y pruebas de consulta automatica | COP $1.500.000 |
+| Desarrollo backend, conectores CPNU, normalizacion de radicados y manejo de errores | COP $2.500.000 |
+| Desarrollo dashboard interno, filtros, tabla operativa y visualizacion de resultados | COP $1.800.000 |
+| Soporte tecnico especializado, pruebas, ajustes y documentacion del piloto | COP $1.200.000 |
+| Direccion tecnica, arquitectura, coordinacion y gestion del proyecto | COP $1.500.000 |
+| **Total estimado** | **COP $10.000.000** |
 
 ### Opcion B - MVP Operativo Completo
 
@@ -286,28 +300,57 @@ Alcance:
 - Dashboard operativo mas completo.
 - Reporte de piloto.
 - Mejoras de reglas de terminos/audiencias.
+- Mayor acompanamiento durante validacion operativa.
 
-Duracion:
+Duracion estimada:
 
 - 4 a 6 semanas.
 
-Valor sugerido:
+Inversion estimada:
 
-> COP $14.000.000 - $20.000.000
+> COP $17.000.000
 
-### Opcion C - Automatizacion + Soporte Mensual
+Distribucion de referencia:
 
-Despues del MVP, se recomienda una bolsa mensual para:
+| Concepto | Valor estimado |
+| --- | ---: |
+| Ingresos a favor de terceros: servidores, almacenamiento, servicios cloud, herramientas de monitoreo, licencias, mensajeria de prueba y componentes tecnicos necesarios | COP $2.500.000 |
+| Investigacion y desarrollo sobre fuentes judiciales, incluyendo CPNU, SAMAI y validaciones iniciales de fuentes adicionales | COP $2.500.000 |
+| Desarrollo backend, conectores, procesamiento de actuaciones, snapshots y estructura de datos | COP $3.500.000 |
+| Desarrollo dashboard operativo, filtros, bandeja de revision, estados de fuente y vistas de alertas | COP $2.800.000 |
+| Soporte tecnico especializado, QA, pruebas con radicados reales, ajustes de reglas y estabilizacion | COP $2.200.000 |
+| Direccion tecnica, arquitectura, coordinacion de equipo, gestion de alcance y acompanamiento funcional | COP $3.500.000 |
+| **Total estimado** | **COP $17.000.000** |
 
-- Monitorear fuentes.
-- Ajustar conectores.
-- Corregir cambios de portales judiciales.
-- Mejorar reglas.
-- Agregar nuevas fuentes.
+### Opcion C - Soporte, Operacion y Mejora Continua
 
-Valor sugerido:
+Despues del MVP, se recomienda una bolsa mensual para mantener la automatizacion operativa. Las fuentes judiciales pueden cambiar sin aviso, por lo que el sistema requiere monitoreo, ajustes y soporte tecnico recurrente.
 
-> COP $2.000.000 - $4.000.000 mensuales
+Alcance mensual:
+
+- Monitoreo de fuentes.
+- Ajustes de conectores.
+- Correccion de cambios en portales judiciales.
+- Mejoras a reglas de terminos/audiencias.
+- Soporte tecnico especializado.
+- Pequenas mejoras evolutivas.
+- Revision de errores y estabilidad.
+
+Valor mensual estimado:
+
+> COP $3.000.000 mensuales
+
+Distribucion de referencia:
+
+| Concepto | Valor mensual estimado |
+| --- | ---: |
+| Ingresos a favor de terceros: servidores, almacenamiento, herramientas, monitoreo, licencias y servicios de soporte operativo | COP $800.000 |
+| Soporte tecnico especializado y correccion de incidencias | COP $900.000 |
+| Investigacion, ajustes de fuentes y mejoras menores | COP $700.000 |
+| Direccion tecnica, seguimiento y priorizacion mensual | COP $600.000 |
+| **Total mensual estimado** | **COP $3.000.000** |
+
+Nota: los valores anteriores corresponden a una estimacion inicial para dimensionar el proyecto. Los costos asociados a terceros pueden variar segun consumo, proveedor, cantidad de procesos, canales de notificacion, almacenamiento, licencias y servicios adicionales requeridos.
 
 ## 11. Modelo Comercial Futuro para Legal Search
 
@@ -408,4 +451,3 @@ El objetivo del MVP es reducir carga operativa, disminuir riesgo de omisiones y 
 4. Se inicia Fase 0.
 5. Se entrega primer tablero operativo.
 6. Se ejecuta piloto comparado contra revision manual.
-
