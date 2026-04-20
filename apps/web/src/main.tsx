@@ -13,6 +13,28 @@ type DiagnosticQuestion = {
   options: DiagnosticOption[];
 };
 
+type ProcessState = "info" | "success" | "warning" | "error";
+
+type ProcessStatus = "novedad" | "sin-cambios" | "no-consultado" | "error-fuente" | "revision";
+
+type ProcessRow = {
+  radicado: string;
+  status: string;
+  statusType: ProcessStatus;
+  action: string;
+  annotation: string;
+  date: string;
+  minutesAgo: number;
+  owner: string;
+  priority: "Crítica" | "Alta" | "Media" | "Baja";
+  source: string;
+  state: ProcessState;
+};
+
+type OperationalFilter = "todos" | ProcessStatus;
+
+type TimeFilter = "24h" | "7d" | "30d" | "todos";
+
 const diagnosticQuestions: DiagnosticQuestion[] = [
   {
     question: "¿Cuántos procesos vigilas actualmente?",
@@ -91,38 +113,84 @@ const diagnosticQuestions: DiagnosticQuestion[] = [
   },
 ];
 
-const processRows = [
+const processRows: ProcessRow[] = [
   {
     radicado: "11001400303520230010700",
     status: "Nuevo movimiento",
+    statusType: "novedad",
     action: "Auto fija fecha",
+    annotation: "Se fija audiencia inicial para el 14 de mayo. Requiere validación del responsable.",
     date: "Hoy, 08:42",
+    minutesAgo: 96,
     owner: "Laura P.",
+    priority: "Alta",
+    source: "CPNU",
     state: "info",
   },
   {
     radicado: "11001400306620230164700",
     status: "Sin cambios",
+    statusType: "sin-cambios",
     action: "Fijación en estado",
+    annotation: "Última actuación sin variación frente a la consulta anterior.",
     date: "Ayer, 17:10",
+    minutesAgo: 1110,
     owner: "Carlos M.",
+    priority: "Media",
+    source: "CPNU",
     state: "success",
   },
   {
     radicado: "11001333603820250000100",
     status: "No consultado",
+    statusType: "no-consultado",
     action: "Fuente no disponible",
+    annotation: "El intento quedó registrado. Se recomienda reintento controlado antes del cierre diario.",
     date: "Hoy, 07:30",
+    minutesAgo: 168,
     owner: "Ana R.",
+    priority: "Crítica",
+    source: "CPNU",
     state: "error",
   },
   {
     radicado: "25899310300220190018400",
     status: "Requiere revisión",
+    statusType: "revision",
     action: "Traslado pendiente",
+    annotation: "Movimiento detectado con posible término. Requiere lectura manual.",
     date: "Hace 2 días",
+    minutesAgo: 3240,
     owner: "Juan V.",
+    priority: "Alta",
+    source: "CPNU",
     state: "warning",
+  },
+  {
+    radicado: "11001400307720220073000",
+    status: "Error de fuente",
+    statusType: "error-fuente",
+    action: "Timeout en consulta",
+    annotation: "La fuente respondió fuera del tiempo esperado. No se asume ausencia de novedad.",
+    date: "Hace 5 días",
+    minutesAgo: 7600,
+    owner: "Laura P.",
+    priority: "Media",
+    source: "CPNU",
+    state: "error",
+  },
+  {
+    radicado: "11001418901820240057700",
+    status: "Sin cambios",
+    statusType: "sin-cambios",
+    action: "Auto admite demanda",
+    annotation: "Sin variaciones desde la última consulta exitosa.",
+    date: "Hace 12 días",
+    minutesAgo: 17280,
+    owner: "Carlos M.",
+    priority: "Baja",
+    source: "CPNU",
+    state: "success",
   },
 ];
 
@@ -146,6 +214,70 @@ function getRiskLabel(score: number) {
   if (score >= 17) return "alto";
   if (score >= 9) return "medio";
   return "bajo";
+}
+
+function getRowsByTime(rows: ProcessRow[], filter: TimeFilter) {
+  const limits: Record<TimeFilter, number> = {
+    "24h": 24 * 60,
+    "7d": 7 * 24 * 60,
+    "30d": 30 * 24 * 60,
+    todos: Number.POSITIVE_INFINITY,
+  };
+
+  return rows.filter((row) => row.minutesAgo <= limits[filter]);
+}
+
+function getRowsByOperationalState(rows: ProcessRow[], filter: OperationalFilter) {
+  if (filter === "todos") return rows;
+  return rows.filter((row) => row.statusType === filter);
+}
+
+function pluralize(count: number, singular: string, plural: string) {
+  return count === 1 ? `${count} ${singular}` : `${count} ${plural}`;
+}
+
+function getCompanionAnswer(intent: string, rows: ProcessRow[]) {
+  const movedToday = rows.filter((row) => row.statusType === "novedad" && row.minutesAgo <= 24 * 60);
+  const failed = rows.filter((row) => row.statusType === "no-consultado" || row.statusType === "error-fuente");
+  const stale = rows.filter((row) => row.statusType === "sin-cambios").sort((a, b) => b.minutesAgo - a.minutesAgo);
+  const critical = rows.filter((row) => row.priority === "Crítica" || row.priority === "Alta");
+
+  if (intent === "movimientos") {
+    return movedToday.length
+      ? `${pluralize(movedToday.length, "proceso tuvo", "procesos tuvieron")} movimiento hoy. El más reciente es ${movedToday[0].radicado}: ${movedToday[0].action}.`
+      : "No hay movimientos nuevos en las últimas 24 horas dentro de esta muestra.";
+  }
+
+  if (intent === "fallas") {
+    return failed.length
+      ? `${pluralize(failed.length, "proceso requiere", "procesos requieren")} atención por consulta fallida o fuente no disponible. No se deben tratar como casos sin novedad.`
+      : "No hay procesos con falla de fuente en esta muestra.";
+  }
+
+  if (intent === "responsables") {
+    const counts = rows.reduce<Record<string, number>>((acc, row) => {
+      acc[row.owner] = (acc[row.owner] ?? 0) + 1;
+      return acc;
+    }, {});
+    const topOwner = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    if (!topOwner) return "No hay responsables visibles con el filtro actual.";
+    const [owner, count] = topOwner;
+    return `${owner} concentra ${pluralize(count, "proceso", "procesos")} en esta bandeja. Conviene revisar primero sus casos con prioridad alta o error.`;
+  }
+
+  if (intent === "sin-cambios") {
+    return stale.length
+      ? `El caso con más tiempo sin cambios es ${stale[0].radicado}, con última referencia registrada ${stale[0].date.toLowerCase()}.`
+      : "No hay procesos clasificados como sin cambios en esta vista.";
+  }
+
+  if (intent === "prioridad") {
+    return critical.length
+      ? `${pluralize(critical.length, "proceso está", "procesos están")} en prioridad alta o crítica. Deben aparecer antes en la rutina de consulta y revisión.`
+      : "No hay procesos de alta prioridad en esta muestra.";
+  }
+
+  return "Selecciona una pregunta operativa para convertir la bandeja en una respuesta accionable.";
 }
 
 function DiagnosticModal({
@@ -237,6 +369,40 @@ function DiagnosticModal({
 
 function App() {
   const [isDiagnosticOpen, setDiagnosticOpen] = useState(false);
+  const [operationalFilter, setOperationalFilter] = useState<OperationalFilter>("todos");
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("todos");
+  const [companionIntent, setCompanionIntent] = useState("movimientos");
+  const [isCompanionOpen, setCompanionOpen] = useState(true);
+  const rowsByTime = getRowsByTime(processRows, timeFilter);
+  const visibleRows = getRowsByOperationalState(rowsByTime, operationalFilter);
+  const companionAnswer = getCompanionAnswer(companionIntent, rowsByTime);
+  const summary = {
+    novedades: rowsByTime.filter((row) => row.statusType === "novedad").length,
+    sinCambios: rowsByTime.filter((row) => row.statusType === "sin-cambios").length,
+    noConsultados: rowsByTime.filter((row) => row.statusType === "no-consultado").length,
+    errores: rowsByTime.filter((row) => row.statusType === "error-fuente").length,
+    responsables: new Set(rowsByTime.map((row) => row.owner)).size,
+  };
+  const operationalFilters: { label: string; value: OperationalFilter }[] = [
+    { label: "Todos", value: "todos" },
+    { label: "Con novedad", value: "novedad" },
+    { label: "Sin cambios", value: "sin-cambios" },
+    { label: "No consultados", value: "no-consultado" },
+    { label: "Errores de fuente", value: "error-fuente" },
+  ];
+  const timeFilters: { label: string; value: TimeFilter }[] = [
+    { label: "24 horas", value: "24h" },
+    { label: "Semana", value: "7d" },
+    { label: "30 días", value: "30d" },
+    { label: "Todos", value: "todos" },
+  ];
+  const companionPrompts = [
+    { label: "¿Qué procesos se movieron hoy?", value: "movimientos" },
+    { label: "¿Cuáles no se pudieron consultar?", value: "fallas" },
+    { label: "¿Quién concentra más pendientes?", value: "responsables" },
+    { label: "¿Qué casos llevan más tiempo sin cambios?", value: "sin-cambios" },
+    { label: "¿Qué requiere prioridad?", value: "prioridad" },
+  ];
 
   return (
     <main className="app">
@@ -356,20 +522,59 @@ function App() {
             <h2>Una bandeja para decidir. No otra tabla para revisar.</h2>
             <p>Todo en un solo lugar. Con trazabilidad.</p>
           </div>
-          <div className="filterGroup" aria-label="Filtros rápidos">
-            <button type="button" className="filter active">Con novedad</button>
-            <button type="button" className="filter">No consultados</button>
-            <button type="button" className="filter">Errores de fuente</button>
+          <div className="controlTools">
+            <div className="filterGroup" aria-label="Filtros rápidos">
+              {operationalFilters.map((item) => (
+                <button
+                  type="button"
+                  className={`filter ${operationalFilter === item.value ? "active" : ""}`}
+                  key={item.value}
+                  onClick={() => setOperationalFilter(item.value)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <div className="filterGroup timeFilters" aria-label="Filtros de tiempo">
+              {timeFilters.map((item) => (
+                <button
+                  type="button"
+                  className={`filter compact ${timeFilter === item.value ? "active" : ""}`}
+                  key={item.value}
+                  onClick={() => setTimeFilter(item.value)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         <div className="stateGrid">
-          <article><strong>Procesos con novedad</strong></article>
-          <article><strong>Procesos sin cambios</strong></article>
-          <article><strong>Procesos no consultados</strong></article>
-          <article><strong>Errores de fuente</strong></article>
-          <article><strong>Responsables</strong></article>
-          <article><strong>Prioridades</strong></article>
+          <button type="button" onClick={() => setOperationalFilter("novedad")}>
+            <strong>{summary.novedades}</strong>
+            <span>Procesos con novedad</span>
+          </button>
+          <button type="button" onClick={() => setOperationalFilter("sin-cambios")}>
+            <strong>{summary.sinCambios}</strong>
+            <span>Procesos sin cambios</span>
+          </button>
+          <button type="button" onClick={() => setOperationalFilter("no-consultado")}>
+            <strong>{summary.noConsultados}</strong>
+            <span>Procesos no consultados</span>
+          </button>
+          <button type="button" onClick={() => setOperationalFilter("error-fuente")}>
+            <strong>{summary.errores}</strong>
+            <span>Errores de fuente</span>
+          </button>
+          <button type="button" onClick={() => setCompanionIntent("responsables")}>
+            <strong>{summary.responsables}</strong>
+            <span>Responsables activos</span>
+          </button>
+          <button type="button" onClick={() => setCompanionIntent("prioridad")}>
+            <strong>{rowsByTime.filter((row) => row.priority === "Alta" || row.priority === "Crítica").length}</strong>
+            <span>Prioridades altas</span>
+          </button>
         </div>
 
         <div className="workbench">
@@ -381,28 +586,65 @@ function App() {
               <span>Fecha</span>
               <span>Responsable</span>
             </div>
-            {processRows.map((row) => (
+            {visibleRows.map((row) => (
               <article className={`processRow ${row.state}`} key={row.radicado}>
                 <span className="radicado">{row.radicado}</span>
                 <span className={`badge ${row.state}`}>{row.status}</span>
-                <span>{row.action}</span>
+                <span>
+                  <strong>{row.action}</strong>
+                  <small>{row.annotation}</small>
+                </span>
                 <time>{row.date}</time>
-                <span>{row.owner}</span>
+                <span>
+                  {row.owner}
+                  <small>{row.priority}</small>
+                </span>
               </article>
             ))}
+            {visibleRows.length === 0 ? (
+              <div className="emptyState">
+                No hay procesos en esta vista. Cambia el filtro para ver otra señal operativa.
+              </div>
+            ) : null}
           </section>
 
-          <aside className="companionPanel" aria-label="Companion operativo">
-            <div className="companionHeader">
-              <span>Companion</span>
-              <strong>No buscas procesos. Preguntas por tu operación.</strong>
-            </div>
-            <p>¿Qué procesos se movieron hoy?</p>
-            <p>¿Cuáles no se pudieron consultar?</p>
-            <p>¿Qué casos llevan más tiempo sin cambios?</p>
-            <div className="answer">
-              LexControl responde sobre lo que está pasando. No sobre lo que crees que pasó.
-            </div>
+          <aside className={`companionPanel ${isCompanionOpen ? "open" : "closed"}`} aria-label="Companion operativo">
+            <button
+              className="companionToggle"
+              type="button"
+              onClick={() => setCompanionOpen((current) => !current)}
+              aria-expanded={isCompanionOpen}
+            >
+              <span>LC</span>
+              Companion
+            </button>
+            {isCompanionOpen ? (
+              <>
+                <div className="companionHeader">
+                  <span>Companion operativo</span>
+                  <strong>No buscas procesos. Preguntas por tu operación.</strong>
+                </div>
+                <div className="promptList" aria-label="Preguntas sugeridas">
+                  {companionPrompts.map((prompt) => (
+                    <button
+                      type="button"
+                      className={companionIntent === prompt.value ? "active" : ""}
+                      key={prompt.value}
+                      onClick={() => setCompanionIntent(prompt.value)}
+                    >
+                      {prompt.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="answer">
+                  <span>Respuesta</span>
+                  {companionAnswer}
+                </div>
+                <p className="companionFootnote">
+                  Basado en la bandeja demo. En beta responde sobre tus procesos reales.
+                </p>
+              </>
+            ) : null}
           </aside>
         </div>
       </section>
