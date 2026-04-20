@@ -972,9 +972,10 @@ function App() {
           <img src={logoUrl} alt="LexControl" />
         </a>
         <nav className="nav" aria-label="Principal">
-          <a href="#diagnostico">Diagnóstico</a>
-          <a href="#control">Control</a>
-          <a href="#demo">Demo</a>
+          <a href="#problema">Problema</a>
+          <a href="#control">Cómo funciona</a>
+          <a href="#preguntas">Preguntas</a>
+          <a href="#precios">Precios</a>
         </nav>
         <button className="navCta" type="button" onClick={() => setActivationOpen(true)}>
           Activar demo gratis
@@ -1018,7 +1019,7 @@ function App() {
         <strong>Y aún así estar dejando casos sin revisar.</strong>
       </section>
 
-      <section className="problemSection">
+      <section className="problemSection" id="problema">
         <div>
           <p className="eyebrow">Problema</p>
           <h2>El riesgo no está solo en que un proceso cambie.</h2>
