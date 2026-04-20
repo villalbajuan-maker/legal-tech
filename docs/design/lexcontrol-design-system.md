@@ -880,7 +880,24 @@ Must show:
 
 ---
 
-## 15. Design System Summary
+## 15. Responsive Rendering
+
+Mobile and tablet layouts must follow the dedicated rendering contract:
+
+[LexControl Mobile Rendering Contract](./lexcontrol-mobile-rendering-contract.md)
+
+Core rule:
+
+```text
+Mobile is not compressed desktop.
+Mobile is a guided decision flow.
+```
+
+The mobile landing must reduce visual containers, simplify the operational tray, and use Lex to explain the state of the demo.
+
+---
+
+## 16. Design System Summary
 
 LexControl must look and behave like an operational legal control center.
 
