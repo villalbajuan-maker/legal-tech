@@ -881,6 +881,60 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (mediaQuery.matches) return;
+
+    let animationFrame = 0;
+
+    function updateHeroParallax() {
+      const offset = Math.min(window.scrollY * 0.08, 42);
+      document.documentElement.style.setProperty("--hero-parallax", `${offset}px`);
+      animationFrame = 0;
+    }
+
+    function handleScroll() {
+      if (animationFrame) return;
+      animationFrame = window.requestAnimationFrame(updateHeroParallax);
+    }
+
+    updateHeroParallax();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (animationFrame) {
+        window.cancelAnimationFrame(animationFrame);
+      }
+      document.documentElement.style.removeProperty("--hero-parallax");
+    };
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const revealElements = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
+
+    if (mediaQuery.matches || !("IntersectionObserver" in window)) {
+      revealElements.forEach((element) => element.classList.add("is-visible"));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        });
+      },
+      { rootMargin: "0px 0px -12% 0px", threshold: 0.16 },
+    );
+
+    revealElements.forEach((element) => observer.observe(element));
+
+    return () => observer.disconnect();
+  }, []);
+
   function applyLexIntent(intent: LexIntent) {
     if (intent === "movimientos") {
       setOperationalFilter("novedad");
@@ -983,7 +1037,7 @@ function App() {
       </header>
 
       <section className="hero" id="inicio">
-        <div className="heroContent">
+        <div className="heroContent" data-reveal>
           <p className="eyebrow">LexControl — vigilancia judicial operativa</p>
           <h1>
             El problema no es revisar procesos. Es no saber cuáles nunca fueron revisados.
@@ -1014,12 +1068,12 @@ function App() {
         </div>
       </section>
 
-      <section className="transitionSection">
+      <section className="transitionSection" data-reveal>
         <p>Puedes revisar procesos todos los días.</p>
         <strong>Y aún así estar dejando casos sin revisar.</strong>
       </section>
 
-      <section className="problemSection" id="problema">
+      <section className="problemSection" id="problema" data-reveal>
         <div>
           <p className="eyebrow">Problema</p>
           <h2>El riesgo no está solo en que un proceso cambie.</h2>
@@ -1040,7 +1094,7 @@ function App() {
         </div>
       </section>
 
-      <section className="diagnosticEntry" id="diagnostico">
+      <section className="diagnosticEntry" id="diagnostico" data-reveal>
         <div>
           <p className="eyebrow">Diagnóstico de Riesgo Operativo Judicial</p>
           <h2>Este diagnóstico no mide qué tan organizado estás.</h2>
@@ -1051,14 +1105,14 @@ function App() {
         </button>
       </section>
 
-      <section className="solutionSection">
+      <section className="solutionSection" data-reveal>
         <div>
           <p className="eyebrow">Solución</p>
           <h2>De revisión manual a control operativo.</h2>
         </div>
         <div className="solutionGrid">
           {solutionBlocks.map((item) => (
-            <article className="solutionCard" key={item.title}>
+            <article className="solutionCard" key={item.title} data-reveal>
               <h3>{item.title}</h3>
               <p>{item.text}</p>
             </article>
@@ -1066,7 +1120,7 @@ function App() {
         </div>
       </section>
 
-      <section className="modelShift">
+      <section className="modelShift" data-reveal>
         <article>
           <span>Hoy operas así</span>
           <p>Revisión manual</p>
@@ -1083,7 +1137,7 @@ function App() {
         </article>
       </section>
 
-      <section className="controlSurface" id="control" aria-label="Panel de control LexControl">
+      <section className="controlSurface" id="control" aria-label="Panel de control LexControl" data-reveal>
         <div className="controlHeader">
           <div>
             <p className="eyebrow">Panel</p>
@@ -1278,7 +1332,7 @@ function App() {
         </div>
       </section>
 
-      <section className="beta" id="demo">
+      <section className="beta" id="demo" data-reveal>
         <div>
           <p className="eyebrow">Demo gratuita controlada</p>
           <h2>Activa LexControl con una muestra real de tu operación.</h2>
@@ -1296,7 +1350,7 @@ function App() {
         </button>
       </section>
 
-      <section className="faqSection" id="preguntas">
+      <section className="faqSection" id="preguntas" data-reveal>
         <div className="sectionIntro">
           <p className="eyebrow">Preguntas frecuentes</p>
           <h2>Antes de hablar de precio, aclaremos la operación.</h2>
@@ -1314,7 +1368,7 @@ function App() {
         </div>
       </section>
 
-      <section className="pricingSection" id="precios">
+      <section className="pricingSection" id="precios" data-reveal>
         <div className="sectionIntro">
           <p className="eyebrow">Precios de lanzamiento</p>
           <h2>Precios claros antes de activar la demo.</h2>
@@ -1325,7 +1379,7 @@ function App() {
         </div>
         <div className="pricingGrid">
           {launchPlans.map((plan) => (
-            <article className={`pricingCard ${plan.featured ? "featured" : ""}`} key={plan.name}>
+            <article className={`pricingCard ${plan.featured ? "featured" : ""}`} key={plan.name} data-reveal>
               {plan.featured ? <span className="planTag">Más útil para operar</span> : null}
               <h3>{plan.name}</h3>
               <strong>{plan.price}</strong>
@@ -1346,7 +1400,7 @@ function App() {
             Activar demo gratis
           </button>
         </div>
-        <div className="addOnsPanel">
+        <div className="addOnsPanel" data-reveal>
           <div>
             <p className="eyebrow">Complementos disponibles</p>
             <h3>Activa más capacidad según plan y volumen.</h3>
@@ -1363,7 +1417,7 @@ function App() {
         </div>
       </section>
 
-      <section className="closingSection">
+      <section className="closingSection" data-reveal>
         <h2>No puedes controlar lo que no puedes ver.</h2>
         <p>Activa una demo gratuita y revisa cómo se ve tu operación cuando cada consulta deja trazabilidad.</p>
         <strong>LexControl convierte esa incertidumbre en sistema.</strong>
@@ -1372,7 +1426,7 @@ function App() {
         </button>
       </section>
 
-      <footer className="siteFooter">
+      <footer className="siteFooter" data-reveal>
         <div className="footerBrand">
           <img src={logoUrl} alt="LexControl" />
         </div>
