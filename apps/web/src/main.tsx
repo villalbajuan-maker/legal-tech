@@ -830,6 +830,7 @@ function App() {
   const [ownerFilter, setOwnerFilter] = useState("todos");
   const [isLexOpen, setLexOpen] = useState(false);
   const [isLexTyping, setLexTyping] = useState(false);
+  const [isMobileNavOpen, setMobileNavOpen] = useState(false);
   const [lexInput, setLexInput] = useState("");
   const [lexMessages, setLexMessages] = useState<LexMessage[]>([
     {
@@ -1025,11 +1026,31 @@ function App() {
         <a className="brand" href="#inicio" aria-label="LexControl inicio">
           <img src={logoUrl} alt="LexControl" />
         </a>
-        <nav className="nav" aria-label="Principal">
-          <a href="#problema">Problema</a>
-          <a href="#control">Cómo funciona</a>
-          <a href="#preguntas">Preguntas</a>
-          <a href="#precios">Precios</a>
+        <button
+          className="menuToggle"
+          type="button"
+          onClick={() => setMobileNavOpen((current) => !current)}
+          aria-expanded={isMobileNavOpen}
+          aria-controls="primary-navigation"
+        >
+          <span>Menú</span>
+          <i aria-hidden="true" />
+        </button>
+        <nav className={`nav ${isMobileNavOpen ? "is-open" : ""}`} id="primary-navigation" aria-label="Principal">
+          <a href="#problema" onClick={() => setMobileNavOpen(false)}>Problema</a>
+          <a href="#control" onClick={() => setMobileNavOpen(false)}>Cómo funciona</a>
+          <a href="#preguntas" onClick={() => setMobileNavOpen(false)}>Preguntas</a>
+          <a href="#precios" onClick={() => setMobileNavOpen(false)}>Precios</a>
+          <button
+            className="mobileNavCta"
+            type="button"
+            onClick={() => {
+              setMobileNavOpen(false);
+              setActivationOpen(true);
+            }}
+          >
+            Activar demo gratis
+          </button>
         </nav>
         <button className="navCta" type="button" onClick={() => setActivationOpen(true)}>
           Activar demo gratis
@@ -1225,14 +1246,14 @@ function App() {
             <div className="tableBody">
               {visibleRows.map((row) => (
                 <article className={`processRow ${row.state}`} key={row.radicado}>
-                  <span className="radicado">{row.radicado}</span>
-                  <span className={`badge ${row.state}`}>{row.status}</span>
-                  <span>
+                  <span className="radicado" data-label="Radicado">{row.radicado}</span>
+                  <span className={`badge ${row.state}`} data-label="Estado">{row.status}</span>
+                  <span data-label="Última actuación">
                     <strong>{row.action}</strong>
                     <small>{row.annotation}</small>
                   </span>
-                  <time>{row.date}</time>
-                  <span>
+                  <time data-label="Fecha">{row.date}</time>
+                  <span data-label="Responsable">
                     {row.owner}
                     <small>{row.priority}</small>
                   </span>
