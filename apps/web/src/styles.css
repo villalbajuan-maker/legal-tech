@@ -703,6 +703,11 @@ h3 {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
+.mobileTrayIntro,
+.mobileTrayPanel {
+  display: none;
+}
+
 .stateGrid button {
   display: grid;
   gap: 6px;
@@ -993,6 +998,204 @@ h3 {
   color: var(--muted);
   font-size: var(--font-small);
   font-weight: 750;
+}
+
+.mobileSignalStrip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mobileSignalStrip article {
+  display: grid;
+  gap: 4px;
+  min-height: 62px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #ffffff;
+}
+
+.mobileSignalStrip strong {
+  color: var(--brand);
+  font-size: 18px;
+  font-weight: 820;
+  line-height: 1;
+}
+
+.mobileSignalStrip span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.mobileTrayTabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.mobileTrayTabs button {
+  flex: 0 0 auto;
+  min-height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: #ffffff;
+  color: var(--muted);
+  font-size: var(--font-small);
+  font-weight: 760;
+}
+
+.mobileTrayTabs button.active {
+  border-color: var(--brand-border);
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.mobileFilterBar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mobileFilterBar label {
+  display: grid;
+  gap: 6px;
+  color: var(--subtle);
+  font-size: 11px;
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.mobileFilterBar select {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #ffffff;
+  color: var(--brand);
+  font-size: var(--font-small);
+  font-weight: 760;
+}
+
+.mobileTrayPanel {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  background: #ffffff;
+}
+
+.mobileTrayHeader {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.mobileTrayHeader strong {
+  color: var(--brand);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.mobileTrayHeader span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.mobileProcessList {
+  display: grid;
+  gap: 10px;
+}
+
+.mobileProcessCard {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.mobileProcessCard.info {
+  border-left-color: var(--info);
+}
+
+.mobileProcessCard.success {
+  border-left-color: var(--success);
+}
+
+.mobileProcessCard.warning {
+  border-left-color: var(--warning);
+}
+
+.mobileProcessCard.error {
+  border-left-color: var(--error);
+}
+
+.mobileProcessCard summary {
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.mobileProcessCard summary::-webkit-details-marker {
+  display: none;
+}
+
+.mobileProcessCard summary strong {
+  color: var(--brand);
+  font-size: 14px;
+  font-weight: 780;
+  overflow-wrap: anywhere;
+}
+
+.mobileProcessCard summary p,
+.mobileProcessCard summary small {
+  margin: 0;
+}
+
+.mobileProcessCard summary p {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.mobileProcessCard summary small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.mobileProcessMeta {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  padding: 0 12px 12px;
+}
+
+.mobileProcessMeta div {
+  display: grid;
+  gap: 4px;
+}
+
+.mobileProcessMeta span {
+  color: var(--subtle);
+  font-size: 10px;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.mobileProcessMeta p {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .lexFloatingLayer {
@@ -2228,6 +2431,16 @@ h3 {
     padding: 16px;
   }
 
+  .stateGrid {
+    display: none;
+  }
+
+  .mobileTrayIntro {
+    display: grid;
+    gap: 12px;
+    margin: 18px 0 14px;
+  }
+
   .stateGrid button {
     min-height: 72px;
   }
@@ -2250,10 +2463,12 @@ h3 {
 
   .lexMiniModal {
     position: fixed;
-    right: 10px;
-    bottom: 72px;
-    width: calc(100vw - 20px);
-    max-height: min(620px, calc(100vh - 92px));
+    right: 8px;
+    left: 8px;
+    bottom: 68px;
+    width: auto;
+    max-height: min(74vh, calc(100vh - 84px));
+    border-radius: 14px;
   }
 
   .summaryGrid,
@@ -2290,6 +2505,20 @@ h3 {
 }
 
 @media (max-width: 860px) {
+  .desktopTrayPanel,
+  .stateGrid {
+    display: none;
+  }
+
+  .mobileTrayIntro,
+  .mobileTrayPanel {
+    display: grid;
+  }
+
+  .workbench {
+    gap: 0;
+  }
+
   .tablePanel {
     overflow: visible;
     border: 0;
@@ -2305,6 +2534,10 @@ h3 {
     gap: 10px;
     max-height: min(560px, 72vh);
     padding-right: 2px;
+  }
+
+  .mobileSignalStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .processRow {

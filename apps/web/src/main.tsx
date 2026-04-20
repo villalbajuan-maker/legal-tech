@@ -670,6 +670,22 @@ function App() {
     errores: rowsByTime.filter((row) => row.statusType === "error-fuente").length,
     responsables: new Set(rowsByTime.map((row) => row.owner)).size,
   };
+  const mobileTrayFilter =
+    operationalFilter === "sin-cambios" || operationalFilter === "error-fuente" || operationalFilter === "no-consultado"
+      ? operationalFilter
+      : operationalFilter === "todos"
+        ? "novedad"
+        : operationalFilter;
+  const mobileTrayRows = rowsByTime
+    .filter((row) => ownerFilter === "todos" || row.owner === ownerFilter)
+    .filter((row) => {
+      if (mobileTrayFilter === "sin-cambios") return row.statusType === "sin-cambios";
+      if (mobileTrayFilter === "error-fuente" || mobileTrayFilter === "no-consultado") {
+        return row.statusType === "error-fuente" || row.statusType === "no-consultado";
+      }
+      return row.statusType === "novedad";
+    })
+    .slice(0, 3);
   const operationalFilters: { label: string; value: OperationalFilter }[] = [
     { label: "Todos", value: "todos" },
     { label: "Con novedad", value: "novedad" },
@@ -1008,8 +1024,91 @@ function App() {
           </button>
         </div>
 
+        <section className="mobileTrayIntro" aria-label="Resumen mobile de la bandeja">
+          <div className="mobileSignalStrip">
+            <article>
+              <strong>{rowsByTime.length}</strong>
+              <span>procesos</span>
+            </article>
+            <article>
+              <strong>{summary.novedades}</strong>
+              <span>novedad</span>
+            </article>
+            <article>
+              <strong>{summary.noConsultados + summary.errores}</strong>
+              <span>fallas</span>
+            </article>
+            <article>
+              <strong>{summary.sinCambios}</strong>
+              <span>sin cambios</span>
+            </article>
+          </div>
+
+          <div className="mobileTrayTabs" role="tablist" aria-label="Estados principales de la bandeja">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mobileTrayFilter === "novedad"}
+              className={mobileTrayFilter === "novedad" ? "active" : ""}
+              onClick={() => setOperationalFilter("novedad")}
+            >
+              Novedades
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mobileTrayFilter === "error-fuente" || mobileTrayFilter === "no-consultado"}
+              className={mobileTrayFilter === "error-fuente" || mobileTrayFilter === "no-consultado" ? "active" : ""}
+              onClick={() => setOperationalFilter("error-fuente")}
+            >
+              Fallas
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mobileTrayFilter === "sin-cambios"}
+              className={mobileTrayFilter === "sin-cambios" ? "active" : ""}
+              onClick={() => setOperationalFilter("sin-cambios")}
+            >
+              Sin cambios
+            </button>
+          </div>
+
+          <div className="mobileFilterBar" aria-label="Filtros mobile">
+            <label>
+              Fecha
+              <select
+                value={timeFilter}
+                onChange={(event) => setTimeFilter(event.target.value as TimeFilter)}
+                aria-label="Filtrar por fecha en mobile"
+              >
+                {timeFilters.map((item) => (
+                  <option value={item.value} key={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Responsable
+              <select
+                value={ownerFilter}
+                onChange={(event) => setOwnerFilter(event.target.value)}
+                aria-label="Filtrar por responsable en mobile"
+              >
+                <option value="todos">Todos</option>
+                {ownerOptions.map((owner) => (
+                  <option value={owner} key={owner}>
+                    {owner}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </section>
+
         <div className="workbench">
-          <section className="tablePanel" aria-label="Procesos monitoreados">
+          <section className="tablePanel desktopTrayPanel" aria-label="Procesos monitoreados">
             <div className="tableHeader">
               <span>Radicado</span>
               <label>
@@ -1074,6 +1173,50 @@ function App() {
                 </article>
               ))}
               {visibleRows.length === 0 ? (
+                <div className="emptyState">
+                  No hay procesos en esta vista. Cambia el filtro para ver otra señal operativa.
+                </div>
+              ) : null}
+            </div>
+          </section>
+
+          <section className="mobileTrayPanel" aria-label="Procesos monitoreados en mobile">
+            <div className="mobileTrayHeader">
+              <strong>
+                {mobileTrayFilter === "sin-cambios"
+                  ? "Procesos sin cambios"
+                  : mobileTrayFilter === "error-fuente" || mobileTrayFilter === "no-consultado"
+                    ? "Procesos con fallas"
+                    : "Procesos con novedad"}
+              </strong>
+              <span>Mostrando hasta 3 casos de la muestra.</span>
+            </div>
+            <div className="mobileProcessList">
+              {mobileTrayRows.map((row) => (
+                <details className={`mobileProcessCard ${row.state}`} key={row.radicado}>
+                  <summary>
+                    <span className={`badge ${row.state}`}>{row.status}</span>
+                    <strong>{row.radicado}</strong>
+                    <p>{row.action}</p>
+                    <small>{row.owner} · {row.date}</small>
+                  </summary>
+                  <div className="mobileProcessMeta">
+                    <div>
+                      <span>Anotación</span>
+                      <p>{row.annotation}</p>
+                    </div>
+                    <div>
+                      <span>Fuente</span>
+                      <p>{row.source}</p>
+                    </div>
+                    <div>
+                      <span>Prioridad</span>
+                      <p>{row.priority}</p>
+                    </div>
+                  </div>
+                </details>
+              ))}
+              {mobileTrayRows.length === 0 ? (
                 <div className="emptyState">
                   No hay procesos en esta vista. Cambia el filtro para ver otra señal operativa.
                 </div>
