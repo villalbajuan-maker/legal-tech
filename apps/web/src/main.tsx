@@ -484,6 +484,7 @@ function App() {
   const [isDiagnosticOpen, setDiagnosticOpen] = useState(false);
   const [operationalFilter, setOperationalFilter] = useState<OperationalFilter>("todos");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("todos");
+  const [ownerFilter, setOwnerFilter] = useState("todos");
   const [isLexOpen, setLexOpen] = useState(false);
   const [isLexTyping, setLexTyping] = useState(false);
   const [lexInput, setLexInput] = useState("");
@@ -498,7 +499,9 @@ function App() {
   const lexMessagesRef = useRef<HTMLDivElement | null>(null);
   const lexTypingTimeoutRef = useRef<number | null>(null);
   const rowsByTime = getRowsByTime(processRows, timeFilter);
-  const visibleRows = getRowsByOperationalState(rowsByTime, operationalFilter);
+  const rowsByOperationalState = getRowsByOperationalState(rowsByTime, operationalFilter);
+  const visibleRows = rowsByOperationalState.filter((row) => ownerFilter === "todos" || row.owner === ownerFilter);
+  const ownerOptions = Array.from(new Set(processRows.map((row) => row.owner))).sort();
   const summary = {
     novedades: rowsByTime.filter((row) => row.statusType === "novedad").length,
     sinCambios: rowsByTime.filter((row) => row.statusType === "sin-cambios").length,
@@ -539,21 +542,25 @@ function App() {
     if (intent === "movimientos") {
       setOperationalFilter("novedad");
       setTimeFilter("24h");
+      setOwnerFilter("todos");
     }
 
     if (intent === "fallas") {
       setOperationalFilter("no-consultado");
       setTimeFilter("todos");
+      setOwnerFilter("todos");
     }
 
     if (intent === "sin-cambios") {
       setOperationalFilter("sin-cambios");
       setTimeFilter("todos");
+      setOwnerFilter("todos");
     }
 
     if (intent === "prioridad" || intent === "responsables" || intent === "resumen") {
       setOperationalFilter("todos");
       setTimeFilter("todos");
+      setOwnerFilter("todos");
     }
   }
 
@@ -733,48 +740,22 @@ function App() {
             <h2>Una bandeja para decidir. No otra tabla para revisar.</h2>
             <p>Todo en un solo lugar. Con trazabilidad.</p>
           </div>
-          <div className="controlTools">
-            <div className="filterGroup" aria-label="Filtros rápidos">
-              {operationalFilters.map((item) => (
-                <button
-                  type="button"
-                  className={`filter ${operationalFilter === item.value ? "active" : ""}`}
-                  key={item.value}
-                  onClick={() => setOperationalFilter(item.value)}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-            <div className="filterGroup timeFilters" aria-label="Filtros de tiempo">
-              {timeFilters.map((item) => (
-                <button
-                  type="button"
-                  className={`filter compact ${timeFilter === item.value ? "active" : ""}`}
-                  key={item.value}
-                  onClick={() => setTimeFilter(item.value)}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         <div className="stateGrid">
-          <button type="button" onClick={() => setOperationalFilter("novedad")}>
+          <button type="button" onClick={() => { setOperationalFilter("novedad"); setOwnerFilter("todos"); }}>
             <strong>{summary.novedades}</strong>
             <span>Procesos con novedad</span>
           </button>
-          <button type="button" onClick={() => setOperationalFilter("sin-cambios")}>
+          <button type="button" onClick={() => { setOperationalFilter("sin-cambios"); setOwnerFilter("todos"); }}>
             <strong>{summary.sinCambios}</strong>
             <span>Procesos sin cambios</span>
           </button>
-          <button type="button" onClick={() => setOperationalFilter("no-consultado")}>
+          <button type="button" onClick={() => { setOperationalFilter("no-consultado"); setOwnerFilter("todos"); }}>
             <strong>{summary.noConsultados}</strong>
             <span>Procesos no consultados</span>
           </button>
-          <button type="button" onClick={() => setOperationalFilter("error-fuente")}>
+          <button type="button" onClick={() => { setOperationalFilter("error-fuente"); setOwnerFilter("todos"); }}>
             <strong>{summary.errores}</strong>
             <span>Errores de fuente</span>
           </button>
@@ -792,10 +773,50 @@ function App() {
           <section className="tablePanel" aria-label="Procesos monitoreados">
             <div className="tableHeader">
               <span>Radicado</span>
-              <span>Estado</span>
+              <label>
+                Estado
+                <select
+                  value={operationalFilter}
+                  onChange={(event) => setOperationalFilter(event.target.value as OperationalFilter)}
+                  aria-label="Filtrar por estado"
+                >
+                  {operationalFilters.map((item) => (
+                    <option value={item.value} key={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <span>Última actuación</span>
-              <span>Fecha</span>
-              <span>Responsable</span>
+              <label>
+                Fecha
+                <select
+                  value={timeFilter}
+                  onChange={(event) => setTimeFilter(event.target.value as TimeFilter)}
+                  aria-label="Filtrar por fecha"
+                >
+                  {timeFilters.map((item) => (
+                    <option value={item.value} key={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Responsable
+                <select
+                  value={ownerFilter}
+                  onChange={(event) => setOwnerFilter(event.target.value)}
+                  aria-label="Filtrar por responsable"
+                >
+                  <option value="todos">Todos</option>
+                  {ownerOptions.map((owner) => (
+                    <option value={owner} key={owner}>
+                      {owner}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
             <div className="tableBody">
               {visibleRows.map((row) => (

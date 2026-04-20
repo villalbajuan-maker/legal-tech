@@ -465,7 +465,7 @@ h3 {
 .controlHeader,
 .valueSection {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
   align-items: end;
 }
@@ -641,7 +641,7 @@ h3 {
 .tableHeader,
 .processRow {
   display: grid;
-  grid-template-columns: minmax(170px, 1.25fr) 150px minmax(140px, 1fr) 110px 110px;
+  grid-template-columns: minmax(170px, 1.25fr) 170px minmax(160px, 1fr) 120px 150px;
   align-items: center;
   gap: 12px;
 }
@@ -649,11 +649,36 @@ h3 {
 .tableHeader {
   min-height: 42px;
   border-bottom: 1px solid var(--border);
-  padding: 0 16px;
+  padding: 8px 16px;
   background: var(--surface-subtle);
   color: var(--muted);
   font-size: 12px;
   font-weight: 800;
+}
+
+.tableHeader label {
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.tableHeader select {
+  width: 100%;
+  min-height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 28px 5px 8px;
+  background:
+    linear-gradient(45deg, transparent 50%, var(--brand) 50%) calc(100% - 13px) 13px / 5px 5px no-repeat,
+    linear-gradient(135deg, var(--brand) 50%, transparent 50%) calc(100% - 8px) 13px / 5px 5px no-repeat,
+    #ffffff;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 800;
+  appearance: none;
 }
 
 .processRow {
@@ -1300,6 +1325,7 @@ h3 {
 .lexPromptRail button:focus-visible,
 .lexInputBar input:focus,
 .lexInputBar button:focus-visible,
+.tableHeader select:focus-visible,
 .nav a:focus-visible,
 .navCta:focus-visible {
   outline: 2px solid var(--info);
@@ -1354,7 +1380,7 @@ h3 {
 
   .tableHeader,
   .processRow {
-    min-width: 820px;
+    min-width: 920px;
   }
 }
 
