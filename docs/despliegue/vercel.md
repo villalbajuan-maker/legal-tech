@@ -4,27 +4,20 @@ LexControl usa un monorepo con la landing en `apps/web`.
 
 ## Configuración recomendada
 
-Al importar el repositorio en Vercel, la raíz del proyecto puede quedar en la raíz del repo. El archivo `vercel.json` define:
-
-- Framework: Vite
-- Install command: `npm install`
-- Build command: `npm run build -w apps/web`
-- Output directory: `apps/web/dist`
-
-## Si Vercel usa `apps/web` como Root Directory
-
-También se incluye `apps/web/vercel.json` para el caso en que el proyecto de Vercel tenga configurado:
+Al importar el repositorio en Vercel, configurar el proyecto con:
 
 ```txt
 Root Directory: apps/web
 ```
 
-En ese caso la configuración correcta es:
+El archivo `apps/web/vercel.json` define:
 
 - Framework: Vite
 - Install command: `npm install`
 - Build command: `npm run build`
 - Output directory: `dist`
+
+No existe `vercel.json` en la raíz del repo para evitar que Vercel bloquee campos con configuración del monorepo.
 
 No usar `npm run build -w apps/web` cuando el root ya es `apps/web`, porque Vercel intentará buscar un workspace dentro de `apps/web` y fallará con:
 
@@ -58,7 +51,8 @@ Configurar el dominio desde Vercel cuando el primer deploy esté estable.
 Antes de desplegar:
 
 ```bash
-npm run build -w apps/web
+cd apps/web
+npm run build
 ```
 
 El build debe generar `apps/web/dist`.
