@@ -32,6 +32,17 @@
   --border: #d8dee8;
   --surface: #ffffff;
   --surface-subtle: #f2f5f9;
+  --font-display: 56px;
+  --font-title: 30px;
+  --font-subtitle: 22px;
+  --font-lead: 17px;
+  --font-body: 15px;
+  --font-small: 13px;
+  --font-micro: 12px;
+  --line-tight: 1.08;
+  --line-title: 1.18;
+  --line-body: 1.55;
+  --line-data: 1.35;
 }
 
 * {
@@ -46,6 +57,9 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  color: var(--text);
+  font-size: var(--font-body);
+  line-height: var(--line-body);
 }
 
 button,
@@ -103,10 +117,10 @@ button {
 .nav a,
 .navCta {
   min-height: 36px;
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 8px 12px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--font-small);
   font-weight: 650;
 }
 
@@ -172,8 +186,8 @@ button {
 .eyebrow {
   margin: 0 0 12px;
   color: var(--brand);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: var(--font-micro);
+  font-weight: 760;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -186,42 +200,47 @@ p {
 }
 
 h1 {
-  max-width: 760px;
-  margin-bottom: 18px;
+  max-width: 720px;
+  margin-bottom: 20px;
   color: var(--brand);
-  font-size: 64px;
-  line-height: 1.02;
+  font-size: var(--font-display);
+  font-weight: 820;
+  line-height: var(--line-tight);
 }
 
 h2 {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   color: var(--brand);
-  font-size: 34px;
-  line-height: 1.14;
+  font-size: var(--font-title);
+  font-weight: 800;
+  line-height: var(--line-title);
 }
 
 h3 {
   color: var(--text);
+  font-size: var(--font-subtitle);
+  font-weight: 780;
+  line-height: 1.24;
 }
 
 .lead {
-  max-width: 680px;
+  max-width: 640px;
   margin-bottom: 0;
   color: var(--muted);
-  font-size: 18px;
-  line-height: 1.7;
+  font-size: var(--font-lead);
+  line-height: 1.62;
 }
 
 .strongLead {
   margin-top: 16px;
   color: var(--brand);
-  font-weight: 800;
+  font-weight: 760;
 }
 
 .microcopy {
   margin: 14px 0 0;
   color: var(--subtle);
-  font-size: 13px;
+  font-size: var(--font-small);
   font-weight: 650;
 }
 
@@ -238,9 +257,9 @@ h3 {
   justify-content: center;
   min-height: 38px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 9px 15px;
-  font-size: 14px;
+  font-size: var(--font-small);
   font-weight: 750;
 }
 
@@ -288,8 +307,9 @@ h3 {
 .transitionSection strong {
   margin: 0;
   color: var(--brand);
-  font-size: 28px;
-  line-height: 1.24;
+  font-size: 24px;
+  font-weight: 760;
+  line-height: 1.3;
 }
 
 .transitionSection strong {
@@ -306,11 +326,11 @@ h3 {
   gap: 10px;
   min-height: 42px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 9px 12px;
   background: rgba(255, 255, 255, 0.92);
   color: var(--text);
-  font-size: 13px;
+  font-size: var(--font-small);
   font-weight: 700;
   box-shadow: 0 4px 12px rgb(15 23 42 / 0.08);
 }
@@ -349,8 +369,8 @@ h3 {
 .problemSection h3 {
   margin: 0;
   color: var(--error-text);
-  font-size: 28px;
-  line-height: 1.16;
+  font-size: 24px;
+  line-height: 1.22;
 }
 
 .problemList,
@@ -377,13 +397,14 @@ h3 {
 .modelShift p {
   margin: 0;
   color: var(--muted);
-  line-height: 1.6;
+  line-height: var(--line-body);
 }
 
 .problemList strong {
   margin-top: 8px;
   color: var(--brand);
-  line-height: 1.5;
+  font-weight: 760;
+  line-height: 1.45;
 }
 
 .problemTruth {
@@ -434,7 +455,7 @@ h3 {
 .solutionCard h3 {
   margin-bottom: 10px;
   color: var(--brand);
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .modelShift {
@@ -449,8 +470,8 @@ h3 {
   display: block;
   margin-bottom: 16px;
   color: var(--brand);
-  font-size: 12px;
-  font-weight: 900;
+  font-size: var(--font-micro);
+  font-weight: 820;
   text-transform: uppercase;
 }
 
@@ -459,7 +480,7 @@ h3 {
   border-top: 1px solid var(--border);
   padding-top: 10px;
   color: var(--text);
-  font-weight: 750;
+  font-weight: 720;
 }
 
 .modelShift article:first-child p {
@@ -487,7 +508,7 @@ h3 {
 .controlHeader p {
   margin: 0;
   color: var(--muted);
-  line-height: 1.6;
+  line-height: var(--line-body);
 }
 
 .controlTools {
@@ -506,11 +527,11 @@ h3 {
 .filter {
   min-height: 36px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 8px 12px;
   background: #ffffff;
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--font-small);
   font-weight: 700;
 }
 
@@ -564,35 +585,37 @@ h3 {
 .stateGrid strong {
   display: block;
   color: var(--brand);
-  font-size: 30px;
+  font-size: 26px;
+  font-weight: 820;
   line-height: 1;
 }
 
 .stateGrid span {
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: var(--font-micro);
+  font-weight: 760;
   line-height: 1.25;
 }
 
 .summary {
   min-height: 102px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 16px;
   background: #ffffff;
 }
 
 .summary span {
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--font-small);
   font-weight: 700;
 }
 
 .summary strong {
   display: block;
   margin-top: 12px;
-  font-size: 34px;
+  font-size: 30px;
+  font-weight: 820;
   line-height: 1;
 }
 
@@ -666,7 +689,7 @@ h3 {
   padding: 8px 16px;
   background: var(--surface-subtle);
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-micro);
   font-weight: 800;
 }
 
@@ -675,7 +698,7 @@ h3 {
   gap: 5px;
   color: var(--muted);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 820;
   text-transform: uppercase;
 }
 
@@ -690,8 +713,8 @@ h3 {
     linear-gradient(135deg, var(--brand) 50%, transparent 50%) calc(100% - 8px) 13px / 5px 5px no-repeat,
     #ffffff;
   color: var(--brand);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: var(--font-micro);
+  font-weight: 760;
   appearance: none;
 }
 
@@ -701,8 +724,9 @@ h3 {
   border-bottom: 1px solid var(--border);
   padding: 10px 16px 10px 13px;
   color: var(--text);
-  font-size: 13px;
+  font-size: var(--font-small);
   font-weight: 600;
+  line-height: var(--line-data);
 }
 
 .processRow:last-child {
@@ -737,13 +761,13 @@ h3 {
   color: var(--muted);
   font-size: 11px;
   font-weight: 650;
-  line-height: 1.35;
+  line-height: var(--line-data);
 }
 
 .radicado {
   overflow-wrap: anywhere;
   color: var(--brand);
-  font-weight: 800;
+  font-weight: 760;
 }
 
 .badge {
@@ -755,8 +779,8 @@ h3 {
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 3px 8px;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: var(--font-micro);
+  font-weight: 760;
 }
 
 .badge.info {
@@ -786,7 +810,7 @@ h3 {
 .emptyState {
   padding: 22px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--font-small);
   font-weight: 750;
 }
 
@@ -816,8 +840,8 @@ h3 {
   padding: 8px 12px 8px 8px;
   background: #ffffff;
   color: var(--brand);
-  font-size: 14px;
-  font-weight: 900;
+  font-size: var(--font-small);
+  font-weight: 820;
   box-shadow: 0 12px 32px rgb(15 23 42 / 0.18);
   animation: lex-breathe 2.4s ease-in-out infinite;
 }
@@ -871,7 +895,7 @@ h3 {
   display: block;
   color: var(--brand);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 820;
   text-transform: uppercase;
 }
 
@@ -892,8 +916,9 @@ h3 {
   display: block;
   margin-top: 4px;
   color: var(--text);
-  font-size: 16px;
-  line-height: 1.25;
+  font-size: 15px;
+  font-weight: 780;
+  line-height: 1.3;
 }
 
 .lexModalHeader button {
@@ -903,8 +928,8 @@ h3 {
   padding: 6px 9px;
   background: #ffffff;
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: var(--font-micro);
+  font-weight: 760;
 }
 
 .lexMessages {
@@ -941,9 +966,9 @@ h3 {
   border-radius: 8px;
   padding: 10px 11px;
   color: var(--text);
-  font-size: 13px;
+  font-size: var(--font-small);
   font-weight: 650;
-  line-height: 1.45;
+  line-height: 1.48;
 }
 
 .lexMessage.lex p {
@@ -1009,8 +1034,8 @@ h3 {
   padding: 7px 10px;
   background: #ffffff;
   color: var(--brand);
-  font-size: 12px;
-  font-weight: 850;
+  font-size: var(--font-micro);
+  font-weight: 760;
   box-shadow: 0 2px 8px rgb(15 23 42 / 0.05);
 }
 
@@ -1044,7 +1069,7 @@ h3 {
   padding: 9px 10px;
   background: #ffffff;
   color: var(--text);
-  font-size: 13px;
+  font-size: var(--font-small);
 }
 
 .lexInputBar button {
@@ -1054,8 +1079,8 @@ h3 {
   padding: 9px 12px;
   background: var(--brand);
   color: #ffffff;
-  font-size: 13px;
-  font-weight: 850;
+  font-size: var(--font-small);
+  font-weight: 780;
 }
 
 @keyframes lex-breathe {
@@ -1107,7 +1132,7 @@ h3 {
 .sectionIntro p {
   margin: 0;
   color: var(--muted);
-  line-height: 1.65;
+  line-height: var(--line-body);
 }
 
 .faqGrid {
@@ -1129,9 +1154,9 @@ h3 {
 .faqItem summary {
   cursor: pointer;
   color: var(--text);
-  font-size: 16px;
-  font-weight: 850;
-  line-height: 1.35;
+  font-size: 15px;
+  font-weight: 760;
+  line-height: 1.4;
 }
 
 .faqItem summary::marker {
@@ -1141,8 +1166,8 @@ h3 {
 .faqItem p {
   margin: 10px 0 0;
   color: var(--muted);
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: var(--font-small);
+  line-height: var(--line-body);
 }
 
 .pricingGrid {
@@ -1176,32 +1201,33 @@ h3 {
   background: var(--success-soft);
   color: var(--success-text);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 820;
   text-transform: uppercase;
 }
 
 .pricingCard h3 {
   margin: 4px 0 0;
   color: var(--brand);
-  font-size: 22px;
+  font-size: 21px;
 }
 
 .pricingCard strong {
   color: var(--brand);
-  font-size: 34px;
+  font-size: 30px;
+  font-weight: 820;
   line-height: 1;
 }
 
 .pricingCard small {
   color: var(--muted);
-  font-size: 13px;
-  font-weight: 800;
+  font-size: var(--font-small);
+  font-weight: 720;
 }
 
 .pricingCard p {
   margin: 0;
   color: var(--text);
-  font-weight: 850;
+  font-weight: 760;
 }
 
 .pricingCard div {
@@ -1214,7 +1240,7 @@ h3 {
   border-top: 1px solid var(--border);
   padding-top: 8px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--font-small);
   font-weight: 700;
   line-height: 1.4;
 }
@@ -1232,13 +1258,13 @@ h3 {
 
 .pricingNote span {
   color: var(--brand);
-  font-weight: 900;
+  font-weight: 820;
 }
 
 .pricingNote p {
   margin: 0;
   color: var(--muted);
-  line-height: 1.5;
+  line-height: var(--line-body);
 }
 
 .addOnsPanel {
@@ -1253,7 +1279,7 @@ h3 {
 .addOnsPanel h3 {
   margin: 0;
   color: var(--brand);
-  font-size: 24px;
+  font-size: 22px;
 }
 
 .addOnsGrid {
@@ -1273,20 +1299,21 @@ h3 {
 .addOnsGrid strong {
   display: block;
   color: var(--brand);
-  font-size: 14px;
+  font-size: var(--font-small);
+  font-weight: 780;
 }
 
 .addOnsGrid p,
 .addOnsNote {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: var(--font-small);
+  line-height: 1.48;
 }
 
 .addOnsNote {
   margin: 0;
-  font-weight: 750;
+  font-weight: 720;
 }
 
 .valueSection h2,
@@ -1308,7 +1335,7 @@ h3 {
   min-height: 54px;
   padding: 14px;
   color: var(--text);
-  font-size: 14px;
+  font-size: var(--font-small);
   font-weight: 700;
 }
 
@@ -1332,20 +1359,20 @@ h3 {
 
 .step span {
   color: var(--warning);
-  font-size: 12px;
-  font-weight: 900;
+  font-size: var(--font-micro);
+  font-weight: 820;
 }
 
 .step h3 {
   margin: 18px 0 8px;
-  font-size: 20px;
+  font-size: 19px;
 }
 
 .step p,
 .beta p {
   margin-bottom: 0;
   color: var(--muted);
-  line-height: 1.6;
+  line-height: var(--line-body);
 }
 
 .beta {
@@ -1373,8 +1400,8 @@ h3 {
   padding: 8px 10px;
   background: #ffffff;
   color: var(--brand);
-  font-size: 13px;
-  font-weight: 800;
+  font-size: var(--font-small);
+  font-weight: 760;
 }
 
 .beta .button {
@@ -1397,12 +1424,15 @@ h3 {
 .closingSection p {
   margin: 0;
   color: var(--muted);
-  font-size: 18px;
+  max-width: 620px;
+  font-size: var(--font-lead);
+  line-height: 1.55;
 }
 
 .closingSection strong {
   color: var(--brand);
-  font-size: 20px;
+  font-size: 18px;
+  font-weight: 780;
 }
 
 .siteFooter {
@@ -1432,7 +1462,7 @@ h3 {
 .footerBlock p {
   margin: 0;
   color: var(--muted);
-  font-size: 13.5px;
+  font-size: var(--font-small);
   line-height: 1.6;
 }
 
@@ -1443,15 +1473,15 @@ h3 {
 
 .footerBlock span {
   color: var(--brand);
-  font-size: 12px;
-  font-weight: 900;
+  font-size: var(--font-micro);
+  font-weight: 820;
   text-transform: uppercase;
 }
 
 .footerBlock a {
   color: var(--muted);
   width: fit-content;
-  font-size: 13.5px;
+  font-size: var(--font-small);
   font-weight: 750;
 }
 
@@ -1543,12 +1573,12 @@ h3 {
   right: 16px;
   min-height: 34px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 6px 10px;
   background: #ffffff;
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: var(--font-micro);
+  font-weight: 760;
 }
 
 .progress {
@@ -1559,8 +1589,8 @@ h3 {
 
 .progress span {
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: var(--font-micro);
+  font-weight: 760;
 }
 
 .progress div {
@@ -1586,12 +1616,12 @@ h3 {
 .questionOptions button {
   min-height: 48px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 12px 14px;
   background: #ffffff;
   color: var(--text);
   text-align: left;
-  font-weight: 750;
+  font-weight: 720;
 }
 
 .questionOptions button:hover {
@@ -1608,16 +1638,16 @@ h3 {
 .resultPanel p {
   margin: 0;
   color: var(--muted);
-  line-height: 1.65;
+  line-height: var(--line-body);
 }
 
 .resultStatement {
   border-left: 4px solid var(--error);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 14px;
   background: var(--error-soft);
   color: var(--error-text);
-  font-weight: 850;
+  font-weight: 780;
   line-height: 1.5;
 }
 
@@ -1641,7 +1671,7 @@ h3 {
 .activationStep p {
   margin: 0;
   color: var(--muted);
-  line-height: 1.65;
+  line-height: var(--line-body);
 }
 
 .demoTerms {
@@ -1663,15 +1693,16 @@ h3 {
   margin: 0 0 4px;
   color: var(--brand);
   font-size: 15px;
+  font-weight: 780;
 }
 
 .demoTerms span {
   border-left: 3px solid var(--brand-border);
   padding-left: 9px;
   color: var(--text);
-  font-size: 13px;
+  font-size: var(--font-small);
   font-weight: 700;
-  line-height: 1.35;
+  line-height: var(--line-data);
 }
 
 .activationQuestions,
@@ -1686,8 +1717,8 @@ h3 {
   display: grid;
   gap: 7px;
   color: var(--text);
-  font-size: 13px;
-  font-weight: 800;
+  font-size: var(--font-small);
+  font-weight: 760;
 }
 
 .activationQuestions select,
@@ -1729,15 +1760,15 @@ h3 {
   display: grid;
   gap: 7px;
   color: var(--text);
-  font-size: 13px;
-  font-weight: 800;
+  font-size: var(--font-small);
+  font-weight: 760;
 }
 
 .signup input,
 .signup select {
   min-height: 40px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 9px 11px;
   background: #ffffff;
   color: var(--text);
@@ -1773,7 +1804,7 @@ h3 {
   }
 
   h1 {
-    font-size: 46px;
+    font-size: 44px;
   }
 
   .controlHeader,
@@ -1865,15 +1896,15 @@ h3 {
   }
 
   h1 {
-    font-size: 38px;
+    font-size: 36px;
   }
 
   h2 {
-    font-size: 28px;
+    font-size: 26px;
   }
 
   .lead {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .heroStatus {
