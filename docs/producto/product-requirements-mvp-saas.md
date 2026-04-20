@@ -1328,6 +1328,9 @@ El producto esta listo para beta cuando cumple:
 - Go-to-market corre en paralelo al build tecnico.
 - Toda comunicacion debe estructurarse implicitamente desde por que, como y que.
 - LexControl comunica primero la perdida de control, luego el mecanismo, y solo despues la funcionalidad.
+- CTA principal de landing: activar demo gratis.
+- El diagnostico queda como CTA secundario e instrumento de conciencia/calificacion.
+- La activacion se rige por `docs/producto/demo_gratuita_controlada_contract.md`.
 
 ### 18. Preguntas Pendientes
 
@@ -1346,7 +1349,7 @@ El producto esta listo para beta cuando cumple:
 - Herramienta para landing y formularios.
 - Canales sociales prioritarios.
 - Responsable de contenido y outreach.
-- Oferta exacta de beta fundadora.
+- Oferta comercial posterior a demo gratuita controlada.
 
 ### 19. Proximo Paso
 

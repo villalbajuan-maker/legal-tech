@@ -165,7 +165,19 @@ LexControl separa novedades, sin cambios y fallas de consulta.
 Que:
 
 ```text
-Diagnostico, bandeja operativa, companion y beta fundadora.
+Demo gratuita controlada, diagnostico, bandeja operativa y Lex.
+```
+
+Accion principal:
+
+```text
+Activar demo gratis.
+```
+
+Accion secundaria:
+
+```text
+Hacer diagnostico.
 ```
 
 ### Diagnostico

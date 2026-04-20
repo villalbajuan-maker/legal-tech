@@ -45,6 +45,22 @@ type LexMessage = {
   content: string;
 };
 
+const demoFeatures = [
+  "Carga inicial de hasta 100 procesos",
+  "Hasta 4 responsables",
+  "Bandeja operativa con estados",
+  "Lex sobre datos de la demo",
+  "Sesión inicial de activación",
+  "Revisión de resultados",
+];
+
+const demoLimits = [
+  "No incluye asesoría jurídica",
+  "No reemplaza revisión profesional",
+  "No garantiza disponibilidad permanente de fuentes externas",
+  "La activación se coordina con el equipo de LexControl",
+];
+
 const diagnosticQuestions: DiagnosticQuestion[] = [
   {
     question: "¿Cuántos procesos vigilas actualmente?",
@@ -480,8 +496,188 @@ function DiagnosticModal({
   );
 }
 
+function ActivationModal({
+  onClose,
+}: {
+  onClose: () => void;
+}) {
+  const [step, setStep] = useState(0);
+  const [isSubmitted, setSubmitted] = useState(false);
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitted(true);
+  }
+
+  return (
+    <div className="modalLayer" role="dialog" aria-modal="true" aria-labelledby="activation-title">
+      <div className="activationModal">
+        <button className="modalClose" type="button" onClick={onClose} aria-label="Cerrar activación">
+          Cerrar
+        </button>
+
+        {!isSubmitted ? (
+          <>
+            <p className="eyebrow">Demo gratuita controlada</p>
+            <div className="progress">
+              <span>{step + 1} de 3</span>
+              <div>
+                <i style={{ width: `${((step + 1) / 3) * 100}%` }} />
+              </div>
+            </div>
+
+            {step === 0 ? (
+              <section className="activationStep">
+                <h2 id="activation-title">Activa una demo gratuita con procesos reales.</h2>
+                <p>
+                  Estamos activando un grupo reducido de abogados y firmas que operan
+                  volumen real de procesos.
+                </p>
+                <p>
+                  La demo permite ver cómo LexControl convierte una lista de radicados
+                  en una bandeja operativa: novedades, sin cambios, errores de fuente,
+                  responsables y prioridad.
+                </p>
+                <div className="demoTerms">
+                  <div>
+                    <h3>La demo incluye</h3>
+                    {demoFeatures.map((item) => (
+                      <span key={item}>{item}</span>
+                    ))}
+                  </div>
+                  <div>
+                    <h3>Condiciones</h3>
+                    {demoLimits.map((item) => (
+                      <span key={item}>{item}</span>
+                    ))}
+                  </div>
+                </div>
+                <button className="button primary" type="button" onClick={() => setStep(1)}>
+                  Continuar
+                </button>
+              </section>
+            ) : null}
+
+            {step === 1 ? (
+              <section className="activationStep">
+                <h2>Cuéntanos cómo opera hoy tu vigilancia.</h2>
+                <div className="activationQuestions">
+                  <label>
+                    ¿Cuántos procesos vigilas actualmente?
+                    <select defaultValue="">
+                      <option value="" disabled>Selecciona una opción</option>
+                      <option>Menos de 50</option>
+                      <option>50 a 100</option>
+                      <option>101 a 300</option>
+                      <option>Más de 300</option>
+                    </select>
+                  </label>
+                  <label>
+                    ¿Cómo los revisan hoy?
+                    <select defaultValue="">
+                      <option value="" disabled>Selecciona una opción</option>
+                      <option>Manual en Rama Judicial</option>
+                      <option>Excel + revisión manual</option>
+                      <option>Dependiente / asistente</option>
+                      <option>Herramienta externa</option>
+                      <option>No hay proceso claro</option>
+                    </select>
+                  </label>
+                  <label>
+                    ¿Cuál es el principal riesgo hoy?
+                    <select defaultValue="">
+                      <option value="" disabled>Selecciona una opción</option>
+                      <option>No detectar actuaciones</option>
+                      <option>No saber qué no se consultó</option>
+                      <option>Errores de fuente</option>
+                      <option>Falta de trazabilidad</option>
+                      <option>Demasiado tiempo operativo</option>
+                    </select>
+                  </label>
+                  <label>
+                    ¿Tienen responsables asignados por proceso?
+                    <select defaultValue="">
+                      <option value="" disabled>Selecciona una opción</option>
+                      <option>Sí</option>
+                      <option>Parcialmente</option>
+                      <option>No</option>
+                    </select>
+                  </label>
+                </div>
+                <div className="modalActions">
+                  <button className="button secondary" type="button" onClick={() => setStep(0)}>
+                    Volver
+                  </button>
+                  <button className="button primary" type="button" onClick={() => setStep(2)}>
+                    Continuar
+                  </button>
+                </div>
+              </section>
+            ) : null}
+
+            {step === 2 ? (
+              <form className="activationStep" onSubmit={submit}>
+                <h2>Solicita la activación.</h2>
+                <p>No necesitas enviar radicados ni datos sensibles en este formulario.</p>
+                <div className="activationForm">
+                  <label>
+                    Nombre
+                    <input required name="name" autoComplete="name" />
+                  </label>
+                  <label>
+                    Correo
+                    <input required type="email" name="email" autoComplete="email" />
+                  </label>
+                  <label>
+                    WhatsApp
+                    <input required name="phone" autoComplete="tel" />
+                  </label>
+                  <label>
+                    Firma o empresa
+                    <input name="company" autoComplete="organization" />
+                  </label>
+                  <label>
+                    Ciudad
+                    <input name="city" autoComplete="address-level2" />
+                  </label>
+                  <label>
+                    Número aproximado de procesos
+                    <input name="caseCount" inputMode="numeric" />
+                  </label>
+                  <label className="fullField">
+                    Mensaje opcional
+                    <textarea name="message" rows={3} />
+                  </label>
+                </div>
+                <div className="modalActions">
+                  <button className="button secondary" type="button" onClick={() => setStep(1)}>
+                    Volver
+                  </button>
+                  <button className="button primary" type="submit">
+                    Solicitar activación
+                  </button>
+                </div>
+              </form>
+            ) : null}
+          </>
+        ) : (
+          <section className="activationStep">
+            <p className="eyebrow">Solicitud recibida</p>
+            <h2>Revisaremos si tu operación encaja con la demo controlada.</h2>
+            <p>Coordinaremos una sesión de activación para revisar el alcance y preparar la carga inicial.</p>
+            <button className="button primary" type="button" onClick={onClose}>
+              Cerrar
+            </button>
+          </section>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [isDiagnosticOpen, setDiagnosticOpen] = useState(false);
+  const [isActivationOpen, setActivationOpen] = useState(false);
   const [operationalFilter, setOperationalFilter] = useState<OperationalFilter>("todos");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("todos");
   const [ownerFilter, setOwnerFilter] = useState("todos");
@@ -631,10 +827,10 @@ function App() {
         <nav className="nav" aria-label="Principal">
           <a href="#diagnostico">Diagnóstico</a>
           <a href="#control">Control</a>
-          <a href="#beta">Beta</a>
+          <a href="#demo">Demo</a>
         </nav>
-        <button className="navCta" type="button" onClick={() => setDiagnosticOpen(true)}>
-          Hacer diagnóstico
+        <button className="navCta" type="button" onClick={() => setActivationOpen(true)}>
+          Activar demo gratis
         </button>
       </header>
 
@@ -653,14 +849,20 @@ function App() {
             LexControl convierte esa incertidumbre en control operativo.
           </p>
           <div className="actions">
-            <button className="button primary" type="button" onClick={() => setDiagnosticOpen(true)}>
+            <button className="button primary" type="button" onClick={() => setActivationOpen(true)}>
+              Activar demo gratis
+            </button>
+            <button className="button secondary" type="button" onClick={() => setDiagnosticOpen(true)}>
               Hacer diagnóstico
             </button>
-            <a className="button secondary" href="#control">
+            <a className="button ghostLink" href="#control">
               Ver cómo funciona
             </a>
           </div>
-          <p className="microcopy">Toma menos de 3 minutos. No necesitas datos sensibles.</p>
+          <p className="microcopy">
+            Demo controlada para abogados y firmas que manejan volumen real de procesos.
+            No necesitas datos sensibles para solicitar acceso.
+          </p>
         </div>
       </section>
 
@@ -928,28 +1130,35 @@ function App() {
         </div>
       </section>
 
-      <section className="beta" id="beta">
+      <section className="beta" id="demo">
         <div>
-          <p className="eyebrow">Beta fundadora — acceso limitado</p>
-          <h2>Estamos trabajando con un grupo reducido de abogados y firmas que operan volumen real de procesos.</h2>
+          <p className="eyebrow">Demo gratuita controlada</p>
+          <h2>Activa LexControl con una muestra real de tu operación.</h2>
+          <p>Estamos activando un grupo reducido de abogados y firmas que operan volumen real de procesos.</p>
           <p>Ideal para equipos que manejan 50 a 500 procesos activos.</p>
-          <p>Trabajamos con pocos equipos para validar la operación con casos reales.</p>
+          <div className="demoList">
+            <span>Hasta 100 procesos</span>
+            <span>Hasta 4 responsables</span>
+            <span>Bandeja operativa</span>
+            <span>Lex sobre la demo</span>
+          </div>
         </div>
-        <a className="button primary" href="mailto:contacto@lexcontrol.co?subject=Solicitar%20acceso%20a%20beta%20LexControl">
-          Solicitar acceso a beta
-        </a>
+        <button className="button primary" type="button" onClick={() => setActivationOpen(true)}>
+          Activar demo gratis
+        </button>
       </section>
 
       <section className="closingSection">
         <h2>No puedes controlar lo que no puedes ver.</h2>
-        <p>Y hoy, probablemente, hay procesos que no estás viendo.</p>
+        <p>Activa una demo gratuita y revisa cómo se ve tu operación cuando cada consulta deja trazabilidad.</p>
         <strong>LexControl convierte esa incertidumbre en sistema.</strong>
-        <button className="button primary" type="button" onClick={() => setDiagnosticOpen(true)}>
-          Hacer diagnóstico
+        <button className="button primary" type="button" onClick={() => setActivationOpen(true)}>
+          Activar demo gratis
         </button>
       </section>
 
       {isDiagnosticOpen ? <DiagnosticModal onClose={() => setDiagnosticOpen(false)} /> : null}
+      {isActivationOpen ? <ActivationModal onClose={() => setActivationOpen(false)} /> : null}
     </main>
   );
 }
