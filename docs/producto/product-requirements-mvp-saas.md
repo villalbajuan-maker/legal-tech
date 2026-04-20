@@ -1340,14 +1340,19 @@ El producto esta listo para beta cuando cumple:
 
 ### 19. Proximo Paso
 
-Convertir este PRD en backlog tecnico:
+Este PRD ya fue convertido en backlog tecnico ejecutable:
+
+```text
+docs/producto/backlog-tecnico-mvp-saas.md
+```
+
+El siguiente paso de ejecucion es iniciar Sprint 1:
 
 ```text
 1. Crear modelo de datos inicial.
 2. Crear migraciones Supabase.
-3. Definir estructura de apps/web para SaaS.
-4. Convertir probe CPNU en conector productivo.
-5. Implementar flujo de carga y primera consulta.
-6. Crear landing page inicial de LexControl.
-7. Crear playbook de ventas beta.
+3. Configurar autenticacion y separacion por cuenta.
+4. Crear layout SaaS autenticado.
+5. Crear cuenta demo/beta.
+6. Preparar ruta de carga de procesos.
 ```
