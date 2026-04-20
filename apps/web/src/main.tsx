@@ -244,13 +244,13 @@ function getCompanionAnswer(intent: string, rows: ProcessRow[]) {
 
   if (intent === "movimientos") {
     return movedToday.length
-      ? `${pluralize(movedToday.length, "proceso tuvo", "procesos tuvieron")} movimiento hoy. El más reciente es ${movedToday[0].radicado}: ${movedToday[0].action}.`
+      ? `${pluralize(movedToday.length, "proceso tuvo", "procesos tuvieron")} cambios en las últimas 24 horas. Proceso más reciente: ${movedToday[0].radicado}. Actuación: ${movedToday[0].action}.`
       : "No hay movimientos nuevos en las últimas 24 horas dentro de esta muestra.";
   }
 
   if (intent === "fallas") {
     return failed.length
-      ? `${pluralize(failed.length, "proceso requiere", "procesos requieren")} atención por consulta fallida o fuente no disponible. No se deben tratar como casos sin novedad.`
+      ? `${pluralize(failed.length, "proceso no pudo", "procesos no pudieron")} consultarse. No deben tratarse como casos sin novedad.`
       : "No hay procesos con falla de fuente en esta muestra.";
   }
 
@@ -262,7 +262,7 @@ function getCompanionAnswer(intent: string, rows: ProcessRow[]) {
     const topOwner = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
     if (!topOwner) return "No hay responsables visibles con el filtro actual.";
     const [owner, count] = topOwner;
-    return `${owner} concentra ${pluralize(count, "proceso", "procesos")} en esta bandeja. Conviene revisar primero sus casos con prioridad alta o error.`;
+    return `${owner} concentra ${pluralize(count, "proceso", "procesos")} en esta bandeja. Priorizar casos con error o prioridad alta.`;
   }
 
   if (intent === "sin-cambios") {
@@ -273,11 +273,11 @@ function getCompanionAnswer(intent: string, rows: ProcessRow[]) {
 
   if (intent === "prioridad") {
     return critical.length
-      ? `${pluralize(critical.length, "proceso está", "procesos están")} en prioridad alta o crítica. Deben aparecer antes en la rutina de consulta y revisión.`
+      ? `${pluralize(critical.length, "proceso está", "procesos están")} en prioridad alta o crítica. Requieren revisión antes de los casos de baja prioridad.`
       : "No hay procesos de alta prioridad en esta muestra.";
   }
 
-  return "Selecciona una pregunta operativa para convertir la bandeja en una respuesta accionable.";
+  return "Selecciona una consulta operativa.";
 }
 
 function DiagnosticModal({
@@ -616,13 +616,13 @@ function App() {
               aria-expanded={isCompanionOpen}
             >
               <span>LC</span>
-              Companion
+              Lex
             </button>
             {isCompanionOpen ? (
               <>
                 <div className="companionHeader">
-                  <span>Companion operativo</span>
-                  <strong>No buscas procesos. Preguntas por tu operación.</strong>
+                  <span>Lex · voz del sistema</span>
+                  <strong>Lo que la operación no puede ver.</strong>
                 </div>
                 <div className="promptList" aria-label="Preguntas sugeridas">
                   {companionPrompts.map((prompt) => (
@@ -637,11 +637,11 @@ function App() {
                   ))}
                 </div>
                 <div className="answer">
-                  <span>Respuesta</span>
+                  <span>Lex · ahora</span>
                   {companionAnswer}
                 </div>
                 <p className="companionFootnote">
-                  Basado en la bandeja demo. En beta responde sobre tus procesos reales.
+                  Basado en la bandeja demo. En beta opera sobre datos reales de la cuenta.
                 </p>
               </>
             ) : null}

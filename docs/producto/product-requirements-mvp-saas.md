@@ -143,7 +143,15 @@ El producto debe transmitir:
 
 Se considera como diferencial de producto incorporar un companion o copiloto conversacional dentro del dashboard.
 
-No debe ser un chat cosmetico. Debe funcionar como una capa de consulta analitica y operativa sobre los datos del usuario.
+El companion recibe el nombre operativo de Lex.
+
+Lex no debe ser un chat cosmetico, un asistente generico ni un personaje. Debe funcionar como la voz del sistema: una capa de observacion y comunicacion que expone con precision que ocurrio, que no ocurrio y que fallo en la operacion.
+
+Contrato obligatorio:
+
+```text
+docs/producto/lex_voice_contract.md
+```
 
 Casos de uso esperados:
 
@@ -169,7 +177,7 @@ Muestrame los casos de alta prioridad con error de fuente.
 Vision:
 
 ```text
-El companion debe ayudar al abogado a conversar con su operacion judicial.
+Lex es la capa que muestra lo que la operacion no puede ver.
 ```
 
 Para MVP, el companion puede iniciar como una experiencia limitada:
@@ -544,15 +552,16 @@ Metricas:
 
 Objetivo:
 
-Incorporar una capa conversacional que conecte al usuario con los datos del dashboard.
+Incorporar Lex como capa de observacion y comunicacion del sistema, conectada a los datos del dashboard.
 
 Alcance MVP recomendado:
 
-- Boton o panel lateral de companion.
+- Boton o panel lateral de Lex.
 - Preguntas sugeridas.
 - Resumen del dashboard.
 - Atajos a filtros.
 - Respuestas basadas en datos estructurados.
+- Respuestas sujetas al contrato `docs/producto/lex_voice_contract.md`.
 
 Preguntas iniciales:
 
@@ -572,7 +581,8 @@ No incluir en MVP:
 Regla:
 
 ```text
-El companion no reemplaza el criterio del abogado.
+Lex no reemplaza el criterio del abogado.
+Lex observa, resume y expone senales operativas.
 Debe explicar de donde salen sus respuestas y enlazar a los datos.
 ```
 

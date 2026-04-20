@@ -36,7 +36,8 @@ Que no se pudo consultar.
 - No depender de SAMAI ni de fuentes con CAPTCHA para la beta inicial.
 - No prometer automatizacion absoluta.
 - Hacer visible el error como parte del valor del producto.
-- Mantener el companion limitado a datos estructurados durante MVP.
+- Mantener Lex limitado a datos estructurados durante MVP.
+- Tratar Lex como voz del sistema, no como chatbot generico.
 - Usar la landing como instrumento activo de validacion comercial.
 
 ---
@@ -303,15 +304,15 @@ Criterios de aceptacion:
 
 ---
 
-### E8. Companion Operativo MVP
+### E8. Lex Operativo MVP
 
 Objetivo:
 
-Dar una interfaz conversacional limitada sobre datos estructurados.
+Dar una capa de observacion y comunicacion limitada sobre datos estructurados.
 
 Historias:
 
-- Como usuario, puedo abrir un panel de companion.
+- Como usuario, puedo abrir un panel de Lex.
 - Como usuario, puedo elegir preguntas sugeridas.
 - Como usuario, recibo respuestas basadas en mis procesos.
 - Como usuario, puedo convertir una respuesta en filtro de bandeja.
@@ -327,19 +328,21 @@ Preguntas MVP:
 
 Tareas tecnicas:
 
-- Crear panel lateral de companion.
+- Crear panel lateral de Lex.
 - Crear catalogo de intents permitidos.
 - Crear servicio de consulta estructurada.
 - Crear respuestas con enlaces a filtros/procesos.
 - Guardar threads y mensajes si aplica.
 - Evitar respuestas juridicas sustantivas.
 - Agregar textos de limitacion operativa.
+- Aplicar contrato `docs/producto/lex_voice_contract.md`.
 
 Criterios de aceptacion:
 
-- El companion responde solo con datos de la cuenta activa.
+- Lex responde solo con datos de la cuenta activa.
 - Toda respuesta puede explicar de donde sale.
-- El companion no inventa informacion.
+- Lex no inventa informacion.
+- Lex no usa tono de chatbot, soporte o asistente generico.
 - Cada respuesta importante tiene accion: abrir filtro, abrir proceso o ver detalle.
 
 ---
@@ -771,4 +774,3 @@ Checklist inmediato:
 - [ ] Crear seed de cuenta demo.
 - [ ] Crear layout SaaS autenticado.
 - [ ] Definir ruta de carga de procesos.
-
