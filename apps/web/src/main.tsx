@@ -45,6 +45,40 @@ type LexMessage = {
   content: string;
 };
 
+type SocialIconName = "whatsapp" | "linkedin" | "instagram" | "facebook";
+
+function SocialIcon({ name }: { name: SocialIconName }) {
+  if (name === "whatsapp") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12.04 3.25a8.63 8.63 0 0 0-7.42 13.05l-1.02 3.72 3.82-1a8.61 8.61 0 0 0 4.62 1.33h.01a8.55 8.55 0 0 0 6.1-2.53 8.58 8.58 0 0 0 2.53-6.1 8.64 8.64 0 0 0-8.64-8.47Zm.01 15.62h-.01a7.15 7.15 0 0 1-3.65-1l-.26-.15-2.27.6.61-2.22-.17-.28a7.14 7.14 0 1 1 5.75 3.05Zm3.92-5.35c-.21-.11-1.27-.63-1.47-.7-.2-.08-.34-.11-.48.1-.14.22-.56.7-.69.84-.13.14-.25.16-.47.05-.22-.11-.92-.34-1.75-1.08a6.6 6.6 0 0 1-1.21-1.51c-.13-.22-.01-.34.1-.44.1-.1.22-.25.33-.38.11-.13.14-.22.22-.36.07-.15.03-.27-.02-.38-.05-.11-.48-1.17-.66-1.6-.17-.42-.35-.36-.48-.37h-.41c-.15 0-.38.05-.58.27-.2.22-.76.74-.76 1.8 0 1.05.78 2.08.89 2.22.11.14 1.53 2.33 3.7 3.27.52.22.92.35 1.24.45.52.16.99.14 1.36.08.41-.06 1.27-.52 1.45-1.02.18-.5.18-.93.13-1.02-.05-.09-.2-.14-.41-.25Z" />
+      </svg>
+    );
+  }
+
+  if (name === "linkedin") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6.7 19.25H3.75V9.1H6.7v10.15ZM5.23 7.74A1.73 1.73 0 1 1 5.24 4.3a1.73 1.73 0 0 1-.01 3.45Zm15.02 11.51h-2.94v-4.94c0-1.18-.02-2.69-1.64-2.69-1.64 0-1.89 1.28-1.89 2.6v5.03h-2.94V9.1h2.82v1.39h.04c.39-.74 1.35-1.53 2.78-1.53 2.98 0 3.52 1.96 3.52 4.5v5.79h.25Z" />
+      </svg>
+    );
+  }
+
+  if (name === "instagram") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 7.45a4.55 4.55 0 1 0 0 9.1 4.55 4.55 0 0 0 0-9.1Zm0 7.5a2.95 2.95 0 1 1 0-5.9 2.95 2.95 0 0 1 0 5.9Zm5.8-7.68a1.06 1.06 0 1 1-2.12 0 1.06 1.06 0 0 1 2.12 0Zm3.02 1.08c-.07-1.43-.39-2.7-1.44-3.74-1.04-1.05-2.31-1.37-3.74-1.44-1.48-.08-5.9-.08-7.38 0-1.42.07-2.69.39-3.74 1.43-1.05 1.05-1.37 2.32-1.44 3.75-.08 1.48-.08 5.9 0 7.38.07 1.43.39 2.7 1.44 3.74 1.05 1.05 2.32 1.37 3.74 1.44 1.48.08 5.9.08 7.38 0 1.43-.07 2.7-.39 3.74-1.44 1.05-1.04 1.37-2.31 1.44-3.74.08-1.48.08-5.9 0-7.38Zm-1.9 8.97a3 3 0 0 1-1.69 1.69c-1.17.46-3.95.35-5.23.35s-4.06.1-5.23-.35a3 3 0 0 1-1.69-1.69c-.46-1.17-.35-3.95-.35-5.23s-.1-4.06.35-5.23a3 3 0 0 1 1.69-1.69c1.17-.46 3.95-.35 5.23-.35s4.06-.1 5.23.35a3 3 0 0 1 1.69 1.69c.46 1.17.35 3.95.35 5.23s.11 4.06-.35 5.23Z" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M14.05 21v-8.2h2.75l.41-3.2h-3.16V7.56c0-.92.26-1.55 1.58-1.55h1.69V3.15A22.2 22.2 0 0 0 14.86 3c-2.44 0-4.11 1.49-4.11 4.22V9.6H8v3.2h2.75V21h3.3Z" />
+    </svg>
+  );
+}
+
 const demoFeatures = [
   "Carga inicial de hasta 100 procesos",
   "Hasta 4 responsables",
@@ -1340,7 +1374,6 @@ function App() {
       <footer className="siteFooter">
         <div className="footerBrand">
           <img src={logoUrl} alt="LexControl" />
-          <strong>Sistema operativo de vigilancia judicial.</strong>
           <p>
             LexControl convierte consultas, novedades y fallas de fuente en una
             bandeja operativa para abogados y firmas que manejan volumen real de procesos.
@@ -1348,9 +1381,14 @@ function App() {
         </div>
         <div className="footerBlock">
           <span>Contacto</span>
-          <a href="mailto:contacto@lexcontrol.co">contacto@lexcontrol.co</a>
-          <a href="https://wa.me/573001234567">WhatsApp</a>
-          <p>Bogotá, Colombia</p>
+          <a href="https://lexcontrol.co">lexcontrol.co</a>
+          <a href="mailto:lex@lexcontrol.co">lex@lexcontrol.co</a>
+          <a className="footerIconLink" href="https://wa.me/573192509637" aria-label="Abrir WhatsApp de LexControl">
+            <SocialIcon name="whatsapp" />
+            WhatsApp
+          </a>
+          <a href="tel:+573192509637">+57 319 250-9637</a>
+          <p>Calle 63 # 1-59, apartamento 3102. Bogotá, Colombia.</p>
         </div>
         <div className="footerBlock">
           <span>Producto</span>
@@ -1362,9 +1400,15 @@ function App() {
         <div className="footerBlock">
           <span>Social</span>
           <div className="socialLinks" aria-label="Redes sociales">
-            <a href="https://www.linkedin.com/" aria-label="LinkedIn">in</a>
-            <a href="https://www.instagram.com/" aria-label="Instagram">ig</a>
-            <a href="mailto:contacto@lexcontrol.co" aria-label="Correo">@</a>
+            <a href="https://www.linkedin.com/" aria-label="LinkedIn">
+              <SocialIcon name="linkedin" />
+            </a>
+            <a href="https://www.instagram.com/" aria-label="Instagram">
+              <SocialIcon name="instagram" />
+            </a>
+            <a href="https://www.facebook.com/" aria-label="Facebook">
+              <SocialIcon name="facebook" />
+            </a>
           </div>
         </div>
       </footer>
