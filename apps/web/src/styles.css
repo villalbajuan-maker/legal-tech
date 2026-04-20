@@ -453,6 +453,8 @@ h3 {
 }
 
 .controlSurface {
+  position: relative;
+  overflow: visible;
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 24px;
@@ -614,12 +616,11 @@ h3 {
 
 .workbench {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(310px, 360px);
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 
 .tablePanel,
-.companionPanel,
 .signal,
 .step,
 .signup {
@@ -738,121 +739,226 @@ h3 {
   color: var(--error-text);
 }
 
-.companionPanel {
+.emptyState {
+  padding: 22px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.lexFloatingLayer {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 6;
   display: grid;
-  align-content: start;
-  gap: 14px;
-  padding: 18px;
+  justify-items: end;
+  pointer-events: none;
 }
 
-.companionPanel.closed {
-  display: flex;
-  align-items: start;
-  justify-content: end;
-  min-height: 88px;
-  padding: 14px;
+.lexOrb,
+.lexMiniModal {
+  pointer-events: auto;
 }
 
-.companionToggle {
-  display: inline-flex;
+.lexOrb {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: auto 8px;
   align-items: center;
-  gap: 8px;
-  min-height: 38px;
+  gap: 9px;
+  min-height: 46px;
   border: 1px solid var(--brand-border);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 10px 13px;
+  background: var(--brand);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 900;
+  box-shadow: 0 12px 32px rgb(15 23 42 / 0.18);
+  animation: lex-breathe 2.4s ease-in-out infinite;
+}
+
+.lexOrb span {
+  letter-spacing: 0;
+}
+
+.lexOrb i {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--success);
+  box-shadow: 0 0 0 5px rgb(52 176 72 / 0.16);
+}
+
+.lexMiniModal {
+  position: absolute;
+  right: 0;
+  bottom: 62px;
+  display: grid;
+  grid-template-rows: auto minmax(180px, 1fr) auto auto;
+  width: min(430px, calc(100vw - 40px));
+  max-height: min(560px, calc(100vh - 120px));
+  overflow: hidden;
+  border: 1px solid var(--brand-border);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 48px rgb(15 23 42 / 0.22);
+}
+
+.lexModalHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
+  padding: 14px;
+  background: var(--surface-subtle);
+}
+
+.lexModalHeader span,
+.lexMessage span {
+  display: block;
+  color: var(--brand);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.lexModalHeader strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.lexModalHeader button {
+  min-height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 9px;
+  background: #ffffff;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.lexMessages {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 14px;
+  background: #ffffff;
+}
+
+.lexMessage {
+  display: grid;
+  gap: 5px;
+  max-width: 92%;
+}
+
+.lexMessage p {
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 11px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.lexMessage.lex p {
+  border-left: 3px solid var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.lexMessage.user {
+  justify-self: end;
+}
+
+.lexMessage.user span {
+  color: var(--muted);
+  text-align: right;
+}
+
+.lexMessage.user p {
+  border-color: var(--brand-border);
+  background: var(--surface-subtle);
+}
+
+.lexPromptRail {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  border-top: 1px solid var(--border);
+  padding: 10px 12px;
+  background: #ffffff;
+}
+
+.lexPromptRail button {
+  flex: 0 0 auto;
+  min-height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: #ffffff;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.lexPromptRail button:hover {
+  border-color: var(--brand-border);
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.lexInputBar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  padding: 12px;
+  background: var(--surface-subtle);
+}
+
+.lexInputBar input {
+  min-height: 38px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: #ffffff;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.lexInputBar button {
+  min-height: 38px;
+  border: 1px solid var(--brand);
+  border-radius: 8px;
+  padding: 9px 12px;
   background: var(--brand);
   color: #ffffff;
   font-size: 13px;
   font-weight: 850;
 }
 
-.companionToggle span {
-  display: inline-grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  background: #ffffff;
-  color: var(--brand);
-  font-size: 11px;
-}
+@keyframes lex-breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+    box-shadow: 0 12px 32px rgb(15 23 42 / 0.18);
+  }
 
-.companionHeader span {
-  display: block;
-  color: var(--brand);
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.companionHeader strong {
-  display: block;
-  margin-top: 4px;
-  font-size: 18px;
-}
-
-.companionPanel p {
-  margin-bottom: 0;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-.promptList {
-  display: grid;
-  gap: 8px;
-}
-
-.promptList button {
-  min-height: 38px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 9px 10px;
-  background: #ffffff;
-  color: var(--muted);
-  text-align: left;
-  font-size: 13px;
-  font-weight: 750;
-}
-
-.promptList button:hover,
-.promptList button.active {
-  border-color: var(--brand-border);
-  background: var(--brand-soft);
-  color: var(--brand);
-}
-
-.answer {
-  border-left: 3px solid var(--brand);
-  border-radius: 8px;
-  padding: 12px;
-  background: var(--brand-soft);
-  color: var(--brand);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.5;
-}
-
-.answer span {
-  display: block;
-  margin-bottom: 5px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.companionFootnote {
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-  font-size: 12px;
-}
-
-.emptyState {
-  padding: 22px;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 750;
+  50% {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 38px rgb(15 23 42 / 0.24);
+  }
 }
 
 .valueSection,
@@ -1105,8 +1211,11 @@ h3 {
 .signup select:focus,
 .button:focus-visible,
 .filter:focus-visible,
-.promptList button:focus-visible,
-.companionToggle:focus-visible,
+.lexOrb:focus-visible,
+.lexModalHeader button:focus-visible,
+.lexPromptRail button:focus-visible,
+.lexInputBar input:focus,
+.lexInputBar button:focus-visible,
 .nav a:focus-visible,
 .navCta:focus-visible {
   outline: 2px solid var(--info);
@@ -1220,6 +1329,18 @@ h3 {
 
   .controlSurface {
     padding: 16px;
+  }
+
+  .lexFloatingLayer {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .lexMiniModal {
+    right: -4px;
+    bottom: 58px;
+    width: min(380px, calc(100vw - 24px));
+    max-height: min(560px, calc(100vh - 96px));
   }
 
   .summaryGrid,

@@ -1,4 +1,5 @@
-import { StrictMode, useMemo, useState } from "react";
+import { StrictMode, useEffect, useMemo, useRef, useState } from "react";
+import type { FormEvent } from "react";
 import { createRoot } from "react-dom/client";
 import logoUrl from "./assets/lexcontrol-logo.png";
 import "./styles.css";
@@ -34,6 +35,14 @@ type ProcessRow = {
 type OperationalFilter = "todos" | ProcessStatus;
 
 type TimeFilter = "24h" | "7d" | "30d" | "todos";
+
+type LexIntent = "movimientos" | "fallas" | "responsables" | "sin-cambios" | "prioridad" | "resumen";
+
+type LexMessage = {
+  id: number;
+  role: "user" | "lex";
+  content: string;
+};
 
 const diagnosticQuestions: DiagnosticQuestion[] = [
   {
@@ -236,11 +245,25 @@ function pluralize(count: number, singular: string, plural: string) {
   return count === 1 ? `${count} ${singular}` : `${count} ${plural}`;
 }
 
-function getCompanionAnswer(intent: string, rows: ProcessRow[]) {
+const lexPrompts: { label: string; value: LexIntent }[] = [
+  { label: "¿Qué procesos se movieron hoy?", value: "movimientos" },
+  { label: "¿Cuáles no se pudieron consultar?", value: "fallas" },
+  { label: "¿Quién concentra más pendientes?", value: "responsables" },
+  { label: "¿Qué casos llevan más tiempo sin cambios?", value: "sin-cambios" },
+  { label: "¿Qué requiere prioridad?", value: "prioridad" },
+  { label: "Resumen operativo", value: "resumen" },
+];
+
+function getLexAnswer(intent: LexIntent, rows: ProcessRow[]) {
   const movedToday = rows.filter((row) => row.statusType === "novedad" && row.minutesAgo <= 24 * 60);
   const failed = rows.filter((row) => row.statusType === "no-consultado" || row.statusType === "error-fuente");
   const stale = rows.filter((row) => row.statusType === "sin-cambios").sort((a, b) => b.minutesAgo - a.minutesAgo);
   const critical = rows.filter((row) => row.priority === "Crítica" || row.priority === "Alta");
+
+  if (intent === "resumen") {
+    const unchanged = rows.filter((row) => row.statusType === "sin-cambios");
+    return `${pluralize(rows.length, "proceso fue", "procesos fueron")} leídos en la bandeja demo. ${pluralize(movedToday.length, "proceso tuvo", "procesos tuvieron")} cambios en las últimas 24 horas. ${pluralize(failed.length, "proceso no pudo", "procesos no pudieron")} consultarse. ${pluralize(unchanged.length, "proceso permanece", "procesos permanecen")} sin cambios.`;
+  }
 
   if (intent === "movimientos") {
     return movedToday.length
@@ -278,6 +301,17 @@ function getCompanionAnswer(intent: string, rows: ProcessRow[]) {
   }
 
   return "Selecciona una consulta operativa.";
+}
+
+function inferLexIntent(text: string): LexIntent | null {
+  const value = text.toLowerCase();
+  if (value.includes("resumen") || value.includes("estado") || value.includes("operativo")) return "resumen";
+  if (value.includes("mov") || value.includes("cambio") || value.includes("novedad") || value.includes("actuacion")) return "movimientos";
+  if (value.includes("fall") || value.includes("error") || value.includes("fuente") || value.includes("consultar")) return "fallas";
+  if (value.includes("responsable") || value.includes("pendiente")) return "responsables";
+  if (value.includes("sin cambio") || value.includes("tiempo") || value.includes("quieto")) return "sin-cambios";
+  if (value.includes("prioridad") || value.includes("critico") || value.includes("alta")) return "prioridad";
+  return null;
 }
 
 function DiagnosticModal({
@@ -371,11 +405,19 @@ function App() {
   const [isDiagnosticOpen, setDiagnosticOpen] = useState(false);
   const [operationalFilter, setOperationalFilter] = useState<OperationalFilter>("todos");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("todos");
-  const [companionIntent, setCompanionIntent] = useState("movimientos");
-  const [isCompanionOpen, setCompanionOpen] = useState(true);
+  const [isLexOpen, setLexOpen] = useState(false);
+  const [lexInput, setLexInput] = useState("");
+  const [lexMessages, setLexMessages] = useState<LexMessage[]>([
+    {
+      id: 1,
+      role: "lex",
+      content:
+        "Bandeja demo activa. Se puede consultar movimientos, fallas, responsables, prioridad y procesos sin cambios.",
+    },
+  ]);
+  const lexMessagesRef = useRef<HTMLDivElement | null>(null);
   const rowsByTime = getRowsByTime(processRows, timeFilter);
   const visibleRows = getRowsByOperationalState(rowsByTime, operationalFilter);
-  const companionAnswer = getCompanionAnswer(companionIntent, rowsByTime);
   const summary = {
     novedades: rowsByTime.filter((row) => row.statusType === "novedad").length,
     sinCambios: rowsByTime.filter((row) => row.statusType === "sin-cambios").length,
@@ -396,13 +438,76 @@ function App() {
     { label: "30 días", value: "30d" },
     { label: "Todos", value: "todos" },
   ];
-  const companionPrompts = [
-    { label: "¿Qué procesos se movieron hoy?", value: "movimientos" },
-    { label: "¿Cuáles no se pudieron consultar?", value: "fallas" },
-    { label: "¿Quién concentra más pendientes?", value: "responsables" },
-    { label: "¿Qué casos llevan más tiempo sin cambios?", value: "sin-cambios" },
-    { label: "¿Qué requiere prioridad?", value: "prioridad" },
-  ];
+
+  useEffect(() => {
+    lexMessagesRef.current?.scrollTo({
+      top: lexMessagesRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [lexMessages, isLexOpen]);
+
+  function applyLexIntent(intent: LexIntent) {
+    if (intent === "movimientos") {
+      setOperationalFilter("novedad");
+      setTimeFilter("24h");
+    }
+
+    if (intent === "fallas") {
+      setOperationalFilter("no-consultado");
+      setTimeFilter("todos");
+    }
+
+    if (intent === "sin-cambios") {
+      setOperationalFilter("sin-cambios");
+      setTimeFilter("todos");
+    }
+
+    if (intent === "prioridad" || intent === "responsables" || intent === "resumen") {
+      setOperationalFilter("todos");
+      setTimeFilter("todos");
+    }
+  }
+
+  function getRowsForLexIntent(intent: LexIntent) {
+    if (intent === "movimientos") return getRowsByTime(processRows, "24h");
+    return processRows;
+  }
+
+  function askLex(intent: LexIntent, question: string) {
+    setLexOpen(true);
+    applyLexIntent(intent);
+    const answer = getLexAnswer(intent, getRowsForLexIntent(intent));
+    setLexMessages((current) => [
+      ...current,
+      { id: current.length + 1, role: "user", content: question },
+      { id: current.length + 2, role: "lex", content: answer },
+    ]);
+  }
+
+  function submitLexQuestion(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const question = lexInput.trim();
+    if (!question) return;
+
+    const intent = inferLexIntent(question);
+    if (!intent) {
+      setLexMessages((current) => [
+        ...current,
+        { id: current.length + 1, role: "user", content: question },
+        {
+          id: current.length + 2,
+          role: "lex",
+          content:
+            "Consulta no disponible en la demo. Consultas activas: movimientos, fallas, responsables, prioridad, procesos sin cambios y resumen operativo.",
+        },
+      ]);
+      setLexInput("");
+      return;
+    }
+
+    askLex(intent, question);
+    setLexInput("");
+  }
 
   return (
     <main className="app">
@@ -567,11 +672,11 @@ function App() {
             <strong>{summary.errores}</strong>
             <span>Errores de fuente</span>
           </button>
-          <button type="button" onClick={() => setCompanionIntent("responsables")}>
+          <button type="button" onClick={() => askLex("responsables", "¿Quién concentra más pendientes?")}>
             <strong>{summary.responsables}</strong>
             <span>Responsables activos</span>
           </button>
-          <button type="button" onClick={() => setCompanionIntent("prioridad")}>
+          <button type="button" onClick={() => askLex("prioridad", "¿Qué requiere prioridad?")}>
             <strong>{rowsByTime.filter((row) => row.priority === "Alta" || row.priority === "Crítica").length}</strong>
             <span>Prioridades altas</span>
           </button>
@@ -607,45 +712,60 @@ function App() {
               </div>
             ) : null}
           </section>
+        </div>
 
-          <aside className={`companionPanel ${isCompanionOpen ? "open" : "closed"}`} aria-label="Companion operativo">
-            <button
-              className="companionToggle"
-              type="button"
-              onClick={() => setCompanionOpen((current) => !current)}
-              aria-expanded={isCompanionOpen}
-            >
-              <span>LC</span>
-              Lex
-            </button>
-            {isCompanionOpen ? (
-              <>
-                <div className="companionHeader">
+        <div className="lexFloatingLayer" aria-live="polite">
+          <button
+            className="lexOrb"
+            type="button"
+            onClick={() => setLexOpen((current) => !current)}
+            aria-expanded={isLexOpen}
+            aria-controls="lex-demo-panel"
+          >
+            <span>Lex</span>
+            <i />
+          </button>
+
+          {isLexOpen ? (
+            <section className="lexMiniModal" id="lex-demo-panel" aria-label="Lex demo conversacional">
+              <header className="lexModalHeader">
+                <div>
                   <span>Lex · voz del sistema</span>
-                  <strong>Lo que la operación no puede ver.</strong>
+                  <strong>Consulta esta bandeja demo.</strong>
                 </div>
-                <div className="promptList" aria-label="Preguntas sugeridas">
-                  {companionPrompts.map((prompt) => (
-                    <button
-                      type="button"
-                      className={companionIntent === prompt.value ? "active" : ""}
-                      key={prompt.value}
-                      onClick={() => setCompanionIntent(prompt.value)}
-                    >
-                      {prompt.label}
-                    </button>
-                  ))}
-                </div>
-                <div className="answer">
-                  <span>Lex · ahora</span>
-                  {companionAnswer}
-                </div>
-                <p className="companionFootnote">
-                  Basado en la bandeja demo. En beta opera sobre datos reales de la cuenta.
-                </p>
-              </>
-            ) : null}
-          </aside>
+                <button type="button" onClick={() => setLexOpen(false)} aria-label="Cerrar Lex">
+                  Cerrar
+                </button>
+              </header>
+
+              <div className="lexMessages" ref={lexMessagesRef}>
+                {lexMessages.map((message) => (
+                  <article className={`lexMessage ${message.role}`} key={message.id}>
+                    <span>{message.role === "lex" ? "Lex" : "Usuario"}</span>
+                    <p>{message.content}</p>
+                  </article>
+                ))}
+              </div>
+
+              <div className="lexPromptRail" aria-label="Consultas sugeridas">
+                {lexPrompts.map((prompt) => (
+                  <button type="button" key={prompt.value} onClick={() => askLex(prompt.value, prompt.label)}>
+                    {prompt.label}
+                  </button>
+                ))}
+              </div>
+
+              <form className="lexInputBar" onSubmit={submitLexQuestion}>
+                <input
+                  value={lexInput}
+                  onChange={(event) => setLexInput(event.target.value)}
+                  placeholder="Pregunta por movimientos, fallas o responsables"
+                  aria-label="Pregunta para Lex"
+                />
+                <button type="submit">Enviar</button>
+              </form>
+            </section>
+          ) : null}
         </div>
       </section>
 

@@ -398,6 +398,7 @@ Tareas tecnicas/comerciales:
 - Mantener diagnostico como CTA principal.
 - Crear bandeja demo interactiva dentro del flujo.
 - Crear companion demo con preguntas guiadas y datos simulados.
+- Aplicar contrato de demo `docs/producto/lex_landing_demo_contract.md`.
 - Capturar datos de interesado.
 - Definir destino de leads: Supabase, correo o CRM simple.
 - Crear pagina o seccion de beta fundadora.
