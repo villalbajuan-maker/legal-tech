@@ -1,13 +1,94 @@
-import { StrictMode } from "react";
+import { StrictMode, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import logoUrl from "./assets/lexcontrol-logo.png";
 import "./styles.css";
 
-const stateSummary = [
-  { label: "Con novedad", value: "18", state: "info" },
-  { label: "Sin cambios", value: "186", state: "success" },
-  { label: "No consultados", value: "11", state: "error" },
-  { label: "Requieren revision", value: "5", state: "warning" },
+type DiagnosticOption = {
+  label: string;
+  score: number;
+};
+
+type DiagnosticQuestion = {
+  question: string;
+  options: DiagnosticOption[];
+};
+
+const diagnosticQuestions: DiagnosticQuestion[] = [
+  {
+    question: "¿Cuántos procesos vigilas actualmente?",
+    options: [
+      { label: "Menos de 25", score: 0 },
+      { label: "25 - 100", score: 1 },
+      { label: "101 - 300", score: 2 },
+      { label: "Más de 300", score: 3 },
+    ],
+  },
+  {
+    question: "¿Cómo revisan hoy las novedades?",
+    options: [
+      { label: "Manual en Rama Judicial", score: 3 },
+      { label: "Excel + revisión manual", score: 3 },
+      { label: "Dependiente / asistente", score: 2 },
+      { label: "Herramienta externa", score: 1 },
+      { label: "No hay proceso claro", score: 4 },
+    ],
+  },
+  {
+    question: "¿Con qué frecuencia revisan los procesos?",
+    options: [
+      { label: "Diario", score: 1 },
+      { label: "Varias veces por semana", score: 1 },
+      { label: "Una vez por semana", score: 2 },
+      { label: "Cuando el cliente pregunta", score: 4 },
+      { label: "No hay frecuencia fija", score: 4 },
+    ],
+  },
+  {
+    question: "¿Pueden saber qué procesos no fueron consultados exitosamente hoy?",
+    options: [
+      { label: "Sí, con trazabilidad", score: 0 },
+      { label: "Parcialmente", score: 2 },
+      { label: "No", score: 4 },
+      { label: "No estoy seguro", score: 3 },
+    ],
+  },
+  {
+    question: "¿Tienen una bandeja que separe novedades, sin cambios y fallas?",
+    options: [
+      { label: "Sí", score: 0 },
+      { label: "No", score: 4 },
+      { label: "Lo hacemos manualmente", score: 3 },
+      { label: "Depende del responsable", score: 3 },
+    ],
+  },
+  {
+    question: "¿Quién recibe alertas cuando hay una actuación nueva?",
+    options: [
+      { label: "Responsable asignado", score: 0 },
+      { label: "Todo el equipo", score: 2 },
+      { label: "Una sola persona centraliza", score: 2 },
+      { label: "Nadie automáticamente", score: 4 },
+      { label: "Depende del caso", score: 3 },
+    ],
+  },
+  {
+    question: "¿Qué pasa si una fuente no se puede consultar?",
+    options: [
+      { label: "Queda registrado", score: 0 },
+      { label: "Alguien lo revisa manualmente", score: 2 },
+      { label: "No siempre se sabe", score: 4 },
+      { label: "No tenemos control", score: 4 },
+    ],
+  },
+  {
+    question: "¿Cuál sería el impacto de no detectar una actuación a tiempo?",
+    options: [
+      { label: "Bajo", score: 0 },
+      { label: "Medio", score: 1 },
+      { label: "Alto", score: 3 },
+      { label: "Crítico frente al cliente", score: 4 },
+    ],
+  },
 ];
 
 const processRows = [
@@ -22,7 +103,7 @@ const processRows = [
   {
     radicado: "11001400306620230164700",
     status: "Sin cambios",
-    action: "Fijacion en estado",
+    action: "Fijación en estado",
     date: "Ayer, 17:10",
     owner: "Carlos M.",
     state: "success",
@@ -37,42 +118,126 @@ const processRows = [
   },
   {
     radicado: "25899310300220190018400",
-    status: "Requiere revision",
+    status: "Requiere revisión",
     action: "Traslado pendiente",
-    date: "Hace 2 dias",
+    date: "Hace 2 días",
     owner: "Juan V.",
     state: "warning",
   },
 ];
 
-const signals = [
-  "Ultima actuacion y anotacion",
-  "Procesos no consultados",
-  "Responsables por caso",
-  "Prioridad operativa",
-  "Resumen por correo",
-  "Base preparada para WhatsApp",
+const solutionBlocks = [
+  {
+    title: "Consulta",
+    text: "Registra cada intento de consulta. Incluso cuando la fuente falla.",
+  },
+  {
+    title: "Clasifica",
+    text: "Separa automáticamente novedades, sin cambios y fallas.",
+  },
+  {
+    title: "Prioriza",
+    text: "Muestra qué requiere atención y quién es responsable.",
+  },
 ];
 
-const steps = [
-  {
-    eyebrow: "01",
-    title: "Carga radicados",
-    text: "Organiza procesos por cliente, responsable y prioridad.",
-  },
-  {
-    eyebrow: "02",
-    title: "Consulta fuentes",
-    text: "CPNU se consulta por lotes, con trazabilidad y control de errores.",
-  },
-  {
-    eyebrow: "03",
-    title: "Decide que revisar",
-    text: "La bandeja separa novedades, estabilidad y fallas de consulta.",
-  },
-];
+function getRiskLabel(score: number) {
+  if (score >= 24) return "crítico";
+  if (score >= 17) return "alto";
+  if (score >= 9) return "medio";
+  return "bajo";
+}
+
+function DiagnosticModal({
+  onClose,
+}: {
+  onClose: () => void;
+}) {
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<number[]>([]);
+  const isComplete = answers.length === diagnosticQuestions.length;
+  const score = useMemo(() => answers.reduce((total, item) => total + item, 0), [answers]);
+  const risk = getRiskLabel(score);
+  const current = diagnosticQuestions[step];
+
+  function answer(option: DiagnosticOption) {
+    const next = [...answers, option.score];
+    setAnswers(next);
+    if (next.length < diagnosticQuestions.length) {
+      setStep(step + 1);
+    }
+  }
+
+  function reset() {
+    setStep(0);
+    setAnswers([]);
+  }
+
+  return (
+    <div className="modalLayer" role="dialog" aria-modal="true" aria-labelledby="diagnostic-title">
+      <div className="diagnosticModal">
+        <button className="modalClose" type="button" onClick={onClose} aria-label="Cerrar diagnóstico">
+          Cerrar
+        </button>
+
+        {!isComplete ? (
+          <>
+            <p className="eyebrow">Diagnóstico de Riesgo Operativo Judicial</p>
+            <div className="progress">
+              <span>{step + 1} de {diagnosticQuestions.length}</span>
+              <div>
+                <i style={{ width: `${((step + 1) / diagnosticQuestions.length) * 100}%` }} />
+              </div>
+            </div>
+            <h2 id="diagnostic-title">{current.question}</h2>
+            <div className="questionOptions">
+              {current.options.map((option) => (
+                <button type="button" key={option.label} onClick={() => answer(option)}>
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <section className="resultPanel">
+            <p className="eyebrow">Resultado</p>
+            <h2>Tu operación tiene riesgo operativo {risk}.</h2>
+            <p>
+              Esto no significa que no estés revisando procesos. Significa que no
+              puedes demostrar con claridad qué fue revisado, qué falló y qué nunca
+              se consultó.
+            </p>
+            <p>
+              Ese tipo de falla no se detecta cuando ocurre. Se detecta cuando ya
+              es tarde.
+            </p>
+            <div className="resultStatement">
+              El problema no es que no revises. Es que no puedes ver lo que no se revisó.
+            </div>
+            <p>
+              LexControl no automatiza la revisión. Te muestra lo que hoy no puedes ver.
+            </p>
+            <div className="resultActions">
+              <a className="button primary" href="mailto:contacto@lexcontrol.co?subject=Quiero%20ver%20LexControl%20con%20mis%20procesos">
+                Quiero ver LexControl con mis procesos
+              </a>
+              <a className="button secondary" href="mailto:contacto@lexcontrol.co?subject=Enviar%20diagnostico%20LexControl">
+                Recibir diagnóstico por correo
+              </a>
+            </div>
+            <button className="button ghost" type="button" onClick={reset}>
+              Repetir diagnóstico
+            </button>
+          </section>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function App() {
+  const [isDiagnosticOpen, setDiagnosticOpen] = useState(false);
+
   return (
     <main className="app">
       <header className="topbar">
@@ -80,61 +245,131 @@ function App() {
           <img src={logoUrl} alt="LexControl" />
         </a>
         <nav className="nav" aria-label="Principal">
+          <a href="#diagnostico">Diagnóstico</a>
           <a href="#control">Control</a>
-          <a href="#valor">Valor</a>
           <a href="#beta">Beta</a>
         </nav>
-        <a className="navCta" href="mailto:contacto@lexcontrol.co?subject=Beta%20LexControl">
-          Solicitar beta
-        </a>
+        <button className="navCta" type="button" onClick={() => setDiagnosticOpen(true)}>
+          Hacer diagnóstico
+        </button>
       </header>
 
       <section className="hero" id="inicio">
         <div className="heroContent">
-          <p className="eyebrow">Sistema operativo de vigilancia judicial</p>
-          <h1>Controla que cambio, que no cambio y que no se pudo consultar.</h1>
+          <p className="eyebrow">LexControl — vigilancia judicial operativa</p>
+          <h1>
+            El problema no es revisar procesos. Es no saber cuáles nunca fueron revisados.
+          </h1>
           <p className="lead">
-            LexControl convierte listas de radicados en una bandeja operativa para
-            abogados, firmas y operadores legales que necesitan monitorear procesos
-            sin revisar manualmente cada fuente.
+            La mayoría de los equipos jurídicos cree que está al día. Pero no puede
+            demostrar qué procesos fueron realmente consultados, cuáles fallaron y
+            cuáles nunca se revisaron.
+          </p>
+          <p className="lead strongLead">
+            LexControl convierte esa incertidumbre en control operativo.
           </p>
           <div className="actions">
-            <a className="button primary" href="mailto:contacto@lexcontrol.co?subject=Quiero%20entrar%20a%20la%20beta%20LexControl">
-              Entrar a la beta
-            </a>
+            <button className="button primary" type="button" onClick={() => setDiagnosticOpen(true)}>
+              Hacer diagnóstico
+            </button>
             <a className="button secondary" href="#control">
-              Ver panel de control
+              Ver cómo funciona
             </a>
           </div>
+          <p className="microcopy">Toma menos de 3 minutos. No necesitas datos sensibles.</p>
         </div>
+      </section>
 
-        <div className="heroStatus" aria-label="Estado operativo">
-          <span className="sourceDot" />
-          CPNU operativo
-          <span>Ultima sincronizacion: 08:42</span>
+      <section className="transitionSection">
+        <p>Puedes revisar procesos todos los días.</p>
+        <strong>Y aún así estar dejando casos sin revisar.</strong>
+      </section>
+
+      <section className="problemSection">
+        <div>
+          <p className="eyebrow">Problema</p>
+          <h2>El riesgo no está solo en que un proceso cambie.</h2>
+          <h3>Está en no saber si fue revisado.</h3>
         </div>
+        <div className="problemList">
+          <p>Una actuación puede aparecer.</p>
+          <p>Una audiencia puede moverse.</p>
+          <p>Una fuente puede fallar.</p>
+          <p>Un proceso puede no consultarse.</p>
+          <p>Un responsable puede asumir que alguien más lo vio.</p>
+          <strong>Y no hay una forma clara de saber cuándo pasó.</strong>
+        </div>
+        <div className="problemTruth">
+          <p>No es un problema de disciplina.</p>
+          <h2>Es un problema de visibilidad.</h2>
+          <p>Si no tienes trazabilidad, no tienes control. Solo tienes confianza en que alguien revisó.</p>
+        </div>
+      </section>
+
+      <section className="diagnosticEntry" id="diagnostico">
+        <div>
+          <p className="eyebrow">Diagnóstico de Riesgo Operativo Judicial</p>
+          <h2>Este diagnóstico no mide qué tan organizado estás.</h2>
+          <p>Mide qué tan expuesta está tu operación a errores que no puedes detectar.</p>
+        </div>
+        <button className="button primary" type="button" onClick={() => setDiagnosticOpen(true)}>
+          Iniciar diagnóstico
+        </button>
+      </section>
+
+      <section className="solutionSection">
+        <div>
+          <p className="eyebrow">Solución</p>
+          <h2>De revisión manual a control operativo.</h2>
+        </div>
+        <div className="solutionGrid">
+          {solutionBlocks.map((item) => (
+            <article className="solutionCard" key={item.title}>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="modelShift">
+        <article>
+          <span>Hoy operas así</span>
+          <p>Revisión manual</p>
+          <p>Excel</p>
+          <p>Mensajes</p>
+          <p>Suposiciones</p>
+        </article>
+        <article>
+          <span>Con LexControl</span>
+          <p>Una bandeja clara</p>
+          <p>Estados visibles</p>
+          <p>Errores identificados</p>
+          <p>Responsables asignados</p>
+        </article>
       </section>
 
       <section className="controlSurface" id="control" aria-label="Panel de control LexControl">
         <div className="controlHeader">
           <div>
-            <p className="eyebrow">Control panel</p>
-            <h2>Bandeja diaria de vigilancia</h2>
+            <p className="eyebrow">Panel</p>
+            <h2>Una bandeja para decidir. No otra tabla para revisar.</h2>
+            <p>Todo en un solo lugar. Con trazabilidad.</p>
           </div>
-          <div className="filterGroup" aria-label="Filtros rapidos">
-            <button type="button" className="filter active">Ultimas 24 horas</button>
+          <div className="filterGroup" aria-label="Filtros rápidos">
+            <button type="button" className="filter active">Con novedad</button>
             <button type="button" className="filter">No consultados</button>
-            <button type="button" className="filter">Alta prioridad</button>
+            <button type="button" className="filter">Errores de fuente</button>
           </div>
         </div>
 
-        <div className="summaryGrid">
-          {stateSummary.map((item) => (
-            <article className={`summary ${item.state}`} key={item.label}>
-              <span>{item.label}</span>
-              <strong>{item.value}</strong>
-            </article>
-          ))}
+        <div className="stateGrid">
+          <article><strong>Procesos con novedad</strong></article>
+          <article><strong>Procesos sin cambios</strong></article>
+          <article><strong>Procesos no consultados</strong></article>
+          <article><strong>Errores de fuente</strong></article>
+          <article><strong>Responsables</strong></article>
+          <article><strong>Prioridades</strong></article>
         </div>
 
         <div className="workbench">
@@ -142,7 +377,7 @@ function App() {
             <div className="tableHeader">
               <span>Radicado</span>
               <span>Estado</span>
-              <span>Ultima actuacion</span>
+              <span>Última actuación</span>
               <span>Fecha</span>
               <span>Responsable</span>
             </div>
@@ -160,76 +395,40 @@ function App() {
           <aside className="companionPanel" aria-label="Companion operativo">
             <div className="companionHeader">
               <span>Companion</span>
-              <strong>Consulta tu operacion</strong>
+              <strong>No buscas procesos. Preguntas por tu operación.</strong>
             </div>
-            <p>
-              Que procesos no pudieron consultarse hoy y cuales requieren revision?
-            </p>
+            <p>¿Qué procesos se movieron hoy?</p>
+            <p>¿Cuáles no se pudieron consultar?</p>
+            <p>¿Qué casos llevan más tiempo sin cambios?</p>
             <div className="answer">
-              11 procesos quedaron pendientes por fuente no disponible. 5 tienen
-              prioridad alta y responsable asignado.
+              LexControl responde sobre lo que está pasando. No sobre lo que crees que pasó.
             </div>
-            <button type="button" className="button ghost">Abrir filtro sugerido</button>
           </aside>
         </div>
       </section>
 
-      <section className="valueSection" id="valor">
-        <div>
-          <p className="eyebrow">Diferencial</p>
-          <h2>No es un monitor de radicados. Es una consola de decision.</h2>
-        </div>
-        <div className="signalGrid">
-          {signals.map((signal) => (
-            <article className="signal" key={signal}>
-              <span />
-              {signal}
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="steps">
-        {steps.map((step) => (
-          <article className="step" key={step.title}>
-            <span>{step.eyebrow}</span>
-            <h3>{step.title}</h3>
-            <p>{step.text}</p>
-          </article>
-        ))}
-      </section>
-
       <section className="beta" id="beta">
         <div>
-          <p className="eyebrow">Beta fundadora</p>
-          <h2>Estamos abriendo cupos para abogados y firmas con volumen real.</h2>
-          <p>
-            Buscamos equipos con 50 a 500 procesos que quieran validar vigilancia
-            automatica, trazabilidad y priorizacion operativa con casos reales.
-          </p>
+          <p className="eyebrow">Beta fundadora — acceso limitado</p>
+          <h2>Estamos trabajando con un grupo reducido de abogados y firmas que operan volumen real de procesos.</h2>
+          <p>Ideal para equipos que manejan 50 a 500 procesos activos.</p>
+          <p>Trabajamos con pocos equipos para validar la operación con casos reales.</p>
         </div>
-        <form className="signup" action="mailto:contacto@lexcontrol.co" method="post" encType="text/plain">
-          <label>
-            Nombre
-            <input name="nombre" placeholder="Tu nombre" />
-          </label>
-          <label>
-            Correo
-            <input name="correo" type="email" placeholder="correo@firma.com" />
-          </label>
-          <label>
-            Procesos aproximados
-            <select name="procesos" defaultValue="">
-              <option value="" disabled>Selecciona un rango</option>
-              <option>50 - 100</option>
-              <option>101 - 250</option>
-              <option>251 - 500</option>
-              <option>Mas de 500</option>
-            </select>
-          </label>
-          <button className="button primary" type="submit">Solicitar acceso</button>
-        </form>
+        <a className="button primary" href="mailto:contacto@lexcontrol.co?subject=Solicitar%20acceso%20a%20beta%20LexControl">
+          Solicitar acceso a beta
+        </a>
       </section>
+
+      <section className="closingSection">
+        <h2>No puedes controlar lo que no puedes ver.</h2>
+        <p>Y hoy, probablemente, hay procesos que no estás viendo.</p>
+        <strong>LexControl convierte esa incertidumbre en sistema.</strong>
+        <button className="button primary" type="button" onClick={() => setDiagnosticOpen(true)}>
+          Hacer diagnóstico
+        </button>
+      </section>
+
+      {isDiagnosticOpen ? <DiagnosticModal onClose={() => setDiagnosticOpen(false)} /> : null}
     </main>
   );
 }

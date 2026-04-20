@@ -119,6 +119,7 @@ button {
 .navCta {
   justify-self: end;
   border: 1px solid var(--brand-border);
+  background: #ffffff;
   color: var(--brand);
 }
 
@@ -146,9 +147,15 @@ button {
 
 .heroContent,
 .controlSurface,
+.transitionSection,
+.problemSection,
+.diagnosticEntry,
+.solutionSection,
+.modelShift,
 .valueSection,
 .steps,
-.beta {
+.beta,
+.closingSection {
   position: relative;
   z-index: 1;
   width: min(1180px, calc(100% - 32px));
@@ -203,6 +210,19 @@ h3 {
   line-height: 1.7;
 }
 
+.strongLead {
+  margin-top: 16px;
+  color: var(--brand);
+  font-weight: 800;
+}
+
+.microcopy {
+  margin: 14px 0 0;
+  color: var(--subtle);
+  font-size: 13px;
+  font-weight: 650;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -244,6 +264,26 @@ h3 {
   color: var(--brand);
 }
 
+.transitionSection {
+  display: grid;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  padding: 42px 0;
+  text-align: center;
+}
+
+.transitionSection p,
+.transitionSection strong {
+  margin: 0;
+  color: var(--brand);
+  font-size: 28px;
+  line-height: 1.24;
+}
+
+.transitionSection strong {
+  color: var(--error);
+}
+
 .heroStatus {
   position: absolute;
   z-index: 2;
@@ -275,8 +315,144 @@ h3 {
   background: var(--success);
 }
 
+.problemSection,
+.diagnosticEntry,
+.solutionSection,
+.modelShift,
+.controlSurface,
+.beta,
+.closingSection {
+  margin-top: 72px;
+}
+
+.problemSection {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(340px, 0.8fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.problemSection h3 {
+  margin: 0;
+  color: var(--error-text);
+  font-size: 28px;
+  line-height: 1.16;
+}
+
+.problemList,
+.problemTruth,
+.diagnosticEntry,
+.solutionCard,
+.modelShift article,
+.closingSection {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.problemList {
+  display: grid;
+  gap: 10px;
+  padding: 22px;
+}
+
+.problemList p,
+.problemTruth p,
+.diagnosticEntry p,
+.solutionCard p,
+.modelShift p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.problemList strong {
+  margin-top: 8px;
+  color: var(--brand);
+  line-height: 1.5;
+}
+
+.problemTruth {
+  grid-column: 1 / -1;
+  padding: 28px;
+  border-left: 4px solid var(--warning);
+}
+
+.problemTruth h2 {
+  margin: 8px 0;
+}
+
+.diagnosticEntry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: center;
+  padding: 28px;
+  border-color: var(--brand-border);
+  background: linear-gradient(135deg, #ffffff, var(--brand-soft));
+}
+
+.diagnosticEntry h2 {
+  max-width: 720px;
+}
+
+.solutionSection {
+  display: grid;
+  gap: 22px;
+}
+
+.solutionGrid,
+.modelShift,
+.stateGrid {
+  display: grid;
+  gap: 16px;
+}
+
+.solutionGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.solutionCard {
+  min-height: 164px;
+  padding: 22px;
+}
+
+.solutionCard h3 {
+  margin-bottom: 10px;
+  color: var(--brand);
+  font-size: 22px;
+}
+
+.modelShift {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.modelShift article {
+  padding: 24px;
+}
+
+.modelShift span {
+  display: block;
+  margin-bottom: 16px;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.modelShift p {
+  min-height: 38px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  color: var(--text);
+  font-weight: 750;
+}
+
+.modelShift article:first-child p {
+  color: var(--muted);
+}
+
 .controlSurface {
-  margin-top: -34px;
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 24px;
@@ -290,6 +466,12 @@ h3 {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 24px;
   align-items: end;
+}
+
+.controlHeader p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .filterGroup {
@@ -317,11 +499,31 @@ h3 {
   color: var(--brand);
 }
 
-.summaryGrid {
+.summaryGrid,
+.stateGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin: 22px 0;
+}
+
+.stateGrid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.stateGrid article {
+  min-height: 72px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  background: var(--surface-subtle);
+}
+
+.stateGrid strong {
+  display: block;
+  color: var(--brand);
+  font-size: 13px;
+  line-height: 1.35;
 }
 
 .summary {
@@ -597,8 +799,157 @@ h3 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
   gap: 28px;
-  align-items: start;
-  padding-bottom: 80px;
+  align-items: center;
+  border: 1px solid var(--brand-border);
+  border-radius: 16px;
+  padding: 28px;
+  background: var(--brand-soft);
+}
+
+.beta .button {
+  justify-self: end;
+}
+
+.closingSection {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  margin-bottom: 80px;
+  padding: 42px 24px;
+  text-align: center;
+}
+
+.closingSection h2 {
+  margin-bottom: 0;
+}
+
+.closingSection p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 18px;
+}
+
+.closingSection strong {
+  color: var(--brand);
+  font-size: 20px;
+}
+
+.modalLayer {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(20 42 84 / 0.62);
+}
+
+.diagnosticModal {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: min(780px, calc(100vh - 40px));
+  overflow: auto;
+  border: 1px solid var(--brand-border);
+  border-radius: 16px;
+  padding: 28px;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgb(15 23 42 / 0.2);
+}
+
+.modalClose {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  min-height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 10px;
+  background: #ffffff;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.progress {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.progress span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.progress div {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-subtle);
+}
+
+.progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--brand);
+}
+
+.questionOptions {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.questionOptions button {
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #ffffff;
+  color: var(--text);
+  text-align: left;
+  font-weight: 750;
+}
+
+.questionOptions button:hover {
+  border-color: var(--brand-border);
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.resultPanel {
+  display: grid;
+  gap: 14px;
+}
+
+.resultPanel p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.resultStatement {
+  border-left: 4px solid var(--error);
+  border-radius: 10px;
+  padding: 14px;
+  background: var(--error-soft);
+  color: var(--error-text);
+  font-weight: 850;
+  line-height: 1.5;
+}
+
+.resultActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.resultActions .button.ghost,
+.resultActions .button.secondary {
+  width: auto;
 }
 
 .signup {
@@ -651,6 +1002,10 @@ h3 {
   .controlHeader,
   .valueSection,
   .workbench,
+  .problemSection,
+  .diagnosticEntry,
+  .solutionGrid,
+  .modelShift,
   .beta {
     grid-template-columns: 1fr;
   }
@@ -660,8 +1015,13 @@ h3 {
   }
 
   .summaryGrid,
+  .stateGrid,
   .steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .beta .button {
+    justify-self: start;
   }
 
   .tablePanel {
@@ -696,9 +1056,15 @@ h3 {
 
   .heroContent,
   .controlSurface,
+  .transitionSection,
+  .problemSection,
+  .diagnosticEntry,
+  .solutionSection,
+  .modelShift,
   .valueSection,
   .steps,
-  .beta {
+  .beta,
+  .closingSection {
     width: min(100% - 24px, 1180px);
   }
 
@@ -726,8 +1092,23 @@ h3 {
   }
 
   .summaryGrid,
+  .stateGrid,
+  .solutionGrid,
+  .modelShift,
   .steps,
   .signalGrid {
     grid-template-columns: 1fr;
+  }
+
+  .transitionSection p,
+  .transitionSection strong {
+    font-size: 22px;
+  }
+
+  .diagnosticEntry,
+  .problemTruth,
+  .closingSection,
+  .diagnosticModal {
+    padding: 20px;
   }
 }
