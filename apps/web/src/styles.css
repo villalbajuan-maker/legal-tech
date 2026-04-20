@@ -154,6 +154,7 @@ button {
 .modelShift,
 .valueSection,
 .steps,
+.faqSection,
 .pricingSection,
 .beta,
 .closingSection {
@@ -331,6 +332,7 @@ h3 {
 .solutionSection,
 .modelShift,
 .controlSurface,
+.faqSection,
 .pricingSection,
 .beta,
 .closingSection {
@@ -1093,6 +1095,11 @@ h3 {
   gap: 22px;
 }
 
+.faqSection {
+  display: grid;
+  gap: 22px;
+}
+
 .sectionIntro {
   max-width: 760px;
 }
@@ -1101,6 +1108,58 @@ h3 {
   margin: 0;
   color: var(--muted);
   line-height: 1.65;
+}
+
+.faqGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.faqGroup {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px;
+  background: #ffffff;
+}
+
+.faqGroup > span {
+  width: fit-content;
+  border: 1px solid var(--brand-border);
+  border-radius: 8px;
+  padding: 5px 8px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.faqGroup details {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.faqGroup summary {
+  cursor: pointer;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1.35;
+}
+
+.faqGroup summary::marker {
+  color: var(--brand);
+}
+
+.faqGroup p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .pricingGrid {
@@ -1642,6 +1701,7 @@ h3 {
   .diagnosticEntry,
   .solutionGrid,
   .modelShift,
+  .faqSection,
   .pricingSection,
   .beta {
     grid-template-columns: 1fr;
@@ -1657,6 +1717,7 @@ h3 {
 
   .summaryGrid,
   .stateGrid,
+  .faqGrid,
   .pricingGrid,
   .steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1713,6 +1774,7 @@ h3 {
   .modelShift,
   .valueSection,
   .steps,
+  .faqSection,
   .pricingSection,
   .beta,
   .closingSection {
@@ -1756,6 +1818,7 @@ h3 {
 
   .summaryGrid,
   .stateGrid,
+  .faqGrid,
   .pricingGrid,
   .solutionGrid,
   .modelShift,

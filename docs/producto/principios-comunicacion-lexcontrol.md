@@ -180,6 +180,36 @@ Accion secundaria:
 Hacer diagnostico.
 ```
 
+### Preguntas Frecuentes
+
+Las FAQ deben funcionar como bloque de conversion, no como soporte generico.
+
+Ubicacion recomendada:
+
+```text
+Despues de demostrar la bandeja/demo.
+Antes de precios.
+```
+
+Razon:
+
+```text
+El usuario ya vio el mecanismo.
+Antes de decidir por precio, necesita resolver objeciones operativas.
+```
+
+Estructura:
+
+- Por que: objeciones sobre necesidad, riesgo y relevancia.
+- Como: objeciones sobre fuentes, fallas y activacion.
+- Que: objeciones sobre demo, alcance y pago.
+
+Regla:
+
+```text
+Cada respuesta debe reducir incertidumbre y reforzar control operativo.
+```
+
 ### Diagnostico
 
 Por que:

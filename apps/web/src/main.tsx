@@ -126,6 +126,69 @@ const addOns = [
   },
 ];
 
+const faqs = [
+  {
+    group: "Por qué",
+    items: [
+      {
+        question: "¿Esto reemplaza la revisión del abogado?",
+        answer:
+          "No. LexControl no reemplaza criterio jurídico. Hace visible qué cambió, qué no cambió y qué no se pudo consultar para que el responsable intervenga donde corresponde.",
+      },
+      {
+        question: "¿Por qué no basta con revisar manualmente?",
+        answer:
+          "Porque la revisión manual puede funcionar, pero no siempre deja trazabilidad. El riesgo está en no saber qué procesos no fueron consultados o qué fuente falló.",
+      },
+      {
+        question: "¿Para quién tiene sentido?",
+        answer:
+          "Para abogados, firmas y operadores que manejan volumen real de procesos. El punto de partida recomendado es una operación de 50 a 500 procesos activos.",
+      },
+    ],
+  },
+  {
+    group: "Cómo",
+    items: [
+      {
+        question: "¿Qué fuentes consulta?",
+        answer:
+          "La demo se enfoca inicialmente en CPNU / Rama Judicial. Otras fuentes pueden evaluarse por fase, según disponibilidad técnica y restricciones de acceso.",
+      },
+      {
+        question: "¿Qué pasa si una fuente falla?",
+        answer:
+          "La falla queda visible. LexControl no la oculta ni la interpreta como ausencia de novedad. El proceso pasa a estado no consultado o error de fuente.",
+      },
+      {
+        question: "¿Puedo cargar mis procesos reales?",
+        answer:
+          "Sí, la demo controlada está pensada para operar con una muestra real. La activación se coordina antes de cargar radicados o información sensible.",
+      },
+    ],
+  },
+  {
+    group: "Qué",
+    items: [
+      {
+        question: "¿Qué recibo en la demo gratuita?",
+        answer:
+          "Una activación controlada con hasta 100 procesos, hasta 4 responsables, bandeja operativa, Lex sobre la demo y revisión de resultados.",
+      },
+      {
+        question: "¿Cuánto dura la demo?",
+        answer:
+          "La duración recomendada es de 14 días. Es suficiente para observar consultas, fallas, novedades y comportamiento operativo real.",
+      },
+      {
+        question: "¿Tengo que pagar antes de probar?",
+        answer:
+          "No. Puedes solicitar una demo gratuita antes de elegir plan. Los precios de lanzamiento están visibles para que conozcas el rango desde el inicio.",
+      },
+    ],
+  },
+];
+
 const diagnosticQuestions: DiagnosticQuestion[] = [
   {
     question: "¿Cuántos procesos vigilas actualmente?",
@@ -1211,6 +1274,29 @@ function App() {
         <button className="button primary" type="button" onClick={() => setActivationOpen(true)}>
           Activar demo gratis
         </button>
+      </section>
+
+      <section className="faqSection" id="preguntas">
+        <div className="sectionIntro">
+          <p className="eyebrow">Preguntas frecuentes</p>
+          <h2>Antes de hablar de precio, aclaremos la operación.</h2>
+          <p>
+            Estas respuestas explican por qué existe LexControl, cómo opera la demo y qué recibe un equipo durante la activación controlada.
+          </p>
+        </div>
+        <div className="faqGrid">
+          {faqs.map((group) => (
+            <article className="faqGroup" key={group.group}>
+              <span>{group.group}</span>
+              {group.items.map((item) => (
+                <details key={item.question}>
+                  <summary>{item.question}</summary>
+                  <p>{item.answer}</p>
+                </details>
+              ))}
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="pricingSection" id="precios">
