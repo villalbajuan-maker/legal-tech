@@ -1,19 +1,9 @@
-import { StrictMode, useEffect, useMemo, useRef, useState } from "react";
+import { StrictMode, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { createRoot } from "react-dom/client";
 import lexSymbolUrl from "./assets/lex-control-logo-symbol.png";
 import logoUrl from "./assets/lexcontrol-logo.png";
 import "./styles.css";
-
-type DiagnosticOption = {
-  label: string;
-  score: number;
-};
-
-type DiagnosticQuestion = {
-  question: string;
-  options: DiagnosticOption[];
-};
 
 type ProcessState = "info" | "success" | "warning" | "error";
 
@@ -208,84 +198,6 @@ const faqs = [
   },
 ];
 
-const diagnosticQuestions: DiagnosticQuestion[] = [
-  {
-    question: "¿Cuántos procesos vigilas actualmente?",
-    options: [
-      { label: "Menos de 25", score: 0 },
-      { label: "25 - 100", score: 1 },
-      { label: "101 - 300", score: 2 },
-      { label: "Más de 300", score: 3 },
-    ],
-  },
-  {
-    question: "¿Cómo revisan hoy las novedades?",
-    options: [
-      { label: "Manual en Rama Judicial", score: 3 },
-      { label: "Excel + revisión manual", score: 3 },
-      { label: "Dependiente / asistente", score: 2 },
-      { label: "Herramienta externa", score: 1 },
-      { label: "No hay proceso claro", score: 4 },
-    ],
-  },
-  {
-    question: "¿Con qué frecuencia revisan los procesos?",
-    options: [
-      { label: "Diario", score: 1 },
-      { label: "Varias veces por semana", score: 1 },
-      { label: "Una vez por semana", score: 2 },
-      { label: "Cuando el cliente pregunta", score: 4 },
-      { label: "No hay frecuencia fija", score: 4 },
-    ],
-  },
-  {
-    question: "¿Pueden saber qué procesos no fueron consultados exitosamente hoy?",
-    options: [
-      { label: "Sí, con trazabilidad", score: 0 },
-      { label: "Parcialmente", score: 2 },
-      { label: "No", score: 4 },
-      { label: "No estoy seguro", score: 3 },
-    ],
-  },
-  {
-    question: "¿Tienen una bandeja que separe novedades, sin cambios y fallas?",
-    options: [
-      { label: "Sí", score: 0 },
-      { label: "No", score: 4 },
-      { label: "Lo hacemos manualmente", score: 3 },
-      { label: "Depende del responsable", score: 3 },
-    ],
-  },
-  {
-    question: "¿Quién recibe alertas cuando hay una actuación nueva?",
-    options: [
-      { label: "Responsable asignado", score: 0 },
-      { label: "Todo el equipo", score: 2 },
-      { label: "Una sola persona centraliza", score: 2 },
-      { label: "Nadie automáticamente", score: 4 },
-      { label: "Depende del caso", score: 3 },
-    ],
-  },
-  {
-    question: "¿Qué pasa si una fuente no se puede consultar?",
-    options: [
-      { label: "Queda registrado", score: 0 },
-      { label: "Alguien lo revisa manualmente", score: 2 },
-      { label: "No siempre se sabe", score: 4 },
-      { label: "No tenemos control", score: 4 },
-    ],
-  },
-  {
-    question: "¿Cuál sería el impacto de no detectar una actuación a tiempo?",
-    options: [
-      { label: "Bajo", score: 0 },
-      { label: "Medio", score: 1 },
-      { label: "Alto", score: 3 },
-      { label: "Crítico frente al cliente", score: 4 },
-    ],
-  },
-];
-
 const processRows: ProcessRow[] = [
   {
     radicado: "11001400303520230010700",
@@ -460,13 +372,6 @@ const solutionBlocks = [
   },
 ];
 
-function getRiskLabel(score: number) {
-  if (score >= 24) return "crítico";
-  if (score >= 17) return "alto";
-  if (score >= 9) return "medio";
-  return "bajo";
-}
-
 function getRowsByTime(rows: ProcessRow[], filter: TimeFilter) {
   const limits: Record<TimeFilter, number> = {
     "24h": 24 * 60,
@@ -554,93 +459,6 @@ function inferLexIntent(text: string): LexIntent | null {
   if (value.includes("sin cambio") || value.includes("tiempo") || value.includes("quieto")) return "sin-cambios";
   if (value.includes("prioridad") || value.includes("critico") || value.includes("alta")) return "prioridad";
   return null;
-}
-
-function DiagnosticModal({
-  onClose,
-}: {
-  onClose: () => void;
-}) {
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
-  const isComplete = answers.length === diagnosticQuestions.length;
-  const score = useMemo(() => answers.reduce((total, item) => total + item, 0), [answers]);
-  const risk = getRiskLabel(score);
-  const current = diagnosticQuestions[step];
-
-  function answer(option: DiagnosticOption) {
-    const next = [...answers, option.score];
-    setAnswers(next);
-    if (next.length < diagnosticQuestions.length) {
-      setStep(step + 1);
-    }
-  }
-
-  function reset() {
-    setStep(0);
-    setAnswers([]);
-  }
-
-  return (
-    <div className="modalLayer" role="dialog" aria-modal="true" aria-labelledby="diagnostic-title">
-      <div className="diagnosticModal">
-        <button className="modalClose" type="button" onClick={onClose} aria-label="Cerrar diagnóstico">
-          Cerrar
-        </button>
-
-        {!isComplete ? (
-          <>
-            <p className="eyebrow">Diagnóstico de Riesgo Operativo Judicial</p>
-            <div className="progress">
-              <span>{step + 1} de {diagnosticQuestions.length}</span>
-              <div>
-                <i style={{ width: `${((step + 1) / diagnosticQuestions.length) * 100}%` }} />
-              </div>
-            </div>
-            <h2 id="diagnostic-title">{current.question}</h2>
-            <div className="questionOptions">
-              {current.options.map((option) => (
-                <button type="button" key={option.label} onClick={() => answer(option)}>
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </>
-        ) : (
-          <section className="resultPanel">
-            <p className="eyebrow">Resultado</p>
-            <h2>Tu operación tiene riesgo operativo {risk}.</h2>
-            <p>
-              Esto no significa que no estés revisando procesos. Significa que no
-              puedes demostrar con claridad qué fue revisado, qué falló y qué nunca
-              se consultó.
-            </p>
-            <p>
-              Ese tipo de falla no se detecta cuando ocurre. Se detecta cuando ya
-              es tarde.
-            </p>
-            <div className="resultStatement">
-              El problema no es que no revises. Es que no puedes ver lo que no se revisó.
-            </div>
-            <p>
-              LexControl no automatiza la revisión. Te muestra lo que hoy no puedes ver.
-            </p>
-            <div className="resultActions">
-              <a className="button primary" href="mailto:contacto@lexcontrol.co?subject=Quiero%20ver%20LexControl%20con%20mis%20procesos">
-                Quiero ver LexControl con mis procesos
-              </a>
-              <a className="button secondary" href="mailto:contacto@lexcontrol.co?subject=Enviar%20diagnostico%20LexControl">
-                Recibir diagnóstico por correo
-              </a>
-            </div>
-            <button className="button ghost" type="button" onClick={reset}>
-              Repetir diagnóstico
-            </button>
-          </section>
-        )}
-      </div>
-    </div>
-  );
 }
 
 function ActivationModal({
@@ -823,7 +641,6 @@ function ActivationModal({
 }
 
 function App() {
-  const [isDiagnosticOpen, setDiagnosticOpen] = useState(false);
   const [isActivationOpen, setActivationOpen] = useState(false);
   const [operationalFilter, setOperationalFilter] = useState<OperationalFilter>("todos");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("todos");
@@ -1075,9 +892,6 @@ function App() {
             <button className="button primary" type="button" onClick={() => setActivationOpen(true)}>
               Activar demo gratis
             </button>
-            <button className="button secondary" type="button" onClick={() => setDiagnosticOpen(true)}>
-              Hacer diagnóstico
-            </button>
             <a className="button ghostLink" href="#control">
               Ver cómo funciona
             </a>
@@ -1119,10 +933,10 @@ function App() {
         <div>
           <p className="eyebrow">Diagnóstico de Riesgo Operativo Judicial</p>
           <h2>Este diagnóstico no mide qué tan organizado estás.</h2>
-          <p>Mide qué tan expuesta está tu operación a errores que no puedes detectar.</p>
+          <p>Hace parte de la activación de demo y mide qué tan expuesta está tu operación a errores que no puedes detectar.</p>
         </div>
-        <button className="button primary" type="button" onClick={() => setDiagnosticOpen(true)}>
-          Iniciar diagnóstico
+        <button className="button primary" type="button" onClick={() => setActivationOpen(true)}>
+          Activar demo gratis
         </button>
       </section>
 
@@ -1485,7 +1299,6 @@ function App() {
         </div>
       </footer>
 
-      {isDiagnosticOpen ? <DiagnosticModal onClose={() => setDiagnosticOpen(false)} /> : null}
       {isActivationOpen ? <ActivationModal onClose={() => setActivationOpen(false)} /> : null}
     </main>
   );

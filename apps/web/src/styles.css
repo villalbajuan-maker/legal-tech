@@ -1804,18 +1804,6 @@ h3 {
   background: rgb(20 42 84 / 0.62);
 }
 
-.diagnosticModal {
-  position: relative;
-  width: min(720px, 100%);
-  max-height: min(780px, calc(100vh - 40px));
-  overflow: auto;
-  border: 1px solid var(--brand-border);
-  border-radius: 16px;
-  padding: 28px;
-  background: #ffffff;
-  box-shadow: 0 12px 32px rgb(15 23 42 / 0.2);
-}
-
 .activationModal {
   position: relative;
   width: min(820px, 100%);
@@ -1866,62 +1854,6 @@ h3 {
   height: 100%;
   border-radius: inherit;
   background: var(--brand);
-}
-
-.questionOptions {
-  display: grid;
-  gap: 10px;
-  margin-top: 22px;
-}
-
-.questionOptions button {
-  min-height: 48px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 14px;
-  background: #ffffff;
-  color: var(--text);
-  text-align: left;
-  font-weight: 720;
-}
-
-.questionOptions button:hover {
-  border-color: var(--brand-border);
-  background: var(--brand-soft);
-  color: var(--brand);
-}
-
-.resultPanel {
-  display: grid;
-  gap: 14px;
-}
-
-.resultPanel p {
-  margin: 0;
-  color: var(--muted);
-  line-height: var(--line-body);
-}
-
-.resultStatement {
-  border-left: 4px solid var(--error);
-  border-radius: 8px;
-  padding: 14px;
-  background: var(--error-soft);
-  color: var(--error-text);
-  font-weight: 780;
-  line-height: 1.5;
-}
-
-.resultActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 4px;
-}
-
-.resultActions .button.ghost,
-.resultActions .button.secondary {
-  width: auto;
 }
 
 .activationStep {
@@ -2344,7 +2276,6 @@ h3 {
   .problemTruth,
   .pricingNote,
   .closingSection,
-  .diagnosticModal,
   .activationModal {
     padding: 20px;
   }
