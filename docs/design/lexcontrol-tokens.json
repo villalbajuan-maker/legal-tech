@@ -5,11 +5,11 @@
   },
   "color": {
     "brand": {
-      "default": "#0B2D5C",
-      "hover": "#123B74",
-      "active": "#082348",
-      "soft": "#EAF1FB",
-      "border": "#B8C9E3"
+      "default": "#142A54",
+      "hover": "#1B376A",
+      "active": "#0D1F40",
+      "soft": "#E9EEF7",
+      "border": "#B7C4DB"
     },
     "info": {
       "default": "#1F5FBF",
@@ -19,25 +19,25 @@
       "text": "#174F9F"
     },
     "success": {
-      "default": "#168A4A",
-      "hover": "#0F713B",
-      "soft": "#E8F7EF",
-      "border": "#A9DFBF",
-      "text": "#0F5F33"
+      "default": "#34B048",
+      "hover": "#278C38",
+      "soft": "#EAF8ED",
+      "border": "#AEE2B8",
+      "text": "#1F6D2D"
     },
     "warning": {
-      "default": "#B77900",
-      "hover": "#965F00",
-      "soft": "#FFF5D6",
-      "border": "#F2D27A",
-      "text": "#7A4F00"
+      "default": "#F89820",
+      "hover": "#D47B0A",
+      "soft": "#FFF4DF",
+      "border": "#FFD08A",
+      "text": "#8A4F00"
     },
     "error": {
-      "default": "#C43B3B",
-      "hover": "#A72F2F",
-      "soft": "#FDECEC",
-      "border": "#F2B8B8",
-      "text": "#8F2424"
+      "default": "#EC3A40",
+      "hover": "#C92D33",
+      "soft": "#FEEEEE",
+      "border": "#F5B9BC",
+      "text": "#9F252A"
     },
     "neutral": {
       "text": "#1F2933",

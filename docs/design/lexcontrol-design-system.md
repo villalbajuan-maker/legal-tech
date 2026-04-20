@@ -13,7 +13,12 @@ The interface must help users understand:
 
 The product should feel closer to a control center than a dashboard.
 
-> Note: the exact logo file is not currently available in this repository context. The system below uses a deep blue brand base designed to match the described logo direction. Once the logo asset is available, the primary blue should be sampled and calibrated if needed.
+The palette is calibrated from the provided LexControl logo:
+
+- Deep blue: `#142A54`.
+- Green: `#34B048`.
+- Amber/orange: `#F89820`.
+- Red: `#EC3A40`.
 
 ---
 
@@ -71,11 +76,11 @@ The user should be able to answer these questions in seconds:
 ```css
 :root {
   /* Brand */
-  --color-brand: #0b2d5c;
-  --color-brand-hover: #123b74;
-  --color-brand-active: #082348;
-  --color-brand-soft: #eaf1fb;
-  --color-brand-border: #b8c9e3;
+  --color-brand: #142a54;
+  --color-brand-hover: #1b376a;
+  --color-brand-active: #0d1f40;
+  --color-brand-soft: #e9eef7;
+  --color-brand-border: #b7c4db;
 
   /* Information */
   --color-info: #1f5fbf;
@@ -84,25 +89,25 @@ The user should be able to answer these questions in seconds:
   --color-info-border: #b7d2ff;
 
   /* Success / OK */
-  --color-success: #168a4a;
-  --color-success-hover: #0f713b;
-  --color-success-soft: #e8f7ef;
-  --color-success-border: #a9dfbf;
-  --color-success-text: #0f5f33;
+  --color-success: #34b048;
+  --color-success-hover: #278c38;
+  --color-success-soft: #eaf8ed;
+  --color-success-border: #aee2b8;
+  --color-success-text: #1f6d2d;
 
   /* Warning / Attention */
-  --color-warning: #b77900;
-  --color-warning-hover: #965f00;
-  --color-warning-soft: #fff5d6;
-  --color-warning-border: #f2d27a;
-  --color-warning-text: #7a4f00;
+  --color-warning: #f89820;
+  --color-warning-hover: #d47b0a;
+  --color-warning-soft: #fff4df;
+  --color-warning-border: #ffd08a;
+  --color-warning-text: #8a4f00;
 
   /* Error / Failure */
-  --color-error: #c43b3b;
-  --color-error-hover: #a72f2f;
-  --color-error-soft: #fdecec;
-  --color-error-border: #f2b8b8;
-  --color-error-text: #8f2424;
+  --color-error: #ec3a40;
+  --color-error-hover: #c92d33;
+  --color-error-soft: #feeeee;
+  --color-error-border: #f5b9bc;
+  --color-error-text: #9f252a;
 
   /* Neutrals */
   --color-text: #1f2933;
@@ -150,19 +155,19 @@ The user should be able to answer these questions in seconds:
 
 | Token | HEX | Use |
 | --- | --- | --- |
-| `--color-brand` | `#0B2D5C` | Primary actions, active navigation, brand areas |
-| `--color-brand-hover` | `#123B74` | Primary hover |
-| `--color-brand-active` | `#082348` | Primary active / pressed |
-| `--color-brand-soft` | `#EAF1FB` | Subtle selected backgrounds |
-| `--color-brand-border` | `#B8C9E3` | Brand-tinted borders |
+| `--color-brand` | `#142A54` | Primary actions, active navigation, brand areas |
+| `--color-brand-hover` | `#1B376A` | Primary hover |
+| `--color-brand-active` | `#0D1F40` | Primary active / pressed |
+| `--color-brand-soft` | `#E9EEF7` | Subtle selected backgrounds |
+| `--color-brand-border` | `#B7C4DB` | Brand-tinted borders |
 
 ### 3.2 Operational States
 
 | State | Token | HEX | Meaning |
 | --- | --- | --- | --- |
-| Success | `--color-success` | `#168A4A` | Query OK, no change, stable |
-| Warning | `--color-warning` | `#B77900` | Attention, delayed, review needed |
-| Error | `--color-error` | `#C43B3B` | Failed, not consulted, source error |
+| Success | `--color-success` | `#34B048` | Query OK, no change, stable |
+| Warning | `--color-warning` | `#F89820` | Attention, delayed, review needed |
+| Error | `--color-error` | `#EC3A40` | Failed, not consulted, source error |
 | Info | `--color-info` | `#1F5FBF` | System information, neutral updates |
 | Neutral | `--color-text-muted` | `#5F6B7A` | Archived, inactive, general state |
 
@@ -170,9 +175,9 @@ The user should be able to answer these questions in seconds:
 
 | State | Background | Border | Text |
 | --- | --- | --- | --- |
-| Success | `#E8F7EF` | `#A9DFBF` | `#0F5F33` |
-| Warning | `#FFF5D6` | `#F2D27A` | `#7A4F00` |
-| Error | `#FDECEC` | `#F2B8B8` | `#8F2424` |
+| Success | `#EAF8ED` | `#AEE2B8` | `#1F6D2D` |
+| Warning | `#FFF4DF` | `#FFD08A` | `#8A4F00` |
+| Error | `#FEEEEE` | `#F5B9BC` | `#9F252A` |
 | Info | `#EAF2FF` | `#B7D2FF` | `#174F9F` |
 | Neutral | `#F2F5F9` | `#D8DEE8` | `#5F6B7A` |
 
@@ -735,29 +740,29 @@ Recommended semantic mapping:
 ```js
 colors: {
   brand: {
-    DEFAULT: "#0B2D5C",
-    hover: "#123B74",
-    active: "#082348",
-    soft: "#EAF1FB",
-    border: "#B8C9E3"
+    DEFAULT: "#142A54",
+    hover: "#1B376A",
+    active: "#0D1F40",
+    soft: "#E9EEF7",
+    border: "#B7C4DB"
   },
   success: {
-    DEFAULT: "#168A4A",
-    soft: "#E8F7EF",
-    border: "#A9DFBF",
-    text: "#0F5F33"
+    DEFAULT: "#34B048",
+    soft: "#EAF8ED",
+    border: "#AEE2B8",
+    text: "#1F6D2D"
   },
   warning: {
-    DEFAULT: "#B77900",
-    soft: "#FFF5D6",
-    border: "#F2D27A",
-    text: "#7A4F00"
+    DEFAULT: "#F89820",
+    soft: "#FFF4DF",
+    border: "#FFD08A",
+    text: "#8A4F00"
   },
   error: {
-    DEFAULT: "#C43B3B",
-    soft: "#FDECEC",
-    border: "#F2B8B8",
-    text: "#8F2424"
+    DEFAULT: "#EC3A40",
+    soft: "#FEEEEE",
+    border: "#F5B9BC",
+    text: "#9F252A"
   },
   info: {
     DEFAULT: "#1F5FBF",
