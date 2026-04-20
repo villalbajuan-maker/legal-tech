@@ -1337,6 +1337,38 @@ function App() {
         </button>
       </section>
 
+      <footer className="siteFooter">
+        <div className="footerBrand">
+          <img src={logoUrl} alt="LexControl" />
+          <strong>Sistema operativo de vigilancia judicial.</strong>
+          <p>
+            LexControl convierte consultas, novedades y fallas de fuente en una
+            bandeja operativa para abogados y firmas que manejan volumen real de procesos.
+          </p>
+        </div>
+        <div className="footerBlock">
+          <span>Contacto</span>
+          <a href="mailto:contacto@lexcontrol.co">contacto@lexcontrol.co</a>
+          <a href="https://wa.me/573001234567">WhatsApp</a>
+          <p>Bogotá, Colombia</p>
+        </div>
+        <div className="footerBlock">
+          <span>Producto</span>
+          <a href="#control">Bandeja operativa</a>
+          <a href="#demo">Demo gratuita</a>
+          <a href="#precios">Precios</a>
+          <a href="#preguntas">Preguntas frecuentes</a>
+        </div>
+        <div className="footerBlock">
+          <span>Social</span>
+          <div className="socialLinks" aria-label="Redes sociales">
+            <a href="https://www.linkedin.com/" aria-label="LinkedIn">in</a>
+            <a href="https://www.instagram.com/" aria-label="Instagram">ig</a>
+            <a href="mailto:contacto@lexcontrol.co" aria-label="Correo">@</a>
+          </div>
+        </div>
+      </footer>
+
       {isDiagnosticOpen ? <DiagnosticModal onClose={() => setDiagnosticOpen(false)} /> : null}
       {isActivationOpen ? <ActivationModal onClose={() => setActivationOpen(false)} /> : null}
     </main>

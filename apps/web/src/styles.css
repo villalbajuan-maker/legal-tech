@@ -1405,6 +1405,78 @@ h3 {
   font-size: 20px;
 }
 
+.siteFooter {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.5fr) repeat(3, minmax(150px, 1fr));
+  gap: 28px;
+  border-top: 1px solid var(--border);
+  padding: 38px max(32px, calc((100% - 1180px) / 2)) 34px;
+  background: #ffffff;
+}
+
+.footerBrand,
+.footerBlock {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.footerBrand img {
+  display: block;
+  width: 172px;
+  height: auto;
+}
+
+.footerBrand strong {
+  color: var(--brand);
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+.footerBrand p,
+.footerBlock p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.footerBlock span {
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.footerBlock a {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.footerBlock a:hover {
+  color: var(--brand);
+}
+
+.socialLinks {
+  display: flex;
+  gap: 8px;
+}
+
+.socialLinks a {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--brand-border);
+  border-radius: 8px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
 .modalLayer {
   position: fixed;
   z-index: 50;
@@ -1659,7 +1731,8 @@ h3 {
 .lexInputBar button:focus-visible,
 .tableHeader select:focus-visible,
 .nav a:focus-visible,
-.navCta:focus-visible {
+.navCta:focus-visible,
+.siteFooter a:focus-visible {
   outline: 2px solid var(--info);
   outline-offset: 2px;
 }
@@ -1714,7 +1787,8 @@ h3 {
   .activationQuestions,
   .activationForm,
   .pricingNote,
-  .addOnsGrid {
+  .addOnsGrid,
+  .siteFooter {
     grid-template-columns: 1fr;
   }
 
@@ -1826,5 +1900,9 @@ h3 {
 
   .demoList {
     grid-template-columns: 1fr;
+  }
+
+  .siteFooter {
+    padding: 32px 18px;
   }
 }
