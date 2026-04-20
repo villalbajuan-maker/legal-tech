@@ -1,6 +1,7 @@
 import { StrictMode, useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { createRoot } from "react-dom/client";
+import lexSymbolUrl from "./assets/lex-control-logo-symbol.png";
 import logoUrl from "./assets/lexcontrol-logo.png";
 import "./styles.css";
 
@@ -722,6 +723,7 @@ function App() {
             aria-expanded={isLexOpen}
             aria-controls="lex-demo-panel"
           >
+            <img src={lexSymbolUrl} alt="" aria-hidden="true" />
             <span>Lex</span>
             <i />
           </button>
@@ -730,7 +732,10 @@ function App() {
             <section className="lexMiniModal" id="lex-demo-panel" aria-label="Lex demo conversacional">
               <header className="lexModalHeader">
                 <div>
-                  <span>Lex · voz del sistema</span>
+                  <span className="lexModalBrand">
+                    <img src={lexSymbolUrl} alt="" aria-hidden="true" />
+                    Lex · voz del sistema
+                  </span>
                   <strong>Consulta esta bandeja demo.</strong>
                 </div>
                 <button type="button" onClick={() => setLexOpen(false)} aria-label="Cerrar Lex">

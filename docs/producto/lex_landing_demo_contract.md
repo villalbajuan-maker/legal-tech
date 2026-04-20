@@ -189,6 +189,7 @@ Efecto en UI:
 Lex en landing debe:
 
 - Abrirse desde un icono flotante.
+- Usar el simbolo operativo de LexControl como representacion visual de Lex.
 - Mostrar historial de preguntas y respuestas.
 - Mantener scroll interno.
 - Desplazarse automaticamente al ultimo mensaje.
@@ -257,4 +258,3 @@ La demo de Lex esta correcta si:
 - El historial permite revisar lo preguntado.
 - El modal flota sin romper la bandeja.
 - Cada respuesta refuerza la tesis de LexControl.
-

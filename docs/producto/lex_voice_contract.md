@@ -271,8 +271,18 @@ Lex no puede:
 
 - LexControl = sistema.
 - Lex = voz del sistema.
+- El simbolo operativo de LexControl representa visualmente a Lex cuando aparece como voz del sistema.
 
 Lex nunca reemplaza la marca.
+
+Uso visual:
+
+```text
+El simbolo puede aparecer en botones flotantes, encabezados de panel,
+respuestas operativas y superficies donde Lex observa o comunica estado.
+```
+
+No usar el simbolo como decoracion generica.
 
 ---
 
@@ -351,4 +361,3 @@ Este contrato debe usarse como:
 - Criterio de QA de respuestas.
 - Regla de copy para companion.
 - Regla de UI cuando Lex aparezca en pantalla.
-
