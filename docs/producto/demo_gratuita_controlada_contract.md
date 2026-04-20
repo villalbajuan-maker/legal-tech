@@ -310,6 +310,41 @@ Para mas de 500 procesos:
 Planes Operativo y Enterprise segun volumen.
 ```
 
+### Complementos Disponibles
+
+En landing se deben mostrar como capacidad adicional, no como precios principales.
+
+Copy publico:
+
+```text
+Complementos disponibles.
+Activa mas capacidad segun plan y volumen.
+```
+
+Complementos visibles:
+
+- WhatsApp operativo.
+- Procesos adicionales.
+- Reportes automaticos.
+- Carga masiva asistida.
+- Revision asistida.
+- Portal cliente final.
+
+No mostrar precios detallados de complementos en la landing principal.
+
+Rangos internos:
+
+| Add-on | Rango sugerido |
+| --- | ---: |
+| Proceso adicional | COP $1.000 - $2.500 / proceso / mes |
+| Usuario adicional | COP $29.000 - $49.000 / usuario / mes |
+| WhatsApp premium | COP $49.000 / mes + consumo |
+| Alerta WhatsApp individual | COP $300 - $500 / alerta enviada |
+| Reporte mensual automatico | COP $79.000 / cuenta / mes |
+| Carga masiva asistida | COP $150.000 - $400.000 unico pago |
+| Revision asistida | COP $500 - $1.500 / proceso revisado |
+| Portal para cliente final | COP $49.000 - $99.000 / cliente / mes |
+
 No usar:
 
 - Cotizar como CTA principal.

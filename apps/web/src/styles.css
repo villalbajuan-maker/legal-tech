@@ -1199,6 +1199,54 @@ h3 {
   line-height: 1.5;
 }
 
+.addOnsPanel {
+  display: grid;
+  gap: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  background: #ffffff;
+}
+
+.addOnsPanel h3 {
+  margin: 0;
+  color: var(--brand);
+  font-size: 24px;
+}
+
+.addOnsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.addOnsGrid article {
+  min-height: 116px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--surface-subtle);
+}
+
+.addOnsGrid strong {
+  display: block;
+  color: var(--brand);
+  font-size: 14px;
+}
+
+.addOnsGrid p,
+.addOnsNote {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.addOnsNote {
+  margin: 0;
+  font-weight: 750;
+}
+
 .valueSection h2,
 .beta h2 {
   max-width: 680px;
@@ -1621,7 +1669,8 @@ h3 {
   .demoTerms,
   .activationQuestions,
   .activationForm,
-  .pricingNote {
+  .pricingNote,
+  .addOnsGrid {
     grid-template-columns: 1fr;
   }
 

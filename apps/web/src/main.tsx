@@ -99,6 +99,33 @@ const launchPlans = [
   },
 ];
 
+const addOns = [
+  {
+    name: "WhatsApp operativo",
+    description: "Alertas por responsable y cliente interno.",
+  },
+  {
+    name: "Procesos adicionales",
+    description: "Escala el volumen sin cambiar toda la operación.",
+  },
+  {
+    name: "Reportes automáticos",
+    description: "Resúmenes listos para clientes o equipos.",
+  },
+  {
+    name: "Carga masiva asistida",
+    description: "Activación acompañada para bases grandes.",
+  },
+  {
+    name: "Revisión asistida",
+    description: "Apoyo operativo para fuentes con error o casos que requieren validación.",
+  },
+  {
+    name: "Portal cliente final",
+    description: "Acceso controlado para clientes que necesitan seguimiento.",
+  },
+];
+
 const diagnosticQuestions: DiagnosticQuestion[] = [
   {
     question: "¿Cuántos procesos vigilas actualmente?",
@@ -1217,6 +1244,21 @@ function App() {
           <button className="button primary" type="button" onClick={() => setActivationOpen(true)}>
             Activar demo gratis
           </button>
+        </div>
+        <div className="addOnsPanel">
+          <div>
+            <p className="eyebrow">Complementos disponibles</p>
+            <h3>Activa más capacidad según plan y volumen.</h3>
+          </div>
+          <div className="addOnsGrid">
+            {addOns.map((addOn) => (
+              <article key={addOn.name}>
+                <strong>{addOn.name}</strong>
+                <p>{addOn.description}</p>
+              </article>
+            ))}
+          </div>
+          <p className="addOnsNote">Disponibles según plan, volumen y canal de comunicación.</p>
         </div>
       </section>
 
