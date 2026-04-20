@@ -1374,10 +1374,6 @@ function App() {
       <footer className="siteFooter">
         <div className="footerBrand">
           <img src={logoUrl} alt="LexControl" />
-          <p>
-            LexControl convierte consultas, novedades y fallas de fuente en una
-            bandeja operativa para abogados y firmas que manejan volumen real de procesos.
-          </p>
         </div>
         <div className="footerBlock">
           <span>Contacto</span>
