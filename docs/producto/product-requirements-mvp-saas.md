@@ -242,7 +242,61 @@ La prioridad debe influir en:
 - Reportes.
 - Visibilidad en el companion.
 
-### 7. Alcance MVP
+### 7. Principio De Comunicacion
+
+Toda comunicacion de LexControl debe construirse desde la logica:
+
+```text
+Por que
+↓
+Como
+↓
+Que
+```
+
+Este principio no debe aparecer necesariamente como titulos literales. Debe operar como estructura interna de pensamiento para cualquier mensaje, flujo, subflujo, demo, landing, email, WhatsApp, pitch comercial, companion o onboarding.
+
+Regla:
+
+```text
+Antes de explicar que hace LexControl,
+debemos hacer visible por que importa.
+```
+
+Aplicacion a LexControl:
+
+```text
+Por que:
+No puedes controlar lo que no puedes ver.
+
+Como:
+LexControl convierte consultas, fallas y novedades en una bandeja de control operativo.
+
+Que:
+Sistema operativo de vigilancia judicial con estados, trazabilidad, responsables, alertas y companion.
+```
+
+La comunicacion no debe partir de funcionalidades como:
+
+```text
+Automatizamos consultas judiciales.
+```
+
+Debe partir de la tension real:
+
+```text
+El problema no es revisar procesos.
+Es no saber que no fue revisado.
+```
+
+Esto aplica tambien a la experiencia de producto:
+
+- El diagnostico hace visible el riesgo.
+- La bandeja demuestra el control.
+- El companion traduce preguntas operativas en filtros, resumenes y acciones.
+- Las alertas existen porque la informacion solo sirve si llega al responsable correcto.
+
+### 8. Alcance MVP
 
 El MVP debe permitir operar una beta cerrada con clientes reales.
 
@@ -280,9 +334,9 @@ No incluye en MVP:
 - Companion generativo avanzado.
 - WhatsApp automatico productivo como canal base.
 
-### 8. Modulos MVP
+### 9. Modulos MVP
 
-#### 8.1 Autenticacion Y Cuentas
+#### 9.1 Autenticacion Y Cuentas
 
 Objetivo:
 
@@ -304,7 +358,7 @@ Requisito clave:
 Ninguna cuenta debe ver procesos, clientes, consultas o alertas de otra cuenta.
 ```
 
-#### 8.2 Gestion De Procesos
+#### 9.2 Gestion De Procesos
 
 Objetivo:
 
@@ -332,7 +386,7 @@ Campos minimos:
 - Fecha de creacion.
 - Fecha de ultima consulta.
 
-#### 8.3 Conector CPNU / Rama Judicial
+#### 9.3 Conector CPNU / Rama Judicial
 
 Objetivo:
 
@@ -362,7 +416,7 @@ Requisito:
 Toda consulta debe dejar registro aunque falle.
 ```
 
-#### 8.4 Motor De Consultas
+#### 9.4 Motor De Consultas
 
 Objetivo:
 
@@ -385,7 +439,7 @@ Prioridad inicial:
 - Procesos criticos.
 - Procesos no consultados recientemente.
 
-#### 8.5 Snapshots Y Eventos
+#### 9.5 Snapshots Y Eventos
 
 Objetivo:
 
@@ -408,7 +462,7 @@ Eventos MVP:
 - Fuente no disponible.
 - Consulta fallida.
 
-#### 8.6 Bandeja Operativa
+#### 9.6 Bandeja Operativa
 
 Objetivo:
 
@@ -439,7 +493,7 @@ Columnas minimas:
 - Prioridad.
 - Responsable.
 
-#### 8.7 Alertas Basicas
+#### 9.7 Alertas Basicas
 
 Objetivo:
 
@@ -469,7 +523,7 @@ Consideracion:
 La arquitectura de alertas debe permitir agregar WhatsApp sin redisenar el sistema.
 ```
 
-#### 8.8 Panel Administrativo
+#### 9.8 Panel Administrativo
 
 Objetivo:
 
@@ -486,7 +540,7 @@ Metricas:
 - Estado de fuente CPNU.
 - Uso por cuenta.
 
-#### 8.9 Companion / Copilot Operativo
+#### 9.9 Companion / Copilot Operativo
 
 Objetivo:
 
@@ -522,7 +576,7 @@ El companion no reemplaza el criterio del abogado.
 Debe explicar de donde salen sus respuestas y enlazar a los datos.
 ```
 
-#### 8.10 Comunicaciones Y Responsables
+#### 9.10 Comunicaciones Y Responsables
 
 Objetivo:
 
@@ -541,7 +595,7 @@ Funcionalidades posteriores:
 - Reglas por prioridad.
 - Resumen semanal por abogado.
 
-### 9. Entidades De Datos
+### 10. Entidades De Datos
 
 #### accounts
 
@@ -759,7 +813,7 @@ Campos:
 - is_active.
 - created_at.
 
-### 10. Flujos Principales
+### 11. Flujos Principales
 
 #### Flujo 1: Activacion De Cuenta
 
@@ -907,7 +961,7 @@ Consulta primero procesos criticos y alta prioridad
 Difiere procesos de baja prioridad si hay limite tecnico
 ```
 
-### 11. Reglas De Negocio
+### 12. Reglas De Negocio
 
 #### Reglas De Cuentas
 
@@ -965,7 +1019,7 @@ Difiere procesos de baja prioridad si hay limite tecnico
 - Procesos con actuacion reciente pueden consultarse con mayor frecuencia temporal.
 - La prioridad debe ayudar a proteger la fuente contra consultas innecesarias.
 
-### 12. Riesgos
+### 13. Riesgos
 
 #### Riesgo 1: Cambios En Fuentes Externas
 
@@ -1055,7 +1109,7 @@ Mitigacion:
 - Reglas por prioridad.
 - Agrupacion de eventos.
 
-### 13. Sprints Propuestos
+### 14. Sprints Propuestos
 
 Los sprints del producto deben avanzar en dos lineas paralelas:
 
@@ -1191,7 +1245,7 @@ Entregables:
 - Calendario de contenido inicial.
 - Definicion de canales prioritarios: red directa, LinkedIn, WhatsApp, referidos y alianzas.
 
-### 14. Listo Para Beta
+### 15. Listo Para Beta
 
 El producto esta listo para beta cuando cumple:
 
@@ -1217,7 +1271,7 @@ El producto esta listo para beta cuando cumple:
 - Existe playbook minimo de ventas y diagnostico.
 - Existe lista inicial de prospectos.
 
-### 15. Metricas De Exito Beta
+### 16. Metricas De Exito Beta
 
 #### Producto
 
@@ -1246,7 +1300,7 @@ El producto esta listo para beta cuando cumple:
 - Logs suficientes para soporte.
 - Reintentos controlados.
 
-### 16. Decisiones Congeladas Para MVP
+### 17. Decisiones Congeladas Para MVP
 
 - Fuente inicial: CPNU / Rama Judicial.
 - Canal de alerta inicial: correo.
@@ -1262,8 +1316,10 @@ El producto esta listo para beta cuando cumple:
 - La priorizacion de procesos se usa tanto para experiencia como para proteccion tecnica de fuentes.
 - El landing page y el playbook comercial hacen parte del proyecto MVP.
 - Go-to-market corre en paralelo al build tecnico.
+- Toda comunicacion debe estructurarse implicitamente desde por que, como y que.
+- LexControl comunica primero la perdida de control, luego el mecanismo, y solo despues la funcionalidad.
 
-### 17. Preguntas Pendientes
+### 18. Preguntas Pendientes
 
 - Nombre comercial definitivo.
 - Stack final frontend: Vite o Next.js.
@@ -1282,7 +1338,7 @@ El producto esta listo para beta cuando cumple:
 - Responsable de contenido y outreach.
 - Oferta exacta de beta fundadora.
 
-### 18. Proximo Paso
+### 19. Proximo Paso
 
 Convertir este PRD en backlog tecnico:
 
