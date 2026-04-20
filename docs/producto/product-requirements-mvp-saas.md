@@ -1331,6 +1331,7 @@ El producto esta listo para beta cuando cumple:
 - CTA principal de landing: activar demo gratis.
 - El diagnostico queda como CTA secundario e instrumento de conciencia/calificacion.
 - La activacion se rige por `docs/producto/demo_gratuita_controlada_contract.md`.
+- La landing debe mostrar precios visibles bajo la etiqueta `Precios de lanzamiento`.
 
 ### 18. Preguntas Pendientes
 

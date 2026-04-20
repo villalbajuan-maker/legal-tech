@@ -246,7 +246,79 @@ No debe competir con la demo gratuita como accion principal.
 
 ---
 
-## 11. Copy Base
+## 11. Precios De Lanzamiento
+
+Decision congelada:
+
+```text
+La landing debe mostrar precios visibles bajo la etiqueta
+Precios de lanzamiento.
+```
+
+Razon:
+
+- Reduce la percepcion de que LexControl es inalcanzable.
+- Filtra prospectos con intencion real.
+- Aumenta confianza antes de solicitar demo.
+- Evita que la demo parezca una llamada comercial sin contexto.
+
+La demo gratuita debe aparecer antes de la decision de compra:
+
+```text
+Puedes activar una demo gratuita antes de elegir plan.
+```
+
+Planes sugeridos:
+
+### Inicial
+
+```text
+$149.000 COP / mes
+Hasta 50 procesos
+1 usuario responsable
+Bandeja operativa
+Consulta CPNU / Rama Judicial
+Estados: novedad, sin cambios y fallas
+```
+
+### Operativo
+
+```text
+$299.000 COP / mes
+Hasta 150 procesos
+Hasta 3 responsables
+Bandeja operativa
+Lex sobre la operacion
+Resumen diario
+Prioridades
+```
+
+### Firma
+
+```text
+$499.000 COP / mes
+Hasta 300 procesos
+Hasta 6 responsables
+Alertas por responsable
+Mayor volumen de consulta
+Soporte de activacion
+```
+
+Para mas de 300 procesos:
+
+```text
+Plan segun volumen operativo.
+```
+
+No usar:
+
+- Cotizar como CTA principal.
+- Plan personalizado como mensaje dominante.
+- Precio oculto.
+
+---
+
+## 12. Copy Base
 
 Hero:
 
@@ -279,15 +351,15 @@ Activa una demo gratuita y revisa como se ve tu operacion cuando cada consulta d
 
 ---
 
-## 12. Criterios De Aceptacion
+## 13. Criterios De Aceptacion
 
 La activacion esta bien implementada si:
 
 - El CTA principal es `Activar demo gratis`.
 - El diagnostico queda como CTA secundario.
+- Los precios aparecen como `Precios de lanzamiento`.
 - La demo explica que recibe el usuario.
 - La demo no promete automatizacion absoluta.
 - La solicitud no exige datos sensibles.
 - El flujo permite calificar volumen y riesgo.
 - El cierre dirige a activacion, no solo a diagnostico.
-

@@ -61,6 +61,44 @@ const demoLimits = [
   "La activación se coordina con el equipo de LexControl",
 ];
 
+const launchPlans = [
+  {
+    name: "Inicial",
+    price: "$149.000 COP",
+    scope: "Hasta 50 procesos",
+    features: [
+      "1 usuario responsable",
+      "Bandeja operativa",
+      "Consulta CPNU / Rama Judicial",
+      "Estados: novedad, sin cambios y fallas",
+    ],
+  },
+  {
+    name: "Operativo",
+    price: "$299.000 COP",
+    scope: "Hasta 150 procesos",
+    featured: true,
+    features: [
+      "Hasta 3 responsables",
+      "Bandeja operativa",
+      "Lex sobre la operación",
+      "Resumen diario",
+      "Prioridades",
+    ],
+  },
+  {
+    name: "Firma",
+    price: "$499.000 COP",
+    scope: "Hasta 300 procesos",
+    features: [
+      "Hasta 6 responsables",
+      "Alertas por responsable",
+      "Mayor volumen de consulta",
+      "Soporte de activación",
+    ],
+  },
+];
+
 const diagnosticQuestions: DiagnosticQuestion[] = [
   {
     question: "¿Cuántos procesos vigilas actualmente?",
@@ -1146,6 +1184,40 @@ function App() {
         <button className="button primary" type="button" onClick={() => setActivationOpen(true)}>
           Activar demo gratis
         </button>
+      </section>
+
+      <section className="pricingSection" id="precios">
+        <div className="sectionIntro">
+          <p className="eyebrow">Precios de lanzamiento</p>
+          <h2>Precios claros antes de activar la demo.</h2>
+          <p>
+            Puedes activar una demo gratuita antes de elegir plan. Estos precios aplican
+            para los primeros equipos que validen LexControl con procesos reales.
+          </p>
+        </div>
+        <div className="pricingGrid">
+          {launchPlans.map((plan) => (
+            <article className={`pricingCard ${plan.featured ? "featured" : ""}`} key={plan.name}>
+              {plan.featured ? <span className="planTag">Más útil para operar</span> : null}
+              <h3>{plan.name}</h3>
+              <strong>{plan.price}</strong>
+              <small>/ mes</small>
+              <p>{plan.scope}</p>
+              <div>
+                {plan.features.map((feature) => (
+                  <span key={feature}>{feature}</span>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+        <div className="pricingNote">
+          <span>Más de 300 procesos</span>
+          <p>Se define un plan según volumen operativo.</p>
+          <button className="button primary" type="button" onClick={() => setActivationOpen(true)}>
+            Activar demo gratis
+          </button>
+        </div>
       </section>
 
       <section className="closingSection">
