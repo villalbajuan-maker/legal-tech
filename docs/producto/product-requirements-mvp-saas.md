@@ -106,7 +106,143 @@ Carga tus radicados, consulta automaticamente Rama Judicial,
 detecta la ultima actuacion y recibe una bandeja de novedades.
 ```
 
-### 6. Alcance MVP
+### 6. Principios De Experiencia Y Diferenciacion
+
+El producto no debe limitarse a una interfaz funcional de consultas, tablas y notificaciones. La experiencia debe ser parte central del diferencial competitivo.
+
+Principio:
+
+```text
+La operacion tecnica debe sentirse como control, claridad y criterio.
+No como una lista fria de radicados.
+```
+
+La UI/UX debe considerar desde el inicio:
+
+- Diseno contemporaneo y sobrio.
+- Arquitectura visual clara.
+- Jerarquia de informacion por prioridad.
+- Iconografia propia y consistente.
+- Tipografia legible y profesional.
+- Colores asociados a estado operativo, riesgo y confianza.
+- Paneles que ayuden a decidir, no solo a mirar datos.
+- Flujos simples para usuarios no tecnicos.
+- Interacciones que reduzcan ansiedad operativa.
+- Diferenciacion visual frente a competidores que se ven como listados o herramientas administrativas genericas.
+
+El producto debe transmitir:
+
+- Precision.
+- Confianza.
+- Control.
+- Trazabilidad.
+- Modernidad.
+- Criterio juridico-operativo.
+
+#### Companion / Copilot Operativo
+
+Se considera como diferencial de producto incorporar un companion o copiloto conversacional dentro del dashboard.
+
+No debe ser un chat cosmetico. Debe funcionar como una capa de consulta analitica y operativa sobre los datos del usuario.
+
+Casos de uso esperados:
+
+- Preguntar que procesos tuvieron movimiento hoy.
+- Pedir resumen de novedades de la semana.
+- Consultar que procesos llevan mas tiempo sin movimiento.
+- Preguntar que procesos no pudieron consultarse.
+- Identificar casos con mayor prioridad.
+- Pedir explicacion de errores de fuente.
+- Convertir preguntas en filtros sobre la bandeja.
+- Generar resumen por responsable o cliente interno.
+
+Ejemplos:
+
+```text
+Que procesos se movieron en las ultimas 24 horas?
+Cuales casos llevan mas de 90 dias sin actuacion?
+Que procesos de mi cliente X tuvieron novedad esta semana?
+Que procesos no pudieron consultarse hoy?
+Muestrame los casos de alta prioridad con error de fuente.
+```
+
+Vision:
+
+```text
+El companion debe ayudar al abogado a conversar con su operacion judicial.
+```
+
+Para MVP, el companion puede iniciar como una experiencia limitada:
+
+- Sugerencias predefinidas.
+- Consultas guiadas.
+- Resumen de dashboard.
+- Filtros generados desde preguntas.
+
+La capa generativa avanzada puede quedar para fases posteriores, pero la arquitectura debe contemplarla desde el inicio.
+
+#### Comunicaciones Multicanal
+
+El correo es el canal inicial por simplicidad, pero en Colombia WhatsApp es un canal critico.
+
+La arquitectura debe permitir que las alertas no dependan de un solo canal.
+
+Canales previstos:
+
+- Dashboard.
+- Correo electronico.
+- WhatsApp.
+- Futuro: resumen descargable o reporte programado.
+
+WhatsApp no entra como obligacion del MVP inicial, pero debe quedar previsto como add-on o plan superior.
+
+#### Responsables Y Sillas
+
+El modelo de usuarios no debe ser solo "personas que entran al sistema". Debe soportar operacion por responsables.
+
+Cada proceso puede tener:
+
+- Responsable principal.
+- Usuarios observadores.
+- Cliente interno.
+- Prioridad.
+- Preferencias de alerta.
+
+Esto permite que cada abogado o dependiente reciba recordatorios y novedades de sus propios casos, sin saturar a toda la cuenta.
+
+#### Priorizacion Operativa
+
+La priorizacion es doble:
+
+1. Valor para el usuario: saber que casos requieren mas atencion.
+2. Valor tecnico: evitar consultar todo con la misma frecuencia y reducir riesgo de bloqueo por volumen.
+
+La plataforma debe contemplar niveles de prioridad:
+
+- Alta.
+- Media.
+- Baja.
+- Critica.
+
+Factores de prioridad:
+
+- Ultima actuacion reciente.
+- Proceso con audiencia o termino.
+- Cliente premium.
+- Proceso sin consulta exitosa reciente.
+- Error de fuente.
+- Movimiento frecuente.
+- Marcacion manual por usuario.
+
+La prioridad debe influir en:
+
+- Frecuencia de consulta.
+- Orden de bandeja.
+- Alertas.
+- Reportes.
+- Visibilidad en el companion.
+
+### 7. Alcance MVP
 
 El MVP debe permitir operar una beta cerrada con clientes reales.
 
@@ -126,6 +262,10 @@ Incluye:
 - Procesos no consultados.
 - Alertas basicas por correo.
 - Panel admin minimo.
+- Responsables por proceso.
+- Prioridad de proceso.
+- Arquitectura preparada para WhatsApp.
+- Arquitectura preparada para companion / copilot.
 
 No incluye en MVP:
 
@@ -137,10 +277,12 @@ No incluye en MVP:
 - Pasarela de pagos completa.
 - Portal cliente final avanzado.
 - Automatizacion completa de todas las fuentes.
+- Companion generativo avanzado.
+- WhatsApp automatico productivo como canal base.
 
-### 7. Modulos MVP
+### 8. Modulos MVP
 
-#### 7.1 Autenticacion Y Cuentas
+#### 8.1 Autenticacion Y Cuentas
 
 Objetivo:
 
@@ -153,6 +295,7 @@ Funcionalidades:
 - Usuarios asociados a cuenta.
 - Rol admin de cuenta.
 - Rol usuario operativo.
+- Usuarios responsables de procesos.
 - Separacion de datos por cuenta.
 
 Requisito clave:
@@ -161,7 +304,7 @@ Requisito clave:
 Ninguna cuenta debe ver procesos, clientes, consultas o alertas de otra cuenta.
 ```
 
-#### 7.2 Gestion De Procesos
+#### 8.2 Gestion De Procesos
 
 Objetivo:
 
@@ -189,7 +332,7 @@ Campos minimos:
 - Fecha de creacion.
 - Fecha de ultima consulta.
 
-#### 7.3 Conector CPNU / Rama Judicial
+#### 8.3 Conector CPNU / Rama Judicial
 
 Objetivo:
 
@@ -219,7 +362,7 @@ Requisito:
 Toda consulta debe dejar registro aunque falle.
 ```
 
-#### 7.4 Motor De Consultas
+#### 8.4 Motor De Consultas
 
 Objetivo:
 
@@ -242,7 +385,7 @@ Prioridad inicial:
 - Procesos criticos.
 - Procesos no consultados recientemente.
 
-#### 7.5 Snapshots Y Eventos
+#### 8.5 Snapshots Y Eventos
 
 Objetivo:
 
@@ -265,7 +408,7 @@ Eventos MVP:
 - Fuente no disponible.
 - Consulta fallida.
 
-#### 7.6 Bandeja Operativa
+#### 8.6 Bandeja Operativa
 
 Objetivo:
 
@@ -294,8 +437,9 @@ Columnas minimas:
 - Fecha ultima consulta.
 - Estado de consulta.
 - Prioridad.
+- Responsable.
 
-#### 7.7 Alertas Basicas
+#### 8.7 Alertas Basicas
 
 Objetivo:
 
@@ -304,6 +448,7 @@ Notificar novedades sin saturar al usuario.
 Canal MVP:
 
 - Correo electronico.
+- Dashboard.
 
 Tipos:
 
@@ -318,7 +463,13 @@ No incluir inicialmente:
 - SMS.
 - Push mobile.
 
-#### 7.8 Panel Administrativo
+Consideracion:
+
+```text
+La arquitectura de alertas debe permitir agregar WhatsApp sin redisenar el sistema.
+```
+
+#### 8.8 Panel Administrativo
 
 Objetivo:
 
@@ -335,7 +486,62 @@ Metricas:
 - Estado de fuente CPNU.
 - Uso por cuenta.
 
-### 8. Entidades De Datos
+#### 8.9 Companion / Copilot Operativo
+
+Objetivo:
+
+Incorporar una capa conversacional que conecte al usuario con los datos del dashboard.
+
+Alcance MVP recomendado:
+
+- Boton o panel lateral de companion.
+- Preguntas sugeridas.
+- Resumen del dashboard.
+- Atajos a filtros.
+- Respuestas basadas en datos estructurados.
+
+Preguntas iniciales:
+
+- Procesos con novedad hoy.
+- Procesos no consultados.
+- Procesos con error de fuente.
+- Procesos sin movimiento reciente.
+- Procesos por responsable.
+- Procesos de alta prioridad.
+
+No incluir en MVP:
+
+- Respuestas juridicas sustantivas.
+- Consejos legales.
+- Analisis generativo sin trazabilidad.
+
+Regla:
+
+```text
+El companion no reemplaza el criterio del abogado.
+Debe explicar de donde salen sus respuestas y enlazar a los datos.
+```
+
+#### 8.10 Comunicaciones Y Responsables
+
+Objetivo:
+
+Soportar comunicacion por usuario responsable, no solamente por cuenta.
+
+Funcionalidades MVP:
+
+- Asignar responsable a proceso.
+- Enviar resumen al admin de cuenta.
+- Preparar preferencias de notificacion por usuario.
+
+Funcionalidades posteriores:
+
+- WhatsApp por responsable.
+- Alertas por cliente interno.
+- Reglas por prioridad.
+- Resumen semanal por abogado.
+
+### 9. Entidades De Datos
 
 #### accounts
 
@@ -361,6 +567,9 @@ Campos:
 - email.
 - full_name.
 - role.
+- notification_email.
+- notification_phone.
+- notification_preferences.
 - status.
 - created_at.
 
@@ -386,6 +595,7 @@ Campos:
 - id.
 - account_id.
 - client_id.
+- assigned_user_id.
 - radicado.
 - jurisdiction.
 - specialty.
@@ -393,6 +603,7 @@ Campos:
 - source_primary.
 - priority.
 - watch_status.
+- monitoring_frequency.
 - last_checked_at.
 - last_successful_check_at.
 - created_at.
@@ -493,7 +704,62 @@ Campos:
 - error_rate.
 - notes.
 
-### 9. Flujos Principales
+#### communication_channels
+
+Canales disponibles para alertas.
+
+Campos:
+
+- id.
+- account_id.
+- channel.
+- provider.
+- status.
+- configuration_ref.
+- created_at.
+
+#### companion_threads
+
+Conversaciones del companion.
+
+Campos:
+
+- id.
+- account_id.
+- user_id.
+- title.
+- created_at.
+- updated_at.
+
+#### companion_messages
+
+Mensajes y respuestas del companion.
+
+Campos:
+
+- id.
+- thread_id.
+- role.
+- content.
+- query_intent.
+- referenced_entities.
+- created_at.
+
+#### priority_rules
+
+Reglas configurables o internas de priorizacion.
+
+Campos:
+
+- id.
+- account_id.
+- name.
+- condition_type.
+- priority_result.
+- is_active.
+- created_at.
+
+### 10. Flujos Principales
 
 #### Flujo 1: Activacion De Cuenta
 
@@ -597,7 +863,51 @@ Marcar proceso como no consultado
 Mostrar en bandeja de errores
 ```
 
-### 10. Reglas De Negocio
+#### Flujo 7: Consulta Con Companion
+
+```text
+Usuario abre companion
+↓
+Selecciona pregunta sugerida o escribe pregunta
+↓
+Sistema identifica intencion
+↓
+Sistema consulta datos estructurados de su cuenta
+↓
+Sistema responde con resumen y enlaces a procesos
+↓
+Usuario puede abrir filtro o detalle
+```
+
+#### Flujo 8: Alerta Por Responsable
+
+```text
+Proceso tiene responsable asignado
+↓
+Se detecta evento relevante
+↓
+Sistema verifica preferencias del responsable
+↓
+Envia alerta por canal disponible
+↓
+Registra notificacion
+```
+
+#### Flujo 9: Priorizacion De Consulta
+
+```text
+Scheduler evalua procesos activos
+↓
+Calcula prioridad operativa
+↓
+Ordena lote de consultas
+↓
+Consulta primero procesos criticos y alta prioridad
+↓
+Difiere procesos de baja prioridad si hay limite tecnico
+```
+
+### 11. Reglas De Negocio
 
 #### Reglas De Cuentas
 
@@ -612,6 +922,8 @@ Mostrar en bandeja de errores
 - No debe haber duplicados activos del mismo radicado dentro de una cuenta.
 - Un proceso puede estar activo, pausado o archivado.
 - Solo procesos activos se consultan automaticamente.
+- Un proceso puede tener un responsable principal.
+- La prioridad puede ser manual o calculada.
 
 #### Reglas De Consulta
 
@@ -634,8 +946,26 @@ Mostrar en bandeja de errores
 - Un usuario solo recibe alertas de su cuenta.
 - El resumen diario agrupa eventos para evitar saturacion.
 - Los errores de fuente persistentes deben ser visibles.
+- Las alertas deben poder dirigirse al responsable del proceso.
+- WhatsApp debe tratarse como canal configurable, no como dependencia base.
 
-### 11. Riesgos
+#### Reglas Del Companion
+
+- El companion solo puede consultar datos de la cuenta del usuario.
+- El companion debe responder sobre datos existentes en el sistema.
+- El companion no debe dar asesoria juridica sustantiva en MVP.
+- Toda respuesta analitica debe poder enlazar a procesos, eventos o filtros.
+- Las preguntas sugeridas deben priorizar acciones operativas.
+
+#### Reglas De Priorizacion
+
+- Los procesos criticos se consultan antes que los de baja prioridad.
+- Procesos con error reciente pueden reintentarse con control.
+- Procesos sin movimiento prolongado pueden consultarse con menor frecuencia.
+- Procesos con actuacion reciente pueden consultarse con mayor frecuencia temporal.
+- La prioridad debe ayudar a proteger la fuente contra consultas innecesarias.
+
+### 12. Riesgos
 
 #### Riesgo 1: Cambios En Fuentes Externas
 
@@ -692,7 +1022,40 @@ Mitigacion:
 - Carga inicial guiada.
 - Mostrar resultados en menos de 24 horas.
 
-### 12. Sprints Propuestos
+#### Riesgo 6: UI Percibida Como Herramienta Generica
+
+Si la interfaz se limita a tablas y botones, el producto puede parecer un monitor mas.
+
+Mitigacion:
+
+- Diseñar una arquitectura visual propia.
+- Incorporar companion como capa de decision.
+- Usar estados, prioridad y resumen ejecutivo.
+- Hacer que la bandeja responda preguntas operativas.
+
+#### Riesgo 7: Companion Sin Valor Real
+
+Un chat cosmetico puede distraer sin resolver problemas.
+
+Mitigacion:
+
+- Limitarlo inicialmente a datos estructurados.
+- Usarlo como interfaz de filtros y resumen.
+- Enlazar siempre a procesos y eventos.
+- Evitar asesoria juridica en MVP.
+
+#### Riesgo 8: Saturacion De Comunicaciones
+
+Enviar demasiadas alertas puede generar fatiga.
+
+Mitigacion:
+
+- Resumen diario.
+- Preferencias por responsable.
+- Reglas por prioridad.
+- Agrupacion de eventos.
+
+### 13. Sprints Propuestos
 
 #### Sprint 0: Preparacion
 
@@ -715,6 +1078,7 @@ Entregables:
 - Users.
 - Roles basicos.
 - RLS / separacion por cuenta.
+- Responsables por proceso.
 - Layout base SaaS.
 
 #### Sprint 2: Procesos Y Carga Masiva
@@ -758,6 +1122,8 @@ Entregables:
 - Vista no consultados.
 - Filtros por tiempo.
 - Detalle de proceso.
+- Jerarquia visual por prioridad.
+- Base visual del sistema operativo.
 
 #### Sprint 6: Alertas Y Panel Admin
 
@@ -767,6 +1133,8 @@ Entregables:
 - Registro de notificaciones.
 - Panel admin minimo.
 - source_health.
+- Preferencias de notificacion por usuario.
+- Arquitectura preparada para WhatsApp.
 
 #### Sprint 7: Beta Cerrada
 
@@ -777,8 +1145,9 @@ Entregables:
 - 300 a 800 procesos reales.
 - Monitoreo de errores.
 - Ajustes de usabilidad.
+- Companion inicial con preguntas sugeridas.
 
-### 13. Listo Para Beta
+### 14. Listo Para Beta
 
 El producto esta listo para beta cuando cumple:
 
@@ -795,8 +1164,12 @@ El producto esta listo para beta cuando cumple:
 - Hay panel admin minimo.
 - Hay logs suficientes para diagnosticar errores.
 - Al menos 300 procesos reales pueden consultarse en beta controlada.
+- Existe asignacion de responsable por proceso.
+- Existe jerarquia visual de prioridad.
+- Existe arquitectura de notificaciones extensible a WhatsApp.
+- Existe companion inicial con preguntas sugeridas o resumen estructurado.
 
-### 14. Metricas De Exito Beta
+### 15. Metricas De Exito Beta
 
 #### Producto
 
@@ -804,6 +1177,8 @@ El producto esta listo para beta cuando cumple:
 - 90% de radicados validos cargados correctamente.
 - Menos de 5% de errores no clasificados.
 - Tiempo hasta primer valor menor a 24 horas.
+- Al menos 50% de usuarios beta usan filtros o companion durante la primera semana.
+- Al menos 30% de procesos tienen responsable asignado en cuentas con mas de un usuario.
 
 #### Negocio
 
@@ -819,7 +1194,7 @@ El producto esta listo para beta cuando cumple:
 - Logs suficientes para soporte.
 - Reintentos controlados.
 
-### 15. Decisiones Congeladas Para MVP
+### 16. Decisiones Congeladas Para MVP
 
 - Fuente inicial: CPNU / Rama Judicial.
 - Canal de alerta inicial: correo.
@@ -829,19 +1204,26 @@ El producto esta listo para beta cuando cumple:
 - Posicionamiento: sistema operativo de vigilancia judicial.
 - No se hara bypass de CAPTCHA.
 - SAMAI y otras fuentes quedan para fases posteriores.
+- La experiencia visual es parte del diferencial, no una capa secundaria.
+- El companion se considera componente core progresivo, no adorno.
+- WhatsApp queda previsto como canal posterior/add-on desde la arquitectura.
+- La priorizacion de procesos se usa tanto para experiencia como para proteccion tecnica de fuentes.
 
-### 16. Preguntas Pendientes
+### 17. Preguntas Pendientes
 
 - Nombre comercial definitivo.
 - Stack final frontend: Vite o Next.js.
 - Proveedor de correo transaccional.
+- Proveedor futuro de WhatsApp.
 - Modelo de pago en beta.
 - Limites por plan en version publica.
 - Criterios exactos de prioridad de consulta.
 - Politica de retencion de snapshots.
 - Nivel de detalle del panel admin inicial.
+- Nivel inicial del companion: reglas, query builder o IA generativa limitada.
+- Lineamientos visuales de marca, color, iconografia y tipografia.
 
-### 17. Proximo Paso
+### 18. Proximo Paso
 
 Convertir este PRD en backlog tecnico:
 
