@@ -191,10 +191,14 @@ Lex en landing debe:
 - Abrirse desde un icono flotante.
 - Usar el simbolo operativo de LexControl como representacion visual de Lex.
 - Mostrar historial de preguntas y respuestas.
+- Identificar respuestas de Lex con simbolo + nombre.
+- Mantener al usuario identificado como Usuario.
 - Mantener scroll interno.
 - Desplazarse automaticamente al ultimo mensaje.
 - Mostrar sugerencias tipo pill.
+- Diferenciar visualmente las sugerencias de los mensajes conversacionales.
 - Permitir entrada manual limitada.
+- Mostrar un indicador simulado de escritura antes de entregar la respuesta.
 - Responder con formato operativo.
 
 Lex en landing no debe:

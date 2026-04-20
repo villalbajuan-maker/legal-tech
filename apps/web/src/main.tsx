@@ -407,6 +407,7 @@ function App() {
   const [operationalFilter, setOperationalFilter] = useState<OperationalFilter>("todos");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("todos");
   const [isLexOpen, setLexOpen] = useState(false);
+  const [isLexTyping, setLexTyping] = useState(false);
   const [lexInput, setLexInput] = useState("");
   const [lexMessages, setLexMessages] = useState<LexMessage[]>([
     {
@@ -417,6 +418,7 @@ function App() {
     },
   ]);
   const lexMessagesRef = useRef<HTMLDivElement | null>(null);
+  const lexTypingTimeoutRef = useRef<number | null>(null);
   const rowsByTime = getRowsByTime(processRows, timeFilter);
   const visibleRows = getRowsByOperationalState(rowsByTime, operationalFilter);
   const summary = {
@@ -445,7 +447,15 @@ function App() {
       top: lexMessagesRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [lexMessages, isLexOpen]);
+  }, [lexMessages, isLexOpen, isLexTyping]);
+
+  useEffect(() => {
+    return () => {
+      if (lexTypingTimeoutRef.current) {
+        window.clearTimeout(lexTypingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   function applyLexIntent(intent: LexIntent) {
     if (intent === "movimientos") {
@@ -475,18 +485,27 @@ function App() {
   }
 
   function askLex(intent: LexIntent, question: string) {
+    if (isLexTyping) return;
     setLexOpen(true);
     applyLexIntent(intent);
     const answer = getLexAnswer(intent, getRowsForLexIntent(intent));
-    setLexMessages((current) => [
-      ...current,
-      { id: current.length + 1, role: "user", content: question },
-      { id: current.length + 2, role: "lex", content: answer },
-    ]);
+    setLexMessages((current) => [...current, { id: current.length + 1, role: "user", content: question }]);
+    setLexTyping(true);
+
+    if (lexTypingTimeoutRef.current) {
+      window.clearTimeout(lexTypingTimeoutRef.current);
+    }
+
+    lexTypingTimeoutRef.current = window.setTimeout(() => {
+      setLexMessages((current) => [...current, { id: current.length + 1, role: "lex", content: answer }]);
+      setLexTyping(false);
+      lexTypingTimeoutRef.current = null;
+    }, 720);
   }
 
   function submitLexQuestion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isLexTyping) return;
     const question = lexInput.trim();
     if (!question) return;
 
@@ -495,13 +514,21 @@ function App() {
       setLexMessages((current) => [
         ...current,
         { id: current.length + 1, role: "user", content: question },
-        {
-          id: current.length + 2,
-          role: "lex",
-          content:
-            "Consulta no disponible en la demo. Consultas activas: movimientos, fallas, responsables, prioridad, procesos sin cambios y resumen operativo.",
-        },
       ]);
+      setLexTyping(true);
+      lexTypingTimeoutRef.current = window.setTimeout(() => {
+        setLexMessages((current) => [
+          ...current,
+          {
+            id: current.length + 1,
+            role: "lex",
+            content:
+              "Consulta no disponible en la demo. Consultas activas: movimientos, fallas, responsables, prioridad, procesos sin cambios y resumen operativo.",
+          },
+        ]);
+        setLexTyping(false);
+        lexTypingTimeoutRef.current = null;
+      }, 720);
       setLexInput("");
       return;
     }
@@ -746,15 +773,40 @@ function App() {
               <div className="lexMessages" ref={lexMessagesRef}>
                 {lexMessages.map((message) => (
                   <article className={`lexMessage ${message.role}`} key={message.id}>
-                    <span>{message.role === "lex" ? "Lex" : "Usuario"}</span>
+                    {message.role === "lex" ? (
+                      <span className="lexSpeaker">
+                        <img src={lexSymbolUrl} alt="" aria-hidden="true" />
+                        Lex
+                      </span>
+                    ) : (
+                      <span>Usuario</span>
+                    )}
                     <p>{message.content}</p>
                   </article>
                 ))}
+                {isLexTyping ? (
+                  <article className="lexMessage lex typing" aria-label="Lex está escribiendo">
+                    <span className="lexSpeaker">
+                      <img src={lexSymbolUrl} alt="" aria-hidden="true" />
+                      Lex
+                    </span>
+                    <p>
+                      <i />
+                      <i />
+                      <i />
+                    </p>
+                  </article>
+                ) : null}
               </div>
 
               <div className="lexPromptRail" aria-label="Consultas sugeridas">
                 {lexPrompts.map((prompt) => (
-                  <button type="button" key={prompt.value} onClick={() => askLex(prompt.value, prompt.label)}>
+                  <button
+                    type="button"
+                    key={prompt.value}
+                    onClick={() => askLex(prompt.value, prompt.label)}
+                    disabled={isLexTyping}
+                  >
                     {prompt.label}
                   </button>
                 ))}
@@ -766,8 +818,9 @@ function App() {
                   onChange={(event) => setLexInput(event.target.value)}
                   placeholder="Pregunta por movimientos, fallas o responsables"
                   aria-label="Pregunta para Lex"
+                  disabled={isLexTyping}
                 />
-                <button type="submit">Enviar</button>
+                <button type="submit" disabled={isLexTyping}>Enviar</button>
               </form>
             </section>
           ) : null}

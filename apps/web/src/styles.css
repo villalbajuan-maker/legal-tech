@@ -866,7 +866,7 @@ h3 {
 .lexMessages {
   display: grid;
   align-content: start;
-  gap: 10px;
+  gap: 14px;
   overflow-y: auto;
   padding: 14px;
   background: #ffffff;
@@ -874,8 +874,21 @@ h3 {
 
 .lexMessage {
   display: grid;
-  gap: 5px;
+  gap: 6px;
   max-width: 92%;
+}
+
+.lexSpeaker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.lexSpeaker img {
+  display: block;
+  width: 34px;
+  height: 16px;
+  object-fit: contain;
 }
 
 .lexMessage p {
@@ -895,6 +908,32 @@ h3 {
   color: var(--brand);
 }
 
+.lexMessage.typing p {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  min-width: 58px;
+  min-height: 36px;
+}
+
+.lexMessage.typing p i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--brand);
+  opacity: 0.35;
+  animation: lex-typing 1s ease-in-out infinite;
+}
+
+.lexMessage.typing p i:nth-child(2) {
+  animation-delay: 0.14s;
+}
+
+.lexMessage.typing p i:nth-child(3) {
+  animation-delay: 0.28s;
+}
+
 .lexMessage.user {
   justify-self: end;
 }
@@ -911,29 +950,37 @@ h3 {
 
 .lexPromptRail {
   display: flex;
-  gap: 7px;
+  gap: 8px;
   overflow-x: auto;
   border-top: 1px solid var(--border);
-  padding: 10px 12px;
-  background: #ffffff;
+  padding: 11px 12px;
+  background: var(--surface-subtle);
 }
 
 .lexPromptRail button {
   flex: 0 0 auto;
-  min-height: 30px;
-  border: 1px solid var(--border);
+  min-height: 32px;
+  border: 1px solid var(--brand-border);
   border-radius: 8px;
-  padding: 6px 10px;
+  padding: 7px 10px;
   background: #ffffff;
-  color: var(--muted);
+  color: var(--brand);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 850;
+  box-shadow: 0 2px 8px rgb(15 23 42 / 0.05);
 }
 
 .lexPromptRail button:hover {
-  border-color: var(--brand-border);
-  background: var(--brand-soft);
+  border-color: var(--brand);
+  background: #ffffff;
   color: var(--brand);
+}
+
+.lexPromptRail button:disabled,
+.lexInputBar input:disabled,
+.lexInputBar button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
 }
 
 .lexInputBar {
@@ -977,6 +1024,19 @@ h3 {
   50% {
     transform: translateY(-4px);
     box-shadow: 0 18px 38px rgb(15 23 42 / 0.24);
+  }
+}
+
+@keyframes lex-typing {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+
+  50% {
+    transform: translateY(-3px);
+    opacity: 1;
   }
 }
 
