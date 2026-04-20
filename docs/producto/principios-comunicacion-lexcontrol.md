@@ -204,6 +204,8 @@ Estructura:
 - Como: objeciones sobre fuentes, fallas y activacion.
 - Que: objeciones sobre demo, alcance y pago.
 
+Esta estructura es interna. No debe aparecer como titulos visibles ni como columnas llamadas Por que, Como y Que.
+
 Regla:
 
 ```text

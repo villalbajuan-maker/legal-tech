@@ -1112,53 +1112,36 @@ h3 {
 
 .faqGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.faqGroup {
-  display: grid;
-  align-content: start;
+  grid-template-columns: 1fr;
   gap: 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 18px;
-  background: #ffffff;
+  max-width: 860px;
 }
 
-.faqGroup > span {
-  width: fit-content;
-  border: 1px solid var(--brand-border);
-  border-radius: 8px;
-  padding: 5px 8px;
-  background: var(--brand-soft);
-  color: var(--brand);
-  font-size: 11px;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.faqGroup details {
+.faqItem {
   border-top: 1px solid var(--border);
-  padding-top: 10px;
+  padding: 16px 0;
 }
 
-.faqGroup summary {
+.faqItem:last-child {
+  border-bottom: 1px solid var(--border);
+}
+
+.faqItem summary {
   cursor: pointer;
   color: var(--text);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 850;
   line-height: 1.35;
 }
 
-.faqGroup summary::marker {
+.faqItem summary::marker {
   color: var(--brand);
 }
 
-.faqGroup p {
+.faqItem p {
   margin: 10px 0 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.55;
 }
 
