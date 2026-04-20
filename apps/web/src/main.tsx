@@ -202,6 +202,84 @@ const processRows: ProcessRow[] = [
     source: "CPNU",
     state: "success",
   },
+  {
+    radicado: "11001400305020230030000",
+    status: "Nuevo movimiento",
+    statusType: "novedad",
+    action: "Auto ordena seguir adelante",
+    annotation: "Se registra impulso procesal. Requiere confirmar si modifica término interno.",
+    date: "Hoy, 10:18",
+    minutesAgo: 42,
+    owner: "Ana R.",
+    priority: "Crítica",
+    source: "CPNU",
+    state: "info",
+  },
+  {
+    radicado: "11001418905220240042700",
+    status: "Sin cambios",
+    statusType: "sin-cambios",
+    action: "Auto inadmite demanda",
+    annotation: "Sin variación frente a la última consulta exitosa registrada.",
+    date: "Hace 3 días",
+    minutesAgo: 4380,
+    owner: "Mónica S.",
+    priority: "Media",
+    source: "CPNU",
+    state: "success",
+  },
+  {
+    radicado: "11001600000220240180100",
+    status: "No consultado",
+    statusType: "no-consultado",
+    action: "Consulta diferida",
+    annotation: "Proceso priorizado para reintento por acumulación de consultas en la fuente.",
+    date: "Hoy, 06:12",
+    minutesAgo: 246,
+    owner: "Diego L.",
+    priority: "Alta",
+    source: "CPNU",
+    state: "error",
+  },
+  {
+    radicado: "11001400302520220039800",
+    status: "Requiere revisión",
+    statusType: "revision",
+    action: "Traslado de excepciones",
+    annotation: "Actuación con posible impacto operativo. Requiere lectura por responsable.",
+    date: "Hace 6 días",
+    minutesAgo: 8760,
+    owner: "Mónica S.",
+    priority: "Alta",
+    source: "CPNU",
+    state: "warning",
+  },
+  {
+    radicado: "11001333501120240010300",
+    status: "Error de fuente",
+    statusType: "error-fuente",
+    action: "Respuesta incompleta",
+    annotation: "La fuente no devolvió detalle de actuaciones. Se conserva el último snapshot confiable.",
+    date: "Hace 9 días",
+    minutesAgo: 12960,
+    owner: "Laura P.",
+    priority: "Media",
+    source: "CPNU",
+    state: "error",
+  },
+  {
+    radicado: "11001400304820240111000",
+    status: "Sin cambios",
+    statusType: "sin-cambios",
+    action: "Fijación en lista",
+    annotation: "No se detectaron diferencias entre la consulta actual y el snapshot anterior.",
+    date: "Hace 24 días",
+    minutesAgo: 34560,
+    owner: "Diego L.",
+    priority: "Baja",
+    source: "CPNU",
+    state: "success",
+  },
 ];
 
 const solutionBlocks = [
@@ -719,26 +797,28 @@ function App() {
               <span>Fecha</span>
               <span>Responsable</span>
             </div>
-            {visibleRows.map((row) => (
-              <article className={`processRow ${row.state}`} key={row.radicado}>
-                <span className="radicado">{row.radicado}</span>
-                <span className={`badge ${row.state}`}>{row.status}</span>
-                <span>
-                  <strong>{row.action}</strong>
-                  <small>{row.annotation}</small>
-                </span>
-                <time>{row.date}</time>
-                <span>
-                  {row.owner}
-                  <small>{row.priority}</small>
-                </span>
-              </article>
-            ))}
-            {visibleRows.length === 0 ? (
-              <div className="emptyState">
-                No hay procesos en esta vista. Cambia el filtro para ver otra señal operativa.
-              </div>
-            ) : null}
+            <div className="tableBody">
+              {visibleRows.map((row) => (
+                <article className={`processRow ${row.state}`} key={row.radicado}>
+                  <span className="radicado">{row.radicado}</span>
+                  <span className={`badge ${row.state}`}>{row.status}</span>
+                  <span>
+                    <strong>{row.action}</strong>
+                    <small>{row.annotation}</small>
+                  </span>
+                  <time>{row.date}</time>
+                  <span>
+                    {row.owner}
+                    <small>{row.priority}</small>
+                  </span>
+                </article>
+              ))}
+              {visibleRows.length === 0 ? (
+                <div className="emptyState">
+                  No hay procesos en esta vista. Cambia el filtro para ver otra señal operativa.
+                </div>
+              ) : null}
+            </div>
           </section>
         </div>
 

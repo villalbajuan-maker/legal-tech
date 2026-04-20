@@ -633,6 +633,11 @@ h3 {
   overflow: hidden;
 }
 
+.tableBody {
+  max-height: 440px;
+  overflow-y: auto;
+}
+
 .tableHeader,
 .processRow {
   display: grid;
