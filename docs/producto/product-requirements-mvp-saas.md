@@ -1057,6 +1057,15 @@ Mitigacion:
 
 ### 13. Sprints Propuestos
 
+Los sprints del producto deben avanzar en dos lineas paralelas:
+
+```text
+1. Build del producto SaaS.
+2. Go-to-market, landing, narrativa comercial y activacion.
+```
+
+El landing page, el playbook de ventas y los perfiles comerciales no deben esperar a que el producto este completo. Deben construirse en paralelo para validar mensaje, captar interesados y preparar la beta.
+
 #### Sprint 0: Preparacion
 
 Objetivo:
@@ -1069,6 +1078,9 @@ Entregables:
 - Modelo de datos inicial.
 - Backlog MVP.
 - Ambientes definidos.
+- Mensaje comercial base.
+- Estructura inicial del landing.
+- Lista inicial de prospectos beta.
 
 #### Sprint 1: Auth, Cuentas Y Base De Datos
 
@@ -1080,6 +1092,8 @@ Entregables:
 - RLS / separacion por cuenta.
 - Responsables por proceso.
 - Layout base SaaS.
+- Wireframe del landing.
+- Definicion de propuesta de valor publica.
 
 #### Sprint 2: Procesos Y Carga Masiva
 
@@ -1090,6 +1104,8 @@ Entregables:
 - Validacion de radicados.
 - Carga masiva.
 - Lista de procesos.
+- Copy inicial del landing.
+- Seccion de problema, solucion y beta fundadora.
 
 #### Sprint 3: Conector CPNU Productivo
 
@@ -1101,6 +1117,9 @@ Entregables:
 - Actuaciones.
 - Normalizacion de respuesta.
 - Manejo de errores.
+- Landing page version 1.
+- Formulario de interes o lista de espera.
+- Mensaje para outreach por WhatsApp / LinkedIn.
 
 #### Sprint 4: Jobs, Snapshots Y Eventos
 
@@ -1112,6 +1131,9 @@ Entregables:
 - Comparacion de snapshots.
 - Nueva actuacion.
 - Estado de consulta.
+- Playbook de ventas beta.
+- Guion de demo.
+- Plantilla de diagnostico comercial.
 
 #### Sprint 5: Bandeja Operativa
 
@@ -1124,6 +1146,9 @@ Entregables:
 - Detalle de proceso.
 - Jerarquia visual por prioridad.
 - Base visual del sistema operativo.
+- Screenshots o mockups comerciales del producto.
+- Contenido inicial para LinkedIn.
+- Pagina de pricing preliminar o seccion de planes.
 
 #### Sprint 6: Alertas Y Panel Admin
 
@@ -1135,6 +1160,9 @@ Entregables:
 - source_health.
 - Preferencias de notificacion por usuario.
 - Arquitectura preparada para WhatsApp.
+- Perfiles sociales basicos.
+- Secuencia de contacto para beta.
+- Documento de objeciones y respuestas.
 
 #### Sprint 7: Beta Cerrada
 
@@ -1146,6 +1174,22 @@ Entregables:
 - Monitoreo de errores.
 - Ajustes de usabilidad.
 - Companion inicial con preguntas sugeridas.
+- Landing conectado a beta/lista de espera.
+- Primeras llamadas comerciales.
+- Registro de conversiones y aprendizaje de ventas.
+
+#### Sprint 8: Preparacion De Lanzamiento Publico
+
+Entregables:
+
+- Landing refinado con aprendizajes de beta.
+- Casos de uso documentados.
+- Testimonios o resultados anonimizados si aplica.
+- Playbook comercial version 1.
+- Kit comercial para demos.
+- Perfiles sociales activos.
+- Calendario de contenido inicial.
+- Definicion de canales prioritarios: red directa, LinkedIn, WhatsApp, referidos y alianzas.
 
 ### 14. Listo Para Beta
 
@@ -1168,6 +1212,10 @@ El producto esta listo para beta cuando cumple:
 - Existe jerarquia visual de prioridad.
 - Existe arquitectura de notificaciones extensible a WhatsApp.
 - Existe companion inicial con preguntas sugeridas o resumen estructurado.
+- Existe landing page basico para captar interesados.
+- Existe mensaje comercial beta.
+- Existe playbook minimo de ventas y diagnostico.
+- Existe lista inicial de prospectos.
 
 ### 15. Metricas De Exito Beta
 
@@ -1186,6 +1234,10 @@ El producto esta listo para beta cuando cumple:
 - 300 a 800 procesos vigilados.
 - Al menos 3 cuentas agregan nuevos procesos despues de la carga inicial.
 - Al menos 3 cuentas aceptan pagar plan mensual posterior.
+- Landing publicado o listo para compartir.
+- Al menos 30 prospectos identificados.
+- Al menos 10 conversaciones comerciales iniciadas.
+- Al menos 5 demos o pruebas con radicados reales.
 
 #### Operacion
 
@@ -1208,6 +1260,8 @@ El producto esta listo para beta cuando cumple:
 - El companion se considera componente core progresivo, no adorno.
 - WhatsApp queda previsto como canal posterior/add-on desde la arquitectura.
 - La priorizacion de procesos se usa tanto para experiencia como para proteccion tecnica de fuentes.
+- El landing page y el playbook comercial hacen parte del proyecto MVP.
+- Go-to-market corre en paralelo al build tecnico.
 
 ### 17. Preguntas Pendientes
 
@@ -1222,6 +1276,11 @@ El producto esta listo para beta cuando cumple:
 - Nivel de detalle del panel admin inicial.
 - Nivel inicial del companion: reglas, query builder o IA generativa limitada.
 - Lineamientos visuales de marca, color, iconografia y tipografia.
+- Dominio publico del producto.
+- Herramienta para landing y formularios.
+- Canales sociales prioritarios.
+- Responsable de contenido y outreach.
+- Oferta exacta de beta fundadora.
 
 ### 18. Proximo Paso
 
@@ -1233,4 +1292,6 @@ Convertir este PRD en backlog tecnico:
 3. Definir estructura de apps/web para SaaS.
 4. Convertir probe CPNU en conector productivo.
 5. Implementar flujo de carga y primera consulta.
+6. Crear landing page inicial de LexControl.
+7. Crear playbook de ventas beta.
 ```

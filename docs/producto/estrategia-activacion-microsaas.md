@@ -48,6 +48,97 @@ El sistema separa procesos con novedad, sin novedad y no consultados.
 El abogado entiende cuanto tiempo le ahorro el sistema.
 ```
 
+## Activos Comerciales Paralelos Al Build
+
+La activacion comercial debe construirse en paralelo al desarrollo del producto.
+
+No se debe esperar a tener el SaaS completo para empezar a validar mensaje, captar interesados y abrir conversaciones.
+
+Activos minimos:
+
+- Landing page de LexControl.
+- Formulario de interes o lista de espera.
+- Mensaje comercial de beta fundadora.
+- Playbook de ventas.
+- Guion de diagnostico.
+- Guion de demo.
+- Documento de objeciones y respuestas.
+- Lista de prospectos.
+- Perfiles sociales basicos.
+- Calendario inicial de contenido.
+
+Objetivo:
+
+```text
+Que cuando el producto este listo para beta,
+ya exista una superficie comercial activa
+y una lista de abogados o firmas interesados.
+```
+
+### Landing Page
+
+El landing page debe vender el problema operativo, no solo la funcionalidad.
+
+Mensaje central:
+
+```text
+Vigila tus procesos judiciales sin revisar manualmente la Rama Judicial todos los dias.
+```
+
+Secciones recomendadas:
+
+- Problema.
+- Solucion.
+- Que detecta LexControl.
+- Como funciona.
+- Para quien es.
+- Beta fundadora.
+- Preguntas frecuentes.
+- Formulario de interes.
+
+El landing debe comunicar:
+
+- Que cambio.
+- Que no cambio.
+- Que no se pudo consultar.
+- Que requiere revision.
+
+No debe verse como una pagina generica de software legal.
+
+### Playbook De Ventas
+
+El playbook debe permitir conversar con abogados y firmas de forma consistente.
+
+Debe incluir:
+
+- Perfil de cliente ideal.
+- Preguntas de diagnostico.
+- Criterios de calificacion.
+- Mensaje de apertura.
+- Guion de demo.
+- Objeciones frecuentes.
+- Oferta beta.
+- Cierre sugerido.
+- Seguimiento posterior.
+
+### Perfiles Sociales Y Contenido
+
+Los perfiles sociales deben abrirse con foco en dolor operativo.
+
+Canales iniciales:
+
+- LinkedIn.
+- WhatsApp directo.
+- Red de referidos.
+
+Contenido inicial:
+
+- Riesgo de revisar procesos manualmente.
+- Como priorizar procesos judiciales.
+- Que significa una fuente no consultada.
+- Diferencia entre scraper y sistema operativo de vigilancia.
+- Como medir ahorro operativo en vigilancia judicial.
+
 ## Cliente inicial ideal
 
 No empezar con abogados sin volumen. El primer cliente ideal debe tener dolor real y capacidad de pago.
@@ -481,6 +572,14 @@ Producto minimo:
 - Bandeja de novedades.
 - Resumen por correo.
 
+Activos comerciales:
+
+- Landing page inicial.
+- Formulario de interes.
+- Playbook beta.
+- Lista de 30 prospectos.
+- Mensaje de contacto por WhatsApp y LinkedIn.
+
 ### Fase 2: Programa fundador
 
 Duracion: 60 a 90 dias.
@@ -499,6 +598,14 @@ Agregar:
 - Priorizacion.
 - Primer add-on de WhatsApp.
 
+Activos comerciales:
+
+- Pagina de planes preliminares.
+- Guion de demo.
+- Documento de objeciones.
+- Primeros contenidos de LinkedIn.
+- Programa de referidos.
+
 ### Fase 3: Lanzamiento publico
 
 Objetivo:
@@ -515,6 +622,14 @@ Agregar:
 - Documentacion de fuentes.
 - Programa de referidos.
 - Plan Enterprise.
+
+Activos comerciales:
+
+- Perfiles sociales activos.
+- Calendario editorial.
+- Casos de uso.
+- Testimonios o resultados anonimizados.
+- Kit comercial para demos y alianzas.
 
 ## Decision recomendada
 
