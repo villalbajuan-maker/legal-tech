@@ -63,23 +63,23 @@ const demoLimits = [
 
 const launchPlans = [
   {
-    name: "Inicial",
+    name: "Starter",
     price: "$149.000 COP",
-    scope: "Hasta 50 procesos",
+    scope: "Hasta 100 procesos",
     features: [
-      "1 usuario responsable",
+      "1 usuario",
       "Bandeja operativa",
       "Consulta CPNU / Rama Judicial",
       "Estados: novedad, sin cambios y fallas",
     ],
   },
   {
-    name: "Operativo",
+    name: "Profesional",
     price: "$299.000 COP",
-    scope: "Hasta 150 procesos",
+    scope: "Hasta 250 procesos",
     featured: true,
     features: [
-      "Hasta 3 responsables",
+      "Hasta 2 usuarios",
       "Bandeja operativa",
       "Lex sobre la operación",
       "Resumen diario",
@@ -88,10 +88,10 @@ const launchPlans = [
   },
   {
     name: "Firma",
-    price: "$499.000 COP",
-    scope: "Hasta 300 procesos",
+    price: "$599.000 COP",
+    scope: "Hasta 500 procesos",
     features: [
-      "Hasta 6 responsables",
+      "Hasta 5 usuarios",
       "Alertas por responsable",
       "Mayor volumen de consulta",
       "Soporte de activación",
@@ -1212,8 +1212,8 @@ function App() {
           ))}
         </div>
         <div className="pricingNote">
-          <span>Más de 300 procesos</span>
-          <p>Se define un plan según volumen operativo.</p>
+          <span>Más de 500 procesos</span>
+          <p>Planes Operativo y Enterprise según volumen.</p>
           <button className="button primary" type="button" onClick={() => setActivationOpen(true)}>
             Activar demo gratis
           </button>

@@ -270,23 +270,23 @@ Puedes activar una demo gratuita antes de elegir plan.
 
 Planes sugeridos:
 
-### Inicial
+### Starter
 
 ```text
 $149.000 COP / mes
-Hasta 50 procesos
-1 usuario responsable
+Hasta 100 procesos
+1 usuario
 Bandeja operativa
 Consulta CPNU / Rama Judicial
 Estados: novedad, sin cambios y fallas
 ```
 
-### Operativo
+### Profesional
 
 ```text
 $299.000 COP / mes
-Hasta 150 procesos
-Hasta 3 responsables
+Hasta 250 procesos
+Hasta 2 usuarios
 Bandeja operativa
 Lex sobre la operacion
 Resumen diario
@@ -296,18 +296,18 @@ Prioridades
 ### Firma
 
 ```text
-$499.000 COP / mes
-Hasta 300 procesos
-Hasta 6 responsables
+$599.000 COP / mes
+Hasta 500 procesos
+Hasta 5 usuarios
 Alertas por responsable
 Mayor volumen de consulta
 Soporte de activacion
 ```
 
-Para mas de 300 procesos:
+Para mas de 500 procesos:
 
 ```text
-Plan segun volumen operativo.
+Planes Operativo y Enterprise segun volumen.
 ```
 
 No usar:
