@@ -96,7 +96,7 @@ ${body.question || ""}
           ],
         },
       ],
-      max_output_tokens: 220,
+      max_output_tokens: 320,
       text: {
         format: {
           type: "text",

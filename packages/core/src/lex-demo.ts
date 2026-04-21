@@ -250,6 +250,19 @@ export const lexDemoKnowledgeBase = {
     whoAreYou:
       "Soy Lex, la voz del sistema. Mi función es mostrar qué cambió, qué no cambió y qué falló.",
   },
+  clarificationPolicy: {
+    whenToClarify:
+      "Solo cuando la pregunta sea genuinamente ambigua o cuando pueda referirse a varias señales operativas distintas.",
+    howToClarify:
+      "Pide precisión en una frase breve y ofrece una lectura posible de lo que entendiste.",
+    example:
+      "No estoy seguro de si te refieres a movimientos o a fallas de consulta. ¿Quieres que te muestre los procesos con novedad o los que no se pudieron consultar?",
+  },
+  responseExpectations: [
+    "Si el usuario pide una lista, enumera los elementos exactos visibles en la demo.",
+    "Si el usuario hace una pregunta de seguimiento, usa el historial reciente para mantener el hilo.",
+    "Si el usuario corrige una respuesta, revisa la categoria operativa anterior antes de responder.",
+  ],
 } as const;
 
 export function buildLexSystemPrompt() {
@@ -287,6 +300,9 @@ Comportamiento:
 - Si el usuario pregunta por movimientos, fallas, responsables, prioridad o sin cambios, responde con lo visible en la demo.
 - No confundas procesos con novedad con procesos no consultados o con error de fuente.
 - Si el usuario pide el detalle de responsables, lista cada responsable junto con sus procesos visibles.
+- Si el usuario pide una lista o un detalle, entrega los elementos exactos y no solo un resumen.
+- Si la pregunta es genuinamente ambigua, pide aclaracion en una frase corta. No improvises.
+- Si el usuario corrige o cuestiona una respuesta anterior, revisa el hilo de la conversacion antes de responder.
 - Si el usuario pregunta que mas haces, explica tus capacidades dentro de LexControl.
 - Si el usuario pregunta como funciona el sistema, explica el modelo operativo: consulta, clasificacion, prioridad, responsables y trazabilidad.
 - Si el usuario saluda, agradece, confirma o se despide, responde de forma breve y natural sin convertir eso en un resumen de bandeja.

@@ -424,97 +424,6 @@ function getLexCourtesyAnswer(intent: LexCourtesyIntent) {
   return "Cierro aquí. Si vuelves, retomamos desde la operación visible en esta demo.";
 }
 
-function inferLexFallbackIntent(text: string): LexIntent | null {
-  const value = text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "");
-
-  if (
-    (value.includes("cuales son") || value.includes("cual es el otro") || value.includes("esos dos") || value.includes("los que"))
-    && (value.includes("mov") || value.includes("cambio") || value.includes("novedad") || value.includes("otro"))
-  ) {
-    return "movimientos-detalle";
-  }
-
-  if (
-    (value.includes("cuales") || value.includes("cuales son") || value.includes("que procesos") || value.includes("detalle")) &&
-    (value.includes("consult") || value.includes("fall") || value.includes("fuente"))
-  ) {
-    return "fallas-detalle";
-  }
-
-  if (value.includes("mov") || value.includes("cambio") || value.includes("novedad") || value.includes("actuacion")) {
-    return "movimientos";
-  }
-
-  if (value.includes("fall") || value.includes("error") || value.includes("fuente") || value.includes("consult")) {
-    return "fallas";
-  }
-
-  if (value.includes("responsable") || value.includes("asignad")) {
-    return value.includes("lista") || value.includes("cada") || value.includes("detalle")
-      ? "responsables-detalle"
-      : "responsables";
-  }
-
-  if (value.includes("sin cambio") || value.includes("quiet")) {
-    return "sin-cambios";
-  }
-
-  if (value.includes("prioridad") || value.includes("critic") || value.includes("alta")) {
-    return "prioridad";
-  }
-
-  if (value.includes("resumen") || value.includes("estado")) {
-    return "resumen";
-  }
-
-  return null;
-}
-
-function resolveLexFollowUpIntent(question: string, history: LexMessage[]): LexIntent | null {
-  const value = question
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "");
-
-  const isFollowUp =
-    value.includes("ese") ||
-    value.includes("esos") ||
-    value.includes("esas") ||
-    value.includes("esos son") ||
-    value.includes("el otro") ||
-    value.includes("los que") ||
-    value.includes("me estas hablando") ||
-    value.includes("cual es el otro") ||
-    value.includes("no cuatro") ||
-    value.includes("no dos");
-
-  if (!isFollowUp) return null;
-
-  const recentText = history
-    .slice(-4)
-    .map((message) => message.content.toLowerCase())
-    .join(" ");
-
-  if (recentText.includes("procesos tuvieron cambios") || recentText.includes("cambios en las ultimas 24 horas")) {
-    return value.includes("otro") || value.includes("cuales") || value.includes("esos")
-      ? "movimientos-detalle"
-      : "movimientos";
-  }
-
-  if (recentText.includes("no pudieron consultarse") || recentText.includes("falla de fuente")) {
-    return "fallas-detalle";
-  }
-
-  if (recentText.includes("concentra") && recentText.includes("procesos en esta bandeja")) {
-    return "responsables";
-  }
-
-  return null;
-}
-
 function getLexFallbackAnswer(question: string, intent: LexIntent | null, rows: ProcessRow[], history: LexMessage[]) {
   if (intent) {
     return getLexAnswer(
@@ -528,23 +437,12 @@ function getLexFallbackAnswer(question: string, intent: LexIntent | null, rows: 
     return getLexCourtesyAnswer(courtesyIntent);
   }
 
-  const followUpIntent = resolveLexFollowUpIntent(question, history);
-  if (followUpIntent) {
-    return getLexAnswer(
-      followUpIntent,
-      followUpIntent === "movimientos" || followUpIntent === "movimientos-detalle" ? getRowsByTime(rows, "24h") : rows,
-    );
+  const lastLexMessage = [...history].reverse().find((message) => message.role === "lex")?.content;
+  if (lastLexMessage) {
+    return `No pude cerrar bien esa respuesta en este intento. Si quieres, reformula la última pregunta o aclárame a cuál parte de lo anterior te refieres y continúo desde ahí.`;
   }
 
-  const fallbackIntent = inferLexFallbackIntent(question);
-  if (fallbackIntent) {
-    return getLexAnswer(
-      fallbackIntent,
-      fallbackIntent === "movimientos" || fallbackIntent === "movimientos-detalle" ? getRowsByTime(rows, "24h") : rows,
-    );
-  }
-
-  return "No pude completar esa respuesta en este intento. Puedes repetir la pregunta, dictarla de nuevo o usar una de las consultas sugeridas mientras retomamos el contexto de la demo.";
+  return "No pude completar esa respuesta en este intento. Puedes reformular la pregunta o usar una de las consultas sugeridas mientras retomamos el contexto de la demo.";
 }
 
 function ActivationModal({
