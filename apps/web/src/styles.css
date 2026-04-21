@@ -3113,7 +3113,7 @@ h3 {
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 640px) {
   .desktopTrayPanel,
   .stateGrid {
     display: none;
