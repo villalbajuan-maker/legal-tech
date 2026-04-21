@@ -1285,8 +1285,17 @@ h3 {
 }
 
 .lexOrb,
-.lexMiniModal {
+.lexMiniModal,
+.lexBackdrop {
   pointer-events: auto;
+}
+
+.lexBackdrop {
+  position: fixed;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.08);
+  cursor: default;
 }
 
 .lexOrb {
@@ -2551,6 +2560,10 @@ h3 {
     position: fixed;
     right: 12px;
     bottom: 12px;
+  }
+
+  .lexBackdrop {
+    background: rgb(15 23 42 / 0.14);
   }
 
   .lexOrb {
