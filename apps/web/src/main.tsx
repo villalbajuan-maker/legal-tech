@@ -58,6 +58,7 @@ type LexIntent =
   | "movimientos"
   | "movimientos-detalle"
   | "fallas"
+  | "fallas-detalle"
   | "responsables"
   | "responsables-detalle"
   | "sin-cambios"
@@ -345,6 +346,12 @@ function getLexAnswer(intent: LexIntent, rows: ProcessRow[]) {
       : "No hay procesos con falla de fuente en esta muestra.";
   }
 
+  if (intent === "fallas-detalle") {
+    return failed.length
+      ? failed.map((row) => `${row.radicado}: ${row.action}`).join(". ")
+      : "No hay procesos con falla de fuente en esta muestra.";
+  }
+
   if (intent === "responsables") {
     const counts = rows.reduce<Record<string, number>>((acc, row) => {
       acc[row.owner] = (acc[row.owner] ?? 0) + 1;
@@ -430,6 +437,13 @@ function inferLexFallbackIntent(text: string): LexIntent | null {
     return "movimientos-detalle";
   }
 
+  if (
+    (value.includes("cuales") || value.includes("cuales son") || value.includes("que procesos") || value.includes("detalle")) &&
+    (value.includes("consult") || value.includes("fall") || value.includes("fuente"))
+  ) {
+    return "fallas-detalle";
+  }
+
   if (value.includes("mov") || value.includes("cambio") || value.includes("novedad") || value.includes("actuacion")) {
     return "movimientos";
   }
@@ -469,10 +483,13 @@ function resolveLexFollowUpIntent(question: string, history: LexMessage[]): LexI
     value.includes("ese") ||
     value.includes("esos") ||
     value.includes("esas") ||
+    value.includes("esos son") ||
     value.includes("el otro") ||
     value.includes("los que") ||
     value.includes("me estas hablando") ||
-    value.includes("cual es el otro");
+    value.includes("cual es el otro") ||
+    value.includes("no cuatro") ||
+    value.includes("no dos");
 
   if (!isFollowUp) return null;
 
@@ -485,6 +502,10 @@ function resolveLexFollowUpIntent(question: string, history: LexMessage[]): LexI
     return value.includes("otro") || value.includes("cuales") || value.includes("esos")
       ? "movimientos-detalle"
       : "movimientos";
+  }
+
+  if (recentText.includes("no pudieron consultarse") || recentText.includes("falla de fuente")) {
+    return "fallas-detalle";
   }
 
   if (recentText.includes("concentra") && recentText.includes("procesos en esta bandeja")) {

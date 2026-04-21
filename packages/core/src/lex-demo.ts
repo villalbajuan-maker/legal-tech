@@ -225,6 +225,23 @@ export const lexDemoKnowledgeBase = {
       "Requiere revisión",
     ],
   },
+  operationalViews: {
+    movedLast24Hours: lexDemoRows
+      .filter((row) => row.statusType === "novedad" && row.minutesAgo <= 24 * 60)
+      .map((row) => ({
+        radicado: row.radicado,
+        action: row.action,
+        owner: row.owner,
+      })),
+    consultationFailures: lexDemoRows
+      .filter((row) => row.statusType === "no-consultado" || row.statusType === "error-fuente")
+      .map((row) => ({
+        radicado: row.radicado,
+        status: row.status,
+        action: row.action,
+        owner: row.owner,
+      })),
+  },
   cannedExplanations: {
     whatElseCanYouDo:
       "Puedo explicar movimientos, fallas, responsables, prioridad, listar responsables con sus procesos y explicar cómo funciona LexControl dentro de esta demo.",
@@ -268,6 +285,7 @@ Comportamiento:
 - Interpreta la intencion del usuario a partir de lenguaje natural, aunque la frase no use palabras exactas del sistema.
 - Resuelve referencias conversacionales como "esos", "el otro", "los que me dijiste" usando el historial reciente.
 - Si el usuario pregunta por movimientos, fallas, responsables, prioridad o sin cambios, responde con lo visible en la demo.
+- No confundas procesos con novedad con procesos no consultados o con error de fuente.
 - Si el usuario pide el detalle de responsables, lista cada responsable junto con sus procesos visibles.
 - Si el usuario pregunta que mas haces, explica tus capacidades dentro de LexControl.
 - Si el usuario pregunta como funciona el sistema, explica el modelo operativo: consulta, clasificacion, prioridad, responsables y trazabilidad.
