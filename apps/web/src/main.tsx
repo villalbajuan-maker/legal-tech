@@ -296,6 +296,14 @@ function extractLexUserName(input: string) {
   return cleaned || value;
 }
 
+function formatLexRecordingTime(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
+
 function getLexAnswer(intent: LexIntent, rows: ProcessRow[]) {
   const movedToday = rows.filter((row) => row.statusType === "novedad" && row.minutesAgo <= 24 * 60);
   const failed = rows.filter((row) => row.statusType === "no-consultado" || row.statusType === "error-fuente");
@@ -593,6 +601,8 @@ function App() {
   const [isMobileNavOpen, setMobileNavOpen] = useState(false);
   const [lexInput, setLexInput] = useState("");
   const [isLexListening, setLexListening] = useState(false);
+  const [lexSpeechTranscript, setLexSpeechTranscript] = useState("");
+  const [lexListeningSeconds, setLexListeningSeconds] = useState(0);
   const [lexUserName, setLexUserName] = useState<string | null>(null);
   const [hasStartedLexIntro, setHasStartedLexIntro] = useState(false);
   const [isAwaitingLexName, setAwaitingLexName] = useState(false);
@@ -602,6 +612,7 @@ function App() {
   const lexMessagesRef = useRef<HTMLDivElement | null>(null);
   const lexTypingTimeoutRef = useRef<number | null>(null);
   const speechRecognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const lexListeningTimerRef = useRef<number | null>(null);
   const rowsByTime = getRowsByTime(processRows, timeFilter);
   const rowsByOperationalState = getRowsByOperationalState(rowsByTime, operationalFilter);
   const visibleRows = rowsByOperationalState.filter((row) => ownerFilter === "todos" || row.owner === ownerFilter);
@@ -657,6 +668,9 @@ function App() {
     return () => {
       if (lexTypingTimeoutRef.current) {
         window.clearTimeout(lexTypingTimeoutRef.current);
+      }
+      if (lexListeningTimerRef.current) {
+        window.clearInterval(lexListeningTimerRef.current);
       }
       speechRecognitionRef.current?.stop();
     };
@@ -735,7 +749,7 @@ function App() {
       setOwnerFilter("todos");
     }
 
-    if (intent === "prioridad" || intent === "responsables" || intent === "resumen") {
+    if (intent === "prioridad" || intent === "responsables" || intent === "responsables-detalle" || intent === "resumen") {
       setOperationalFilter("todos");
       setTimeFilter("todos");
       setOwnerFilter("todos");
@@ -825,18 +839,30 @@ function App() {
     }
   }
 
-  async function submitLexQuestion(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (isLexTyping) return;
-    const question = lexInput.trim();
-    if (!question) return;
+  function stopLexListening(options?: { preserveTranscript?: boolean }) {
+    speechRecognitionRef.current?.stop();
+    speechRecognitionRef.current = null;
+    if (lexListeningTimerRef.current) {
+      window.clearInterval(lexListeningTimerRef.current);
+      lexListeningTimerRef.current = null;
+    }
+    setLexListening(false);
+    setLexListeningSeconds(0);
+
+    if (!options?.preserveTranscript) {
+      setLexSpeechTranscript("");
+    }
+  }
+
+  async function submitLexContent(content: string) {
+    const question = content.trim();
+    if (!question || isLexTyping) return;
 
     if (isAwaitingLexName) {
       const userName = extractLexUserName(question);
       setLexUserName(userName);
       setAwaitingLexName(false);
       setLexMessages((current) => [...current, { id: current.length + 1, role: "user", content: question }]);
-      setLexInput("");
       scheduleLexMessage(
         `Mucho gusto, ${userName}. Aquí podrás ver lo que ocurre en el sistema. Puedes tocar cualquiera de estas sugerencias para explorar la demo o escribir tu propia pregunta.`,
         760,
@@ -848,7 +874,21 @@ function App() {
     }
 
     await askLex(null, question);
+  }
+
+  async function submitLexQuestion(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isLexTyping) return;
+    const question = (isLexListening ? lexSpeechTranscript : lexInput).trim();
+    if (!question) return;
+
+    if (isLexListening) {
+      stopLexListening();
+    }
+
+    await submitLexContent(question);
     setLexInput("");
+    setLexSpeechTranscript("");
   }
 
   function toggleLex() {
@@ -856,8 +896,7 @@ function App() {
     setLexOpen(next);
 
     if (!next) {
-      speechRecognitionRef.current?.stop();
-      setLexListening(false);
+      stopLexListening();
     }
 
     if (next && !hasStartedLexIntro) {
@@ -866,8 +905,7 @@ function App() {
   }
 
   function closeLex() {
-    speechRecognitionRef.current?.stop();
-    setLexListening(false);
+    stopLexListening();
     setLexOpen(false);
   }
 
@@ -880,8 +918,8 @@ function App() {
     }
 
     if (isLexListening) {
-      speechRecognitionRef.current?.stop();
-      setLexListening(false);
+      stopLexListening({ preserveTranscript: true });
+      setLexInput(lexSpeechTranscript.trim());
       return;
     }
 
@@ -897,20 +935,28 @@ function App() {
         transcript += event.results[index][0]?.transcript ?? "";
       }
 
-      setLexInput(transcript.trimStart());
+      setLexSpeechTranscript(transcript.trim());
     };
 
     recognition.onerror = () => {
-      setLexListening(false);
+      stopLexListening({ preserveTranscript: true });
     };
 
     recognition.onend = () => {
-      setLexListening(false);
-      speechRecognitionRef.current = null;
+      stopLexListening({ preserveTranscript: true });
     };
 
     speechRecognitionRef.current = recognition;
     setLexListening(true);
+    setLexInput("");
+    setLexSpeechTranscript("");
+    setLexListeningSeconds(0);
+    if (lexListeningTimerRef.current) {
+      window.clearInterval(lexListeningTimerRef.current);
+    }
+    lexListeningTimerRef.current = window.setInterval(() => {
+      setLexListeningSeconds((current) => current + 1);
+    }, 1000);
     recognition.start();
   }
 
@@ -1386,13 +1432,38 @@ function App() {
               ) : null}
 
               <form className="lexInputBar" onSubmit={submitLexQuestion}>
-                <input
-                  value={lexInput}
-                  onChange={(event) => setLexInput(event.target.value)}
-                  placeholder={isAwaitingLexName ? "Escribe tu nombre" : "Pregunta por movimientos, fallas o responsables"}
-                  aria-label="Pregunta para Lex"
-                  disabled={isLexTyping}
-                />
+                {isLexListening ? (
+                  <div className="lexListeningField" aria-live="polite" aria-label="Grabación en curso">
+                    <div className="lexListeningMeta">
+                      <span>Escuchando</span>
+                      <strong>{formatLexRecordingTime(lexListeningSeconds)}</strong>
+                    </div>
+                    <div className="lexListeningWave" aria-hidden="true">
+                      <div className="lexListeningWaveTrack">
+                        <i />
+                        <i />
+                        <i />
+                        <i />
+                        <i />
+                        <i />
+                        <i />
+                        <i />
+                        <i />
+                        <i />
+                        <i />
+                        <i />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <input
+                    value={lexInput}
+                    onChange={(event) => setLexInput(event.target.value)}
+                    placeholder={isAwaitingLexName ? "Escribe tu nombre" : "Pregunta por movimientos, fallas o responsables"}
+                    aria-label="Pregunta para Lex"
+                    disabled={isLexTyping}
+                  />
+                )}
                 <div className="lexInputActions">
                   <button
                     className={`lexMicButton ${isLexListening ? "is-listening" : ""}`}
@@ -1402,11 +1473,13 @@ function App() {
                     aria-pressed={isLexListening}
                     disabled={isLexTyping || !canUseSpeechRecognition}
                   >
-                    <span className="lexMicIcon" aria-hidden="true">
-                      <i />
-                      <i />
-                      <i />
-                    </span>
+                    {isLexListening ? (
+                      <span className="lexStopIcon" aria-hidden="true" />
+                    ) : (
+                      <svg className="lexMicSvg" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 15.25A3.25 3.25 0 0 0 15.25 12V7a3.25 3.25 0 1 0-6.5 0v5A3.25 3.25 0 0 0 12 15.25Zm5.25-3.5a.75.75 0 0 0-1.5 0 3.75 3.75 0 0 1-7.5 0 .75.75 0 0 0-1.5 0 5.26 5.26 0 0 0 4.5 5.19V19H9.5a.75.75 0 0 0 0 1.5h5a.75.75 0 0 0 0-1.5h-1.75v-2.06a5.26 5.26 0 0 0 4.5-5.19Z" />
+                      </svg>
+                    )}
                   </button>
                   <button className="lexSendButton" type="submit" aria-label="Enviar mensaje" disabled={isLexTyping}>
                     ↑

@@ -1635,6 +1635,75 @@ h3 {
     box-shadow 150ms ease;
 }
 
+.lexListeningField {
+  display: grid;
+  gap: 8px;
+  min-height: 60px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #ffffff;
+}
+
+.lexListeningMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lexListeningMeta span {
+  color: var(--brand);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.lexListeningMeta strong {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.lexListeningWave {
+  position: relative;
+  overflow: hidden;
+  height: 18px;
+}
+
+.lexListeningWaveTrack {
+  display: inline-flex;
+  align-items: end;
+  gap: 4px;
+  min-width: max-content;
+  animation: lex-wave-scroll 7s linear infinite;
+}
+
+.lexListeningWaveTrack i {
+  display: block;
+  width: 4px;
+  border-radius: 999px;
+  background: rgb(15 43 91 / 0.55);
+  transform-origin: bottom center;
+  animation: lex-wave-pulse 1s ease-in-out infinite;
+}
+
+.lexListeningWaveTrack i:nth-child(3n + 1) {
+  height: 9px;
+}
+
+.lexListeningWaveTrack i:nth-child(3n + 2) {
+  height: 15px;
+  animation-delay: 0.14s;
+}
+
+.lexListeningWaveTrack i:nth-child(3n) {
+  height: 11px;
+  animation-delay: 0.28s;
+}
+
 .lexInputActions {
   display: inline-flex;
   align-items: center;
@@ -1662,49 +1731,24 @@ h3 {
   color: var(--brand);
 }
 
-.lexMicIcon {
-  display: inline-flex;
-  align-items: end;
-  gap: 3px;
-  height: 16px;
+.lexMicSvg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }
 
-.lexMicIcon i {
+.lexStopIcon {
   display: block;
-  width: 3px;
-  border-radius: 999px;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
   background: currentColor;
-  opacity: 0.72;
-}
-
-.lexMicIcon i:first-child {
-  height: 8px;
-}
-
-.lexMicIcon i:nth-child(2) {
-  height: 14px;
-}
-
-.lexMicIcon i:last-child {
-  height: 10px;
 }
 
 .lexMicButton.is-listening {
   border-color: rgb(15 43 91 / 0.28);
   background: var(--brand-soft);
   box-shadow: 0 0 0 4px rgb(15 43 91 / 0.08);
-}
-
-.lexMicButton.is-listening .lexMicIcon i {
-  animation: lex-listening 1s ease-in-out infinite;
-}
-
-.lexMicButton.is-listening .lexMicIcon i:nth-child(2) {
-  animation-delay: 0.12s;
-}
-
-.lexMicButton.is-listening .lexMicIcon i:last-child {
-  animation-delay: 0.24s;
 }
 
 .lexSendButton {
@@ -1759,7 +1803,7 @@ h3 {
   }
 }
 
-@keyframes lex-listening {
+@keyframes lex-wave-pulse {
   0%,
   100% {
     transform: scaleY(0.65);
@@ -1769,6 +1813,16 @@ h3 {
   50% {
     transform: scaleY(1.15);
     opacity: 1;
+  }
+}
+
+@keyframes lex-wave-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-40%);
   }
 }
 
