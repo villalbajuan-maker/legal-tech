@@ -304,6 +304,12 @@ function formatLexRecordingTime(totalSeconds: number) {
   return `${minutes}:${seconds}`;
 }
 
+function wait(ms: number) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
 function getLexAnswer(intent: LexIntent, rows: ProcessRow[]) {
   const movedToday = rows.filter((row) => row.statusType === "novedad" && row.minutesAgo <= 24 * 60);
   const failed = rows.filter((row) => row.statusType === "no-consultado" || row.statusType === "error-fuente");
@@ -846,31 +852,35 @@ function App() {
     }
 
     try {
-      const response = await fetch("/api/lex-chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          question,
-          intent,
-          userName: lexUserName,
-          history: lexMessages.slice(-8),
-          rows: processRows,
-          currentState: {
-            operationalFilter,
-            timeFilter,
-            ownerFilter,
-            visibleRows,
-            summary,
+      const [response] = await Promise.all([
+        fetch("/api/lex-chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            question,
+            intent,
+            userName: lexUserName,
+            history: lexMessages.slice(-8),
+            rows: processRows,
+            currentState: {
+              operationalFilter,
+              timeFilter,
+              ownerFilter,
+              visibleRows,
+              summary,
+            },
+          }),
         }),
-      });
+        wait(1050),
+      ]);
 
       const payload = (await response.json()) as { answer?: string };
       const answer = payload.answer?.trim() || getLexFallbackAnswer(question, intent, processRows);
       setLexMessages((current) => [...current, { id: current.length + 1, role: "lex", content: answer }]);
     } catch {
+      await wait(900);
       const fallback = getLexFallbackAnswer(question, intent, processRows);
       setLexMessages((current) => [...current, { id: current.length + 1, role: "lex", content: fallback }]);
     } finally {

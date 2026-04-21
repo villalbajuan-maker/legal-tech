@@ -9,6 +9,33 @@ type LexChatBody = {
   currentState?: unknown;
 };
 
+function extractOpenAIText(data: unknown) {
+  if (!data || typeof data !== "object") return "";
+
+  const candidate = data as {
+    output_text?: string;
+    output?: Array<{
+      content?: Array<{
+        type?: string;
+        text?: string;
+      }>;
+    }>;
+  };
+
+  if (typeof candidate.output_text === "string" && candidate.output_text.trim()) {
+    return candidate.output_text.trim();
+  }
+
+  const fragments =
+    candidate.output
+      ?.flatMap((item) => item.content ?? [])
+      .filter((item) => item.type === "output_text" || item.type === "text")
+      .map((item) => item.text?.trim() ?? "")
+      .filter(Boolean) ?? [];
+
+  return fragments.join("\n").trim();
+}
+
 export default {
   async fetch(request: Request) {
     if (request.method !== "POST") {
@@ -91,10 +118,10 @@ ${body.question || ""}
       return Response.json({ error: errorText }, { status: 500 });
     }
 
-    const data = (await response.json()) as { output_text?: string };
+    const data = (await response.json()) as unknown;
 
     return Response.json({
-      answer: data.output_text?.trim() || "",
+      answer: extractOpenAIText(data),
     });
   },
 };
