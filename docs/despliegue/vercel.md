@@ -36,6 +36,13 @@ VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 ```
 
+Para habilitar Lex con LLM en la demo, agregar también:
+
+```bash
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-5
+```
+
 ## Dominio
 
 Dominio objetivo:
