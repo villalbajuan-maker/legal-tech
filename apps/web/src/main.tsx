@@ -722,6 +722,8 @@ function App() {
   const lexTypingTimeoutRef = useRef<number | null>(null);
   const speechRecognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const lexListeningTimerRef = useRef<number | null>(null);
+  const lexSpeechFinalRef = useRef("");
+  const lexShouldResumeListeningRef = useRef(false);
   const rowsByTime = getRowsByTime(processRows, timeFilter);
   const rowsByOperationalState = getRowsByOperationalState(rowsByTime, operationalFilter);
   const visibleRows = rowsByOperationalState.filter((row) => ownerFilter === "todos" || row.owner === ownerFilter);
@@ -954,6 +956,7 @@ function App() {
   }
 
   function stopLexListening(options?: { preserveTranscript?: boolean }) {
+    lexShouldResumeListeningRef.current = false;
     speechRecognitionRef.current?.stop();
     speechRecognitionRef.current = null;
     if (lexListeningTimerRef.current) {
@@ -964,6 +967,7 @@ function App() {
     setLexListeningSeconds(0);
 
     if (!options?.preserveTranscript) {
+      lexSpeechFinalRef.current = "";
       setLexSpeechTranscript("");
     }
   }
@@ -1023,6 +1027,57 @@ function App() {
     setLexOpen(false);
   }
 
+  function startLexListeningSession() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "es-CO";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onresult = (event) => {
+      let finalTranscript = lexSpeechFinalRef.current;
+      let interimTranscript = "";
+
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const piece = event.results[index][0]?.transcript ?? "";
+
+        if (event.results[index].isFinal) {
+          finalTranscript = `${finalTranscript} ${piece}`.trim();
+        } else {
+          interimTranscript += piece;
+        }
+      }
+
+      lexSpeechFinalRef.current = finalTranscript;
+      setLexSpeechTranscript(`${finalTranscript} ${interimTranscript}`.trim());
+    };
+
+    recognition.onerror = () => {
+      stopLexListening({ preserveTranscript: true });
+    };
+
+    recognition.onend = () => {
+      speechRecognitionRef.current = null;
+
+      if (lexShouldResumeListeningRef.current) {
+        window.setTimeout(() => {
+          if (!lexShouldResumeListeningRef.current) return;
+          startLexListeningSession();
+        }, 180);
+        return;
+      }
+
+      stopLexListening({ preserveTranscript: true });
+    };
+
+    speechRecognitionRef.current = recognition;
+    recognition.start();
+  }
+
   function toggleLexListening() {
     if (isLexTyping) return;
 
@@ -1037,32 +1092,10 @@ function App() {
       return;
     }
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = "es-CO";
-    recognition.continuous = true;
-    recognition.interimResults = true;
-
-    recognition.onresult = (event) => {
-      let transcript = "";
-
-      for (let index = event.resultIndex; index < event.results.length; index += 1) {
-        transcript += event.results[index][0]?.transcript ?? "";
-      }
-
-      setLexSpeechTranscript(transcript.trim());
-    };
-
-    recognition.onerror = () => {
-      stopLexListening({ preserveTranscript: true });
-    };
-
-    recognition.onend = () => {
-      stopLexListening({ preserveTranscript: true });
-    };
-
-    speechRecognitionRef.current = recognition;
+    lexShouldResumeListeningRef.current = true;
     setLexListening(true);
     setLexInput("");
+    lexSpeechFinalRef.current = "";
     setLexSpeechTranscript("");
     setLexListeningSeconds(0);
     if (lexListeningTimerRef.current) {
@@ -1071,7 +1104,7 @@ function App() {
     lexListeningTimerRef.current = window.setInterval(() => {
       setLexListeningSeconds((current) => current + 1);
     }, 1000);
-    recognition.start();
+    startLexListeningSession();
   }
 
   return (
