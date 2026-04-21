@@ -847,6 +847,14 @@ h3 {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
+.desktopTrayPanel {
+  display: block;
+}
+
+.stateGrid {
+  display: grid;
+}
+
 .mobileTrayIntro,
 .mobileTrayPanel {
   display: none;
