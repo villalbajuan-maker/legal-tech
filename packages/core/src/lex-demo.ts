@@ -197,6 +197,7 @@ export const lexDemoKnowledgeBase = {
   lexCapabilities: [
     "Resumir el estado operativo actual.",
     "Explicar movimientos, fallas, responsables y prioridad.",
+    "Listar responsables con sus procesos cuando el usuario lo pida.",
     "Explicarse a sí mismo como voz del sistema.",
     "Explicar cómo funciona la demo y qué muestra la bandeja.",
   ],
@@ -226,7 +227,7 @@ export const lexDemoKnowledgeBase = {
   },
   cannedExplanations: {
     whatElseCanYouDo:
-      "Puedo explicar movimientos, fallas, responsables, prioridad y cómo funciona LexControl dentro de esta demo.",
+      "Puedo explicar movimientos, fallas, responsables, prioridad, listar responsables con sus procesos y explicar cómo funciona LexControl dentro de esta demo.",
     howDoYouWork:
       "Trabajo sobre la bandeja visible y sobre la base de conocimiento congelada de esta demo. No interpreto jurídicamente; expongo el estado operativo.",
     whoAreYou:
@@ -265,6 +266,7 @@ Estilo:
 
 Comportamiento:
 - Si el usuario pregunta por movimientos, fallas, responsables, prioridad o sin cambios, responde con lo visible en la demo.
+- Si el usuario pide el detalle de responsables, lista cada responsable junto con sus procesos visibles.
 - Si el usuario pregunta que mas haces, explica tus capacidades dentro de LexControl.
 - Si el usuario pregunta como funciona el sistema, explica el modelo operativo: consulta, clasificacion, prioridad, responsables y trazabilidad.
 - Si el usuario saluda, agradece, confirma o se despide, responde de forma breve y natural sin convertir eso en un resumen de bandeja.

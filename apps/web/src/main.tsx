@@ -54,7 +54,14 @@ type OperationalFilter = "todos" | ProcessStatus;
 
 type TimeFilter = "24h" | "7d" | "30d" | "todos";
 
-type LexIntent = "movimientos" | "fallas" | "responsables" | "sin-cambios" | "prioridad" | "resumen";
+type LexIntent =
+  | "movimientos"
+  | "fallas"
+  | "responsables"
+  | "responsables-detalle"
+  | "sin-cambios"
+  | "prioridad"
+  | "resumen";
 
 type LexCourtesyIntent = "agradecimiento" | "saludo" | "afirmacion" | "despedida";
 
@@ -268,10 +275,26 @@ const lexPrompts: { label: string; value: LexIntent }[] = [
   { label: "¿Qué procesos se movieron hoy?", value: "movimientos" },
   { label: "¿Cuáles no se pudieron consultar?", value: "fallas" },
   { label: "¿Quién concentra más pendientes?", value: "responsables" },
+  { label: "Responsables con sus procesos", value: "responsables-detalle" },
   { label: "¿Qué casos llevan más tiempo sin cambios?", value: "sin-cambios" },
   { label: "¿Qué requiere prioridad?", value: "prioridad" },
   { label: "Resumen operativo", value: "resumen" },
 ];
+
+function extractLexUserName(input: string) {
+  const value = input.trim();
+  if (!value) return "Usuario";
+
+  const cleaned = value
+    .replace(/^(si|sí)\s+/i, "")
+    .replace(/^(yo\s+)?soy\s+/i, "")
+    .replace(/^(me\s+llamo)\s+/i, "")
+    .replace(/^(mi\s+nombre\s+es)\s+/i, "")
+    .replace(/^(el\s+gusto\s+es\s+)?/i, "")
+    .trim();
+
+  return cleaned || value;
+}
 
 function getLexAnswer(intent: LexIntent, rows: ProcessRow[]) {
   const movedToday = rows.filter((row) => row.statusType === "novedad" && row.minutesAgo <= 24 * 60);
@@ -307,6 +330,21 @@ function getLexAnswer(intent: LexIntent, rows: ProcessRow[]) {
     return `${owner} concentra ${pluralize(count, "proceso", "procesos")} en esta bandeja. Priorizar casos con error o prioridad alta.`;
   }
 
+  if (intent === "responsables-detalle") {
+    const grouped = rows.reduce<Record<string, string[]>>((acc, row) => {
+      if (!acc[row.owner]) acc[row.owner] = [];
+      acc[row.owner].push(row.radicado);
+      return acc;
+    }, {});
+
+    const owners = Object.entries(grouped).sort((a, b) => a[0].localeCompare(b[0], "es"));
+    if (!owners.length) return "No hay responsables visibles con el filtro actual.";
+
+    return owners
+      .map(([owner, radicados]) => `${owner}: ${radicados.join(", ")}`)
+      .join(". ");
+  }
+
   if (intent === "sin-cambios") {
     return stale.length
       ? `El caso con más tiempo sin cambios es ${stale[0].radicado}, con última referencia registrada ${stale[0].date.toLowerCase()}.`
@@ -323,11 +361,29 @@ function getLexAnswer(intent: LexIntent, rows: ProcessRow[]) {
 }
 
 function inferLexIntent(text: string): LexIntent | null {
-  const value = text.toLowerCase();
+  const value = text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+
   if (value.includes("resumen") || value.includes("estado") || value.includes("operativo")) return "resumen";
   if (value.includes("mov") || value.includes("cambio") || value.includes("novedad") || value.includes("actuacion")) return "movimientos";
   if (value.includes("fall") || value.includes("error") || value.includes("fuente") || value.includes("consultar")) return "fallas";
-  if (value.includes("responsable") || value.includes("pendiente")) return "responsables";
+  if (
+    (value.includes("responsable") || value.includes("asignado") || value.includes("asignados")) &&
+    (value.includes("lista") || value.includes("cada") || value.includes("procesos") || value.includes("detalle"))
+  ) {
+    return "responsables-detalle";
+  }
+  if (
+    value.includes("responsable") ||
+    value.includes("pendiente") ||
+    value.includes("quien tiene mas procesos") ||
+    value.includes("quien tiene mas mas procesos") ||
+    value.includes("procesos asignados")
+  ) {
+    return "responsables";
+  }
   if (value.includes("sin cambio") || value.includes("tiempo") || value.includes("quieto")) return "sin-cambios";
   if (value.includes("prioridad") || value.includes("critico") || value.includes("alta")) return "prioridad";
   return null;
@@ -809,12 +865,13 @@ function App() {
     if (!question) return;
 
     if (isAwaitingLexName) {
-      setLexUserName(question);
+      const userName = extractLexUserName(question);
+      setLexUserName(userName);
       setAwaitingLexName(false);
       setLexMessages((current) => [...current, { id: current.length + 1, role: "user", content: question }]);
       setLexInput("");
       scheduleLexMessage(
-        `Mucho gusto, ${question}. Aquí podrás ver lo que ocurre en el sistema. Puedes tocar cualquiera de estas sugerencias para explorar la demo o escribir tu propia pregunta.`,
+        `Mucho gusto, ${userName}. Aquí podrás ver lo que ocurre en el sistema. Puedes tocar cualquiera de estas sugerencias para explorar la demo o escribir tu propia pregunta.`,
         760,
         () => {
           setLexReady(true);

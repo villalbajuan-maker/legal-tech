@@ -73,6 +73,7 @@ Lex puede:
 - explicar movimientos;
 - explicar fallas de consulta;
 - explicar responsables;
+- listar responsables con sus procesos visibles;
 - explicar prioridades;
 - identificar casos sin cambios;
 - explicarse a sí mismo;
@@ -156,6 +157,10 @@ Trabajo sobre la bandeja visible y sobre la base de conocimiento congelada de es
 
 ```txt
 Puedo explicarte movimientos, fallas, responsables, prioridad y cómo opera LexControl dentro de esta muestra.
+```
+
+```txt
+También puedo listar cada responsable con los procesos visibles que tiene asignados en esta demo.
 ```
 
 ## Railguards
