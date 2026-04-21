@@ -1973,7 +1973,6 @@ function App() {
       <footer className="siteFooter" data-reveal>
         <div className="footerBrand">
           <img src={logoUrl} alt="LexControl" />
-          <p>Sistema operativo de vigilancia judicial para equipos que necesitan control y trazabilidad real.</p>
         </div>
         <div className="footerBlock">
           <span>Contacto</span>
@@ -1983,7 +1982,6 @@ function App() {
             <SocialIcon name="whatsapp" />
             +57 319 250-9637
           </a>
-          <a href="tel:+573192509637">+57 319 250-9637</a>
           <p>Calle 63 # 1-59, Bogotá, Colombia.</p>
         </div>
         <div className="footerBlock">
@@ -2007,9 +2005,8 @@ function App() {
             </a>
           </div>
         </div>
-        <div className="footerLegal">
-          <span>LexControl 2026</span>
-          <p>Todos los derechos reservados.</p>
+        <div className="footerBottom">
+          <p>LexControl 2026 · Todos los derechos reservados.</p>
         </div>
       </footer>
 

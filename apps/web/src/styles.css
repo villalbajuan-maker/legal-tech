@@ -2267,17 +2267,17 @@ h3 {
 
 .siteFooter {
   display: grid;
-  grid-template-columns: minmax(320px, 1.35fr) minmax(220px, 1fr) minmax(170px, 0.78fr) minmax(150px, 0.72fr);
-  gap: 34px;
+  grid-template-columns: minmax(240px, 1.15fr) minmax(240px, 0.95fr) minmax(190px, 0.8fr) minmax(150px, 0.65fr);
+  gap: 28px 36px;
   border-top: 1px solid var(--border);
-  padding: 44px max(32px, calc((100% - 1180px) / 2)) 40px;
+  padding: 42px max(32px, calc((100% - 1180px) / 2)) 28px;
   background:
     linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }
 
 .footerBrand,
 .footerBlock,
-.footerLegal {
+.footerBottom {
   display: grid;
   align-content: start;
   gap: 12px;
@@ -2285,7 +2285,7 @@ h3 {
 
 .footerBrand img {
   display: block;
-  width: min(238px, 100%);
+  width: min(252px, 100%);
   height: auto;
 }
 
@@ -2295,11 +2295,6 @@ h3 {
   color: var(--muted);
   font-size: var(--font-small);
   line-height: 1.6;
-}
-
-.footerBrand p {
-  max-width: 330px;
-  margin-top: 6px;
 }
 
 .footerBlock span {
@@ -2326,24 +2321,18 @@ h3 {
   gap: 7px;
 }
 
-.footerLegal {
-  justify-items: end;
-  align-content: end;
-  gap: 6px;
-  text-align: right;
+.footerBottom {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
 }
 
-.footerLegal span {
-  color: var(--brand);
-  font-size: var(--font-small);
-  font-weight: 780;
-}
-
-.footerLegal p {
+.footerBottom p {
   margin: 0;
   color: var(--muted);
   font-size: var(--font-micro);
   font-weight: 700;
+  line-height: 1.5;
 }
 
 .socialLinks {
