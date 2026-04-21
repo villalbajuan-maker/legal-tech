@@ -649,6 +649,7 @@ function App() {
   const [isLexTyping, setLexTyping] = useState(false);
   const [isMobileNavOpen, setMobileNavOpen] = useState(false);
   const [lexInput, setLexInput] = useState("");
+  const [usedLexPrompts, setUsedLexPrompts] = useState<LexIntent[]>([]);
   const [lexMessages, setLexMessages] = useState<LexMessage[]>([
     {
       id: 1,
@@ -699,6 +700,7 @@ function App() {
     { label: "30 días", value: "30d" },
     { label: "Todos", value: "todos" },
   ];
+  const visibleLexPrompts = lexPrompts.filter((prompt) => !usedLexPrompts.includes(prompt.value));
 
   useEffect(() => {
     lexMessagesRef.current?.scrollTo({
@@ -800,9 +802,14 @@ function App() {
     return processRows;
   }
 
+  function consumeLexPrompt(intent: LexIntent) {
+    setUsedLexPrompts((current) => (current.includes(intent) ? current : [...current, intent]));
+  }
+
   function askLex(intent: LexIntent, question: string) {
     if (isLexTyping) return;
     setLexOpen(true);
+    consumeLexPrompt(intent);
     applyLexIntent(intent);
     const answer = getLexAnswer(intent, getRowsForLexIntent(intent));
     setLexMessages((current) => [...current, { id: current.length + 1, role: "user", content: question }]);
@@ -1295,7 +1302,7 @@ function App() {
               </div>
 
               <div className="lexPromptRail" aria-label="Consultas sugeridas">
-                {lexPrompts.map((prompt) => (
+                {visibleLexPrompts.map((prompt) => (
                   <button
                     type="button"
                     key={prompt.value}
