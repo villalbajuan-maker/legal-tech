@@ -56,6 +56,7 @@ type TimeFilter = "24h" | "7d" | "30d" | "todos";
 
 type LexIntent =
   | "movimientos"
+  | "movimientos-detalle"
   | "fallas"
   | "responsables"
   | "responsables-detalle"
@@ -327,6 +328,12 @@ function getLexAnswer(intent: LexIntent, rows: ProcessRow[]) {
       : "No hay movimientos nuevos en las últimas 24 horas dentro de esta muestra.";
   }
 
+  if (intent === "movimientos-detalle") {
+    return movedToday.length
+      ? movedToday.map((row) => `${row.radicado}: ${row.action}`).join(". ")
+      : "No hay movimientos nuevos en las últimas 24 horas dentro de esta muestra.";
+  }
+
   if (intent === "fallas") {
     return failed.length
       ? `${pluralize(failed.length, "proceso no pudo", "procesos no pudieron")} consultarse. No deben tratarse como casos sin novedad.`
@@ -411,6 +418,13 @@ function inferLexFallbackIntent(text: string): LexIntent | null {
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "");
 
+  if (
+    (value.includes("cuales son") || value.includes("cual es el otro") || value.includes("esos dos") || value.includes("los que"))
+    && (value.includes("mov") || value.includes("cambio") || value.includes("novedad") || value.includes("otro"))
+  ) {
+    return "movimientos-detalle";
+  }
+
   if (value.includes("mov") || value.includes("cambio") || value.includes("novedad") || value.includes("actuacion")) {
     return "movimientos";
   }
@@ -419,7 +433,7 @@ function inferLexFallbackIntent(text: string): LexIntent | null {
     return "fallas";
   }
 
-  if (value.includes("responsable") || value.includes("asignad") || value.includes("proceso")) {
+  if (value.includes("responsable") || value.includes("asignad")) {
     return value.includes("lista") || value.includes("cada") || value.includes("detalle")
       ? "responsables-detalle"
       : "responsables";
@@ -440,9 +454,47 @@ function inferLexFallbackIntent(text: string): LexIntent | null {
   return null;
 }
 
-function getLexFallbackAnswer(question: string, intent: LexIntent | null, rows: ProcessRow[]) {
+function resolveLexFollowUpIntent(question: string, history: LexMessage[]): LexIntent | null {
+  const value = question
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+
+  const isFollowUp =
+    value.includes("ese") ||
+    value.includes("esos") ||
+    value.includes("esas") ||
+    value.includes("el otro") ||
+    value.includes("los que") ||
+    value.includes("me estas hablando") ||
+    value.includes("cual es el otro");
+
+  if (!isFollowUp) return null;
+
+  const recentText = history
+    .slice(-4)
+    .map((message) => message.content.toLowerCase())
+    .join(" ");
+
+  if (recentText.includes("procesos tuvieron cambios") || recentText.includes("cambios en las ultimas 24 horas")) {
+    return value.includes("otro") || value.includes("cuales") || value.includes("esos")
+      ? "movimientos-detalle"
+      : "movimientos";
+  }
+
+  if (recentText.includes("concentra") && recentText.includes("procesos en esta bandeja")) {
+    return "responsables";
+  }
+
+  return null;
+}
+
+function getLexFallbackAnswer(question: string, intent: LexIntent | null, rows: ProcessRow[], history: LexMessage[]) {
   if (intent) {
-    return getLexAnswer(intent, intent === "movimientos" ? getRowsByTime(rows, "24h") : rows);
+    return getLexAnswer(
+      intent,
+      intent === "movimientos" || intent === "movimientos-detalle" ? getRowsByTime(rows, "24h") : rows,
+    );
   }
 
   const courtesyIntent = inferLexCourtesyIntent(question);
@@ -450,9 +502,20 @@ function getLexFallbackAnswer(question: string, intent: LexIntent | null, rows: 
     return getLexCourtesyAnswer(courtesyIntent);
   }
 
+  const followUpIntent = resolveLexFollowUpIntent(question, history);
+  if (followUpIntent) {
+    return getLexAnswer(
+      followUpIntent,
+      followUpIntent === "movimientos" || followUpIntent === "movimientos-detalle" ? getRowsByTime(rows, "24h") : rows,
+    );
+  }
+
   const fallbackIntent = inferLexFallbackIntent(question);
   if (fallbackIntent) {
-    return getLexAnswer(fallbackIntent, fallbackIntent === "movimientos" ? getRowsByTime(rows, "24h") : rows);
+    return getLexAnswer(
+      fallbackIntent,
+      fallbackIntent === "movimientos" || fallbackIntent === "movimientos-detalle" ? getRowsByTime(rows, "24h") : rows,
+    );
   }
 
   return "No pude completar esa respuesta en este intento. Puedes repetir la pregunta, dictarla de nuevo o usar una de las consultas sugeridas mientras retomamos el contexto de la demo.";
@@ -846,6 +909,7 @@ function App() {
 
     setLexMessages((current) => [...current, { id: current.length + 1, role: "user", content: question }]);
     setLexTyping(true);
+    const recentHistory = [...lexMessages.slice(-8), { id: lexMessages.length + 1, role: "user", content: question } as LexMessage];
 
     if (lexTypingTimeoutRef.current) {
       window.clearTimeout(lexTypingTimeoutRef.current);
@@ -877,11 +941,11 @@ function App() {
       ]);
 
       const payload = (await response.json()) as { answer?: string };
-      const answer = payload.answer?.trim() || getLexFallbackAnswer(question, intent, processRows);
+      const answer = payload.answer?.trim() || getLexFallbackAnswer(question, intent, processRows, recentHistory);
       setLexMessages((current) => [...current, { id: current.length + 1, role: "lex", content: answer }]);
     } catch {
       await wait(900);
-      const fallback = getLexFallbackAnswer(question, intent, processRows);
+      const fallback = getLexFallbackAnswer(question, intent, processRows, recentHistory);
       setLexMessages((current) => [...current, { id: current.length + 1, role: "lex", content: fallback }]);
     } finally {
       setLexTyping(false);
