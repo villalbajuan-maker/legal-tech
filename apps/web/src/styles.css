@@ -2267,7 +2267,7 @@ h3 {
 
 .siteFooter {
   display: grid;
-  grid-template-columns: minmax(300px, 1.45fr) minmax(220px, 1fr) minmax(160px, 0.72fr) minmax(150px, 0.65fr);
+  grid-template-columns: minmax(320px, 1.35fr) minmax(220px, 1fr) minmax(170px, 0.78fr) minmax(150px, 0.72fr);
   gap: 34px;
   border-top: 1px solid var(--border);
   padding: 44px max(32px, calc((100% - 1180px) / 2)) 40px;
@@ -2276,7 +2276,8 @@ h3 {
 }
 
 .footerBrand,
-.footerBlock {
+.footerBlock,
+.footerLegal {
   display: grid;
   align-content: start;
   gap: 12px;
@@ -2297,7 +2298,7 @@ h3 {
 }
 
 .footerBrand p {
-  max-width: 390px;
+  max-width: 330px;
   margin-top: 6px;
 }
 
@@ -2323,6 +2324,26 @@ h3 {
   display: inline-flex;
   align-items: center;
   gap: 7px;
+}
+
+.footerLegal {
+  justify-items: end;
+  align-content: end;
+  gap: 6px;
+  text-align: right;
+}
+
+.footerLegal span {
+  color: var(--brand);
+  font-size: var(--font-small);
+  font-weight: 780;
+}
+
+.footerLegal p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--font-micro);
+  font-weight: 700;
 }
 
 .socialLinks {
