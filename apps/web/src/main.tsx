@@ -957,22 +957,22 @@ function App() {
     errores: rowsByTime.filter((row) => row.statusType === "error-fuente").length,
     responsables: new Set(rowsByTime.map((row) => row.owner)).size,
   };
-  const mobileTrayFilter =
+  const mobileTrayState =
     operationalFilter === "sin-cambios" || operationalFilter === "error-fuente" || operationalFilter === "no-consultado"
       ? operationalFilter
       : operationalFilter === "todos"
         ? "novedad"
         : operationalFilter;
+  const mobileOwnerOptions = Array.from(new Set(rowsByTime.map((row) => row.owner))).sort();
   const mobileTrayRows = rowsByTime
     .filter((row) => ownerFilter === "todos" || row.owner === ownerFilter)
     .filter((row) => {
-      if (mobileTrayFilter === "sin-cambios") return row.statusType === "sin-cambios";
-      if (mobileTrayFilter === "error-fuente" || mobileTrayFilter === "no-consultado") {
+      if (mobileTrayState === "sin-cambios") return row.statusType === "sin-cambios";
+      if (mobileTrayState === "error-fuente" || mobileTrayState === "no-consultado") {
         return row.statusType === "error-fuente" || row.statusType === "no-consultado";
       }
       return row.statusType === "novedad";
-    })
-    .slice(0, 3);
+    });
   const operationalFilters: { label: string; value: OperationalFilter }[] = [
     { label: "Todos", value: "todos" },
     { label: "Con novedad", value: "novedad" },
@@ -994,6 +994,21 @@ function App() {
       behavior: "smooth",
     });
   }, [lexMessages, isLexOpen, isLexTyping]);
+
+  useEffect(() => {
+    const isMobileViewport = window.matchMedia("(max-width: 640px)").matches;
+    if (!isLexOpen || !isMobileViewport) return;
+
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+    };
+  }, [isLexOpen]);
 
   useEffect(() => {
     return () => {
@@ -1544,8 +1559,8 @@ function App() {
               <button
                 type="button"
                 role="tab"
-                aria-selected={mobileTrayFilter === "novedad"}
-                className={mobileTrayFilter === "novedad" ? "active" : ""}
+                aria-selected={mobileTrayState === "novedad"}
+                className={mobileTrayState === "novedad" ? "active" : ""}
                 onClick={() => setOperationalFilter("novedad")}
               >
                 Novedades
@@ -1553,8 +1568,8 @@ function App() {
               <button
                 type="button"
                 role="tab"
-                aria-selected={mobileTrayFilter === "error-fuente" || mobileTrayFilter === "no-consultado"}
-                className={mobileTrayFilter === "error-fuente" || mobileTrayFilter === "no-consultado" ? "active" : ""}
+                aria-selected={mobileTrayState === "error-fuente" || mobileTrayState === "no-consultado"}
+                className={mobileTrayState === "error-fuente" || mobileTrayState === "no-consultado" ? "active" : ""}
                 onClick={() => setOperationalFilter("error-fuente")}
               >
                 Fallas
@@ -1562,8 +1577,8 @@ function App() {
               <button
                 type="button"
                 role="tab"
-                aria-selected={mobileTrayFilter === "sin-cambios"}
-                className={mobileTrayFilter === "sin-cambios" ? "active" : ""}
+                aria-selected={mobileTrayState === "sin-cambios"}
+                className={mobileTrayState === "sin-cambios" ? "active" : ""}
                 onClick={() => setOperationalFilter("sin-cambios")}
               >
                 Sin cambios
@@ -1593,7 +1608,7 @@ function App() {
                   aria-label="Filtrar por responsable en mobile"
                 >
                   <option value="todos">Todos</option>
-                  {ownerOptions.map((owner) => (
+                  {mobileOwnerOptions.map((owner) => (
                     <option value={owner} key={owner}>
                       {owner}
                     </option>
@@ -1679,13 +1694,13 @@ function App() {
             <section className="mobileTrayPanel" aria-label="Procesos monitoreados en mobile">
               <div className="mobileTrayHeader">
                 <strong>
-                  {mobileTrayFilter === "sin-cambios"
+                  {mobileTrayState === "sin-cambios"
                     ? "Procesos sin cambios"
-                    : mobileTrayFilter === "error-fuente" || mobileTrayFilter === "no-consultado"
+                    : mobileTrayState === "error-fuente" || mobileTrayState === "no-consultado"
                       ? "Procesos con fallas"
                       : "Procesos con novedad"}
                 </strong>
-                <span>Mostrando hasta 3 casos de la muestra.</span>
+                <span>{pluralize(mobileTrayRows.length, "proceso visible", "procesos visibles")} en esta vista.</span>
               </div>
               <div className="mobileProcessList">
                 {mobileTrayRows.map((row) => (
