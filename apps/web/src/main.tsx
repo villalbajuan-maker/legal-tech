@@ -29,6 +29,8 @@ type TimeFilter = "24h" | "7d" | "30d" | "todos";
 
 type LexIntent = "movimientos" | "fallas" | "responsables" | "sin-cambios" | "prioridad" | "resumen";
 
+type LexCourtesyIntent = "agradecimiento" | "saludo" | "afirmacion" | "despedida";
+
 type LexMessage = {
   id: number;
   role: "user" | "lex";
@@ -461,9 +463,45 @@ function inferLexIntent(text: string): LexIntent | null {
   return null;
 }
 
+function inferLexCourtesyIntent(text: string): LexCourtesyIntent | null {
+  const value = text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .trim();
+
+  if (!value) return null;
+  if (/^(gracias|muchas gracias|mil gracias|graciaas)$/.test(value)) return "agradecimiento";
+  if (/^(hola|buenas|buen dia|buenas tardes|buenas noches|hey)$/.test(value)) return "saludo";
+  if (/^(ok|okay|vale|listo|perfecto|entendido|dale|bien)$/.test(value)) return "afirmacion";
+  if (/^(chao|adios|hasta luego|nos vemos)$/.test(value)) return "despedida";
+  return null;
+}
+
+function getLexCourtesyAnswer(intent: LexCourtesyIntent) {
+  if (intent === "agradecimiento") {
+    return "Recibido. Si quieres, seguimos con movimientos, fallas o prioridad.";
+  }
+
+  if (intent === "saludo") {
+    return "Estoy listo. Puedo mostrarte qué cambió, qué falló y qué requiere revisión en esta demo.";
+  }
+
+  if (intent === "afirmacion") {
+    return "Entendido. Puedes seguir con otra consulta sobre la operación visible en la demo.";
+  }
+
+  return "Cierro aquí. Si vuelves, retomamos desde la operación visible en esta demo.";
+}
+
 function getLexFallbackAnswer(question: string, intent: LexIntent | null, rows: ProcessRow[]) {
   if (intent) {
     return getLexAnswer(intent, intent === "movimientos" ? getRowsByTime(rows, "24h") : rows);
+  }
+
+  const courtesyIntent = inferLexCourtesyIntent(question);
+  if (courtesyIntent) {
+    return getLexCourtesyAnswer(courtesyIntent);
   }
 
   const novedades = rows.filter((row) => row.statusType === "novedad").length;
