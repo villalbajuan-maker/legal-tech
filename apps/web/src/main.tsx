@@ -311,6 +311,11 @@ function wait(ms: number) {
   });
 }
 
+const LEX_TYPING_DELAY = 2100;
+const LEX_TYPING_DELAY_FALLBACK = 1800;
+const LEX_INTRO_DELAY = 1640;
+const LEX_AFTER_NAME_DELAY = 1520;
+
 function getLexAnswer(intent: LexIntent, rows: ProcessRow[]) {
   const movedToday = rows.filter((row) => row.statusType === "novedad" && row.minutesAgo <= 24 * 60);
   const failed = rows.filter((row) => row.statusType === "no-consultado" || row.statusType === "error-fuente");
@@ -888,16 +893,15 @@ function App() {
   function startLexIntro() {
     if (hasStartedLexIntro) return;
     setHasStartedLexIntro(true);
-    setLexMessages([
-      {
-        id: 1,
-        role: "lex",
-        content: "Soy Lex, la voz del sistema. Mi función es mostrar qué cambió, qué no cambió y qué falló dentro de esta demo operativa.",
+    scheduleLexMessage(
+      "Soy Lex, la voz del sistema. Mi función es mostrar qué cambió, qué no cambió y qué falló dentro de esta demo operativa.",
+      LEX_INTRO_DELAY,
+      () => {
+        scheduleLexMessage("¿Con quién tengo el gusto?", LEX_INTRO_DELAY, () => {
+          setAwaitingLexName(true);
+        });
       },
-    ]);
-    scheduleLexMessage("¿Con quién tengo el gusto?", 820, () => {
-      setAwaitingLexName(true);
-    });
+    );
   }
 
   async function askLex(intent: LexIntent | null, question: string) {
@@ -939,14 +943,14 @@ function App() {
             },
           }),
         }),
-        wait(1050),
+        wait(LEX_TYPING_DELAY),
       ]);
 
       const payload = (await response.json()) as { answer?: string };
       const answer = payload.answer?.trim() || getLexFallbackAnswer(question, intent, processRows, recentHistory);
       setLexMessages((current) => [...current, { id: current.length + 1, role: "lex", content: answer }]);
     } catch {
-      await wait(900);
+      await wait(LEX_TYPING_DELAY_FALLBACK);
       const fallback = getLexFallbackAnswer(question, intent, processRows, recentHistory);
       setLexMessages((current) => [...current, { id: current.length + 1, role: "lex", content: fallback }]);
     } finally {
@@ -983,7 +987,7 @@ function App() {
       setLexMessages((current) => [...current, { id: current.length + 1, role: "user", content: question }]);
       scheduleLexMessage(
         `Mucho gusto, ${userName}. Aquí podrás ver lo que ocurre en el sistema. Puedes tocar cualquiera de estas sugerencias para explorar la demo o escribir o dictar tu propia pregunta.`,
-        760,
+        LEX_AFTER_NAME_DELAY,
         () => {
           setLexReady(true);
         },
