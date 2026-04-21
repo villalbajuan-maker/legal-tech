@@ -399,6 +399,41 @@ function getLexCourtesyAnswer(intent: LexCourtesyIntent) {
   return "Cierro aquí. Si vuelves, retomamos desde la operación visible en esta demo.";
 }
 
+function inferLexFallbackIntent(text: string): LexIntent | null {
+  const value = text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+
+  if (value.includes("mov") || value.includes("cambio") || value.includes("novedad") || value.includes("actuacion")) {
+    return "movimientos";
+  }
+
+  if (value.includes("fall") || value.includes("error") || value.includes("fuente") || value.includes("consult")) {
+    return "fallas";
+  }
+
+  if (value.includes("responsable") || value.includes("asignad") || value.includes("proceso")) {
+    return value.includes("lista") || value.includes("cada") || value.includes("detalle")
+      ? "responsables-detalle"
+      : "responsables";
+  }
+
+  if (value.includes("sin cambio") || value.includes("quiet")) {
+    return "sin-cambios";
+  }
+
+  if (value.includes("prioridad") || value.includes("critic") || value.includes("alta")) {
+    return "prioridad";
+  }
+
+  if (value.includes("resumen") || value.includes("estado")) {
+    return "resumen";
+  }
+
+  return null;
+}
+
 function getLexFallbackAnswer(question: string, intent: LexIntent | null, rows: ProcessRow[]) {
   if (intent) {
     return getLexAnswer(intent, intent === "movimientos" ? getRowsByTime(rows, "24h") : rows);
@@ -409,7 +444,12 @@ function getLexFallbackAnswer(question: string, intent: LexIntent | null, rows: 
     return getLexCourtesyAnswer(courtesyIntent);
   }
 
-  return "No pude completar esa respuesta en este intento. Puedes repetir la pregunta o usar una de las consultas sugeridas mientras retomamos el contexto de la demo.";
+  const fallbackIntent = inferLexFallbackIntent(question);
+  if (fallbackIntent) {
+    return getLexAnswer(fallbackIntent, fallbackIntent === "movimientos" ? getRowsByTime(rows, "24h") : rows);
+  }
+
+  return "No pude completar esa respuesta en este intento. Puedes repetir la pregunta, dictarla de nuevo o usar una de las consultas sugeridas mientras retomamos el contexto de la demo.";
 }
 
 function ActivationModal({
@@ -864,7 +904,7 @@ function App() {
       setAwaitingLexName(false);
       setLexMessages((current) => [...current, { id: current.length + 1, role: "user", content: question }]);
       scheduleLexMessage(
-        `Mucho gusto, ${userName}. Aquí podrás ver lo que ocurre en el sistema. Puedes tocar cualquiera de estas sugerencias para explorar la demo o escribir tu propia pregunta.`,
+        `Mucho gusto, ${userName}. Aquí podrás ver lo que ocurre en el sistema. Puedes tocar cualquiera de estas sugerencias para explorar la demo o escribir o dictar tu propia pregunta.`,
         760,
         () => {
           setLexReady(true);
