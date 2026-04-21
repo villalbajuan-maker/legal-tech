@@ -360,35 +360,6 @@ function getLexAnswer(intent: LexIntent, rows: ProcessRow[]) {
   return "Selecciona una consulta operativa.";
 }
 
-function inferLexIntent(text: string): LexIntent | null {
-  const value = text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "");
-
-  if (value.includes("resumen") || value.includes("estado") || value.includes("operativo")) return "resumen";
-  if (value.includes("mov") || value.includes("cambio") || value.includes("novedad") || value.includes("actuacion")) return "movimientos";
-  if (value.includes("fall") || value.includes("error") || value.includes("fuente") || value.includes("consultar")) return "fallas";
-  if (
-    (value.includes("responsable") || value.includes("asignado") || value.includes("asignados")) &&
-    (value.includes("lista") || value.includes("cada") || value.includes("procesos") || value.includes("detalle"))
-  ) {
-    return "responsables-detalle";
-  }
-  if (
-    value.includes("responsable") ||
-    value.includes("pendiente") ||
-    value.includes("quien tiene mas procesos") ||
-    value.includes("quien tiene mas mas procesos") ||
-    value.includes("procesos asignados")
-  ) {
-    return "responsables";
-  }
-  if (value.includes("sin cambio") || value.includes("tiempo") || value.includes("quieto")) return "sin-cambios";
-  if (value.includes("prioridad") || value.includes("critico") || value.includes("alta")) return "prioridad";
-  return null;
-}
-
 function inferLexCourtesyIntent(text: string): LexCourtesyIntent | null {
   const value = text
     .toLowerCase()
@@ -430,11 +401,7 @@ function getLexFallbackAnswer(question: string, intent: LexIntent | null, rows: 
     return getLexCourtesyAnswer(courtesyIntent);
   }
 
-  const novedades = rows.filter((row) => row.statusType === "novedad").length;
-  const fallas = rows.filter((row) => row.statusType === "no-consultado" || row.statusType === "error-fuente").length;
-  const quietos = rows.filter((row) => row.statusType === "sin-cambios").length;
-
-  return `Estoy leyendo la demo sobre ${rows.length} procesos. Hoy veo ${novedades} con novedad, ${fallas} con fallas de consulta y ${quietos} sin cambios. Si quieres, te explico movimientos, fallas, responsables, prioridad o te hago un resumen operativo a partir de: "${question}".`;
+  return "No pude completar esa respuesta en este intento. Puedes repetir la pregunta o usar una de las consultas sugeridas mientras retomamos el contexto de la demo.";
 }
 
 function ActivationModal({
@@ -880,12 +847,7 @@ function App() {
       return;
     }
 
-    const intent = inferLexIntent(question);
-    if (intent) {
-      consumeLexPrompt(intent);
-    }
-
-    await askLex(intent, question);
+    await askLex(null, question);
     setLexInput("");
   }
 
