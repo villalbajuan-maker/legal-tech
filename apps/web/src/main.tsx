@@ -961,31 +961,43 @@ function App() {
           <p className="eyebrow">Solución</p>
           <h2>De revisión manual a control operativo.</h2>
         </div>
-        <div className="solutionGrid">
-          {solutionBlocks.map((item) => (
-            <article className="solutionCard" key={item.title} data-reveal>
-              <h3>{item.title}</h3>
-              <p>{item.text}</p>
+        <div className="solutionFlow" aria-label="Flujo operativo de LexControl">
+          {solutionBlocks.map((item, index) => (
+            <article className="solutionStep" key={item.title} data-reveal>
+              <span>{index + 1}</span>
+              <div>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </div>
             </article>
           ))}
         </div>
       </section>
 
       <section className="modelShift" data-reveal>
-        <article>
+        <div className="shiftColumn">
           <span>Hoy operas así</span>
-          <p>Revisión manual</p>
-          <p>Excel</p>
-          <p>Mensajes</p>
-          <p>Suposiciones</p>
-        </article>
-        <article>
+          <strong>Revisión manual, Excel, mensajes y supuestos.</strong>
+          <ul>
+            <li>Revisión manual</li>
+            <li>Excel</li>
+            <li>Mensajes</li>
+            <li>Suposiciones</li>
+          </ul>
+        </div>
+        <div className="shiftDivider" aria-hidden="true">
+          <i />
+        </div>
+        <div className="shiftColumn">
           <span>Con LexControl</span>
-          <p>Una bandeja clara</p>
-          <p>Estados visibles</p>
-          <p>Errores identificados</p>
-          <p>Responsables asignados</p>
-        </article>
+          <strong>Una operación visible, trazable y priorizada.</strong>
+          <ul>
+            <li>Una bandeja clara</li>
+            <li>Estados visibles</li>
+            <li>Errores identificados</li>
+            <li>Responsables asignados</li>
+          </ul>
+        </div>
       </section>
 
       <section className="controlSurface" id="control" aria-label="Panel de control LexControl" data-reveal>
@@ -1311,17 +1323,18 @@ function App() {
       </section>
 
       <section className="beta" id="demo" data-reveal>
-        <div>
+        <div className="betaContent">
           <p className="eyebrow">Demo gratuita controlada</p>
           <h2>Activa LexControl con una muestra real de tu operación.</h2>
           <p>Estamos activando un grupo reducido de abogados y firmas que operan volumen real de procesos.</p>
           <p>Ideal para equipos que manejan 50 a 500 procesos activos.</p>
-          <div className="demoList">
-            <span>Hasta 100 procesos</span>
-            <span>Hasta 4 responsables</span>
-            <span>Bandeja operativa</span>
-            <span>Lex sobre la demo</span>
-          </div>
+          <ul className="demoChecklist">
+            <li>Hasta 100 procesos</li>
+            <li>Hasta 4 responsables</li>
+            <li>Bandeja operativa</li>
+            <li>Lex sobre la demo</li>
+          </ul>
+          <small>La activación se coordina con una muestra real y sin pedir datos sensibles en el primer paso.</small>
         </div>
         <button className="button primary" type="button" onClick={() => setActivationOpen(true)}>
           Activar demo gratis

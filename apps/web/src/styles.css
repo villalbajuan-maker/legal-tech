@@ -496,8 +496,6 @@ h3 {
 .problemList,
 .problemTruth,
 .diagnosticEntry,
-.solutionCard,
-.modelShift article,
 .closingSection {
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -552,8 +550,6 @@ h3 {
 }
 
 .diagnosticEntry:hover,
-.solutionCard:hover,
-.modelShift article:hover,
 .closingSection:hover {
   border-color: var(--brand-border);
   box-shadow: 0 12px 28px rgb(15 23 42 / 0.07);
@@ -569,55 +565,135 @@ h3 {
   gap: 22px;
 }
 
-.solutionGrid,
 .modelShift,
 .stateGrid {
   display: grid;
   gap: 16px;
 }
 
-.solutionGrid {
+.solutionFlow {
+  display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
 }
 
-.solutionCard {
-  min-height: 164px;
-  padding: 22px;
+.solutionStep {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
 }
 
-.solutionCard h3 {
-  margin-bottom: 10px;
+.solutionStep:not(:last-child)::after {
+  position: absolute;
+  top: 22px;
+  left: calc(100% - 10px);
+  width: 20px;
+  height: 1px;
+  content: "";
+  background: var(--brand-border);
+}
+
+.solutionStep span {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--brand-border);
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 16px;
+  font-weight: 820;
+}
+
+.solutionStep h3 {
+  margin: 2px 0 8px;
   color: var(--brand);
   font-size: 20px;
 }
 
+.solutionStep p {
+  margin: 0;
+  color: var(--muted);
+  line-height: var(--line-body);
+}
+
 .modelShift {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  padding: 10px 0;
 }
 
-.modelShift article {
-  padding: 24px;
+.shiftColumn {
+  display: grid;
+  gap: 14px;
 }
 
-.modelShift span {
+.shiftColumn span {
   display: block;
-  margin-bottom: 16px;
   color: var(--brand);
   font-size: var(--font-micro);
   font-weight: 820;
   text-transform: uppercase;
 }
 
-.modelShift p {
-  min-height: 38px;
+.shiftColumn strong {
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 760;
+  line-height: 1.35;
+}
+
+.shiftColumn ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shiftColumn li {
   border-top: 1px solid var(--border);
   padding-top: 10px;
   color: var(--text);
-  font-weight: 720;
+  font-size: var(--font-body);
+  font-weight: 700;
 }
 
-.modelShift article:first-child p {
+.shiftColumn:first-child strong,
+.shiftColumn:first-child li {
   color: var(--muted);
+}
+
+.shiftDivider {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  padding-top: 28px;
+}
+
+.shiftDivider i {
+  position: relative;
+  display: block;
+  width: 44px;
+  height: 1px;
+  background: var(--brand-border);
+}
+
+.shiftDivider i::after {
+  position: absolute;
+  top: -4px;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-top: 1px solid var(--brand-border);
+  border-right: 1px solid var(--brand-border);
+  content: "";
+  transform: rotate(45deg);
 }
 
 .controlSurface {
@@ -1836,36 +1912,52 @@ h3 {
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
   gap: 28px;
   align-items: center;
-  border: 1px solid var(--brand-border);
-  border-radius: 16px;
-  padding: 28px;
-  background: var(--brand-soft);
+  padding: 12px 0 0;
+  background: transparent;
+  border: 0;
 }
 
-.demoList {
+.betaContent {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 18px;
+  gap: 14px;
+  max-width: 620px;
 }
 
-.demoList span {
-  min-height: 34px;
-  border: 1px solid var(--brand-border);
-  border-radius: 8px;
-  padding: 8px 10px;
-  background: #ffffff;
-  color: var(--brand);
+.betaContent p {
+  margin: 0;
+}
+
+.demoChecklist {
+  display: grid;
+  gap: 10px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.demoChecklist li {
+  position: relative;
+  padding-left: 18px;
+  color: var(--text);
+  font-size: var(--font-body);
+  font-weight: 700;
+}
+
+.demoChecklist li::before {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  content: "";
+  background: var(--success);
+}
+
+.betaContent small {
+  color: var(--muted);
   font-size: var(--font-small);
-  font-weight: 760;
-  transition:
-    border-color 160ms ease,
-    transform 160ms ease;
-}
-
-.demoList span:hover {
-  border-color: var(--brand);
-  transform: translateY(-1px);
+  line-height: 1.5;
 }
 
 .beta .button {
@@ -2288,12 +2380,22 @@ h3 {
   .workbench,
   .problemSection,
   .diagnosticEntry,
-  .solutionGrid,
   .modelShift,
   .faqSection,
   .pricingSection,
   .beta {
     grid-template-columns: 1fr;
+  }
+
+  .solutionFlow {
+    grid-template-columns: 1fr;
+  }
+
+  .solutionStep:not(:last-child)::after {
+    top: calc(100% + 8px);
+    left: 20px;
+    width: 1px;
+    height: 18px;
   }
 
   .filterGroup {
@@ -2477,11 +2579,27 @@ h3 {
   .stateGrid,
   .faqGrid,
   .pricingGrid,
-  .solutionGrid,
   .modelShift,
   .steps,
   .signalGrid {
     grid-template-columns: 1fr;
+  }
+
+  .solutionFlow {
+    grid-template-columns: 1fr;
+  }
+
+  .solutionStep {
+    grid-template-columns: auto 1fr;
+  }
+
+  .modelShift {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .shiftDivider {
+    display: none;
   }
 
   .transitionSection p,
