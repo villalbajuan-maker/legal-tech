@@ -953,118 +953,129 @@ function App() {
           </div>
         </div>
 
-        <div className="stateGrid">
-          <button type="button" onClick={() => { setOperationalFilter("novedad"); setOwnerFilter("todos"); }}>
-            <strong>{summary.novedades}</strong>
-            <span>Procesos con novedad</span>
-          </button>
-          <button type="button" onClick={() => { setOperationalFilter("sin-cambios"); setOwnerFilter("todos"); }}>
-            <strong>{summary.sinCambios}</strong>
-            <span>Procesos sin cambios</span>
-          </button>
-          <button type="button" onClick={() => { setOperationalFilter("no-consultado"); setOwnerFilter("todos"); }}>
-            <strong>{summary.noConsultados}</strong>
-            <span>Procesos no consultados</span>
-          </button>
-          <button type="button" onClick={() => { setOperationalFilter("error-fuente"); setOwnerFilter("todos"); }}>
-            <strong>{summary.errores}</strong>
-            <span>Errores de fuente</span>
-          </button>
-          <button type="button" onClick={() => askLex("responsables", "¿Quién concentra más pendientes?")}>
-            <strong>{summary.responsables}</strong>
-            <span>Responsables activos</span>
-          </button>
-          <button type="button" onClick={() => askLex("prioridad", "¿Qué requiere prioridad?")}>
-            <strong>{rowsByTime.filter((row) => row.priority === "Alta" || row.priority === "Crítica").length}</strong>
-            <span>Prioridades altas</span>
-          </button>
-        </div>
+        <div className="controlWorkbenchFrame">
+          <div className="controlWorkbenchBar" aria-hidden="true">
+            <div className="controlWorkbenchDots">
+              <i />
+              <i />
+              <i />
+            </div>
+            <span>Vista demo operativa</span>
+            <small>LexControl / muestra congelada</small>
+          </div>
 
-        <section className="mobileTrayIntro" aria-label="Resumen mobile de la bandeja">
-          <div className="mobileSignalStrip">
-            <article>
-              <strong>{rowsByTime.length}</strong>
-              <span>procesos</span>
-            </article>
-            <article>
+          <div className="stateGrid">
+            <button type="button" onClick={() => { setOperationalFilter("novedad"); setOwnerFilter("todos"); }}>
               <strong>{summary.novedades}</strong>
-              <span>novedad</span>
-            </article>
-            <article>
-              <strong>{summary.noConsultados + summary.errores}</strong>
-              <span>fallas</span>
-            </article>
-            <article>
+              <span>Procesos con novedad</span>
+            </button>
+            <button type="button" onClick={() => { setOperationalFilter("sin-cambios"); setOwnerFilter("todos"); }}>
               <strong>{summary.sinCambios}</strong>
-              <span>sin cambios</span>
-            </article>
-          </div>
-
-          <div className="mobileTrayTabs" role="tablist" aria-label="Estados principales de la bandeja">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mobileTrayFilter === "novedad"}
-              className={mobileTrayFilter === "novedad" ? "active" : ""}
-              onClick={() => setOperationalFilter("novedad")}
-            >
-              Novedades
+              <span>Procesos sin cambios</span>
             </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mobileTrayFilter === "error-fuente" || mobileTrayFilter === "no-consultado"}
-              className={mobileTrayFilter === "error-fuente" || mobileTrayFilter === "no-consultado" ? "active" : ""}
-              onClick={() => setOperationalFilter("error-fuente")}
-            >
-              Fallas
+            <button type="button" onClick={() => { setOperationalFilter("no-consultado"); setOwnerFilter("todos"); }}>
+              <strong>{summary.noConsultados}</strong>
+              <span>Procesos no consultados</span>
             </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mobileTrayFilter === "sin-cambios"}
-              className={mobileTrayFilter === "sin-cambios" ? "active" : ""}
-              onClick={() => setOperationalFilter("sin-cambios")}
-            >
-              Sin cambios
+            <button type="button" onClick={() => { setOperationalFilter("error-fuente"); setOwnerFilter("todos"); }}>
+              <strong>{summary.errores}</strong>
+              <span>Errores de fuente</span>
+            </button>
+            <button type="button" onClick={() => askLex("responsables", "¿Quién concentra más pendientes?")}>
+              <strong>{summary.responsables}</strong>
+              <span>Responsables activos</span>
+            </button>
+            <button type="button" onClick={() => askLex("prioridad", "¿Qué requiere prioridad?")}>
+              <strong>{rowsByTime.filter((row) => row.priority === "Alta" || row.priority === "Crítica").length}</strong>
+              <span>Prioridades altas</span>
             </button>
           </div>
 
-          <div className="mobileFilterBar" aria-label="Filtros mobile">
-            <label>
-              Fecha
-              <select
-                value={timeFilter}
-                onChange={(event) => setTimeFilter(event.target.value as TimeFilter)}
-                aria-label="Filtrar por fecha en mobile"
+          <section className="mobileTrayIntro" aria-label="Resumen mobile de la bandeja">
+            <div className="mobileSignalStrip">
+              <article>
+                <strong>{rowsByTime.length}</strong>
+                <span>procesos</span>
+              </article>
+              <article>
+                <strong>{summary.novedades}</strong>
+                <span>novedad</span>
+              </article>
+              <article>
+                <strong>{summary.noConsultados + summary.errores}</strong>
+                <span>fallas</span>
+              </article>
+              <article>
+                <strong>{summary.sinCambios}</strong>
+                <span>sin cambios</span>
+              </article>
+            </div>
+
+            <div className="mobileTrayTabs" role="tablist" aria-label="Estados principales de la bandeja">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mobileTrayFilter === "novedad"}
+                className={mobileTrayFilter === "novedad" ? "active" : ""}
+                onClick={() => setOperationalFilter("novedad")}
               >
-                {timeFilters.map((item) => (
-                  <option value={item.value} key={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Responsable
-              <select
-                value={ownerFilter}
-                onChange={(event) => setOwnerFilter(event.target.value)}
-                aria-label="Filtrar por responsable en mobile"
+                Novedades
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mobileTrayFilter === "error-fuente" || mobileTrayFilter === "no-consultado"}
+                className={mobileTrayFilter === "error-fuente" || mobileTrayFilter === "no-consultado" ? "active" : ""}
+                onClick={() => setOperationalFilter("error-fuente")}
               >
-                <option value="todos">Todos</option>
-                {ownerOptions.map((owner) => (
-                  <option value={owner} key={owner}>
-                    {owner}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        </section>
+                Fallas
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mobileTrayFilter === "sin-cambios"}
+                className={mobileTrayFilter === "sin-cambios" ? "active" : ""}
+                onClick={() => setOperationalFilter("sin-cambios")}
+              >
+                Sin cambios
+              </button>
+            </div>
 
-        <div className="workbench">
-          <section className="tablePanel desktopTrayPanel" aria-label="Procesos monitoreados">
+            <div className="mobileFilterBar" aria-label="Filtros mobile">
+              <label>
+                Fecha
+                <select
+                  value={timeFilter}
+                  onChange={(event) => setTimeFilter(event.target.value as TimeFilter)}
+                  aria-label="Filtrar por fecha en mobile"
+                >
+                  {timeFilters.map((item) => (
+                    <option value={item.value} key={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Responsable
+                <select
+                  value={ownerFilter}
+                  onChange={(event) => setOwnerFilter(event.target.value)}
+                  aria-label="Filtrar por responsable en mobile"
+                >
+                  <option value="todos">Todos</option>
+                  {ownerOptions.map((owner) => (
+                    <option value={owner} key={owner}>
+                      {owner}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <div className="workbench">
+            <section className="tablePanel desktopTrayPanel" aria-label="Procesos monitoreados">
             <div className="tableHeader">
               <span>Radicado</span>
               <label>
@@ -1134,51 +1145,52 @@ function App() {
                 </div>
               ) : null}
             </div>
-          </section>
+            </section>
 
-          <section className="mobileTrayPanel" aria-label="Procesos monitoreados en mobile">
-            <div className="mobileTrayHeader">
-              <strong>
-                {mobileTrayFilter === "sin-cambios"
-                  ? "Procesos sin cambios"
-                  : mobileTrayFilter === "error-fuente" || mobileTrayFilter === "no-consultado"
-                    ? "Procesos con fallas"
-                    : "Procesos con novedad"}
-              </strong>
-              <span>Mostrando hasta 3 casos de la muestra.</span>
-            </div>
-            <div className="mobileProcessList">
-              {mobileTrayRows.map((row) => (
-                <details className={`mobileProcessCard ${row.state}`} key={row.radicado}>
-                  <summary>
-                    <span className={`badge ${row.state}`}>{row.status}</span>
-                    <strong>{row.radicado}</strong>
-                    <p>{row.action}</p>
-                    <small>{row.owner} · {row.date}</small>
-                  </summary>
-                  <div className="mobileProcessMeta">
-                    <div>
-                      <span>Anotación</span>
-                      <p>{row.annotation}</p>
+            <section className="mobileTrayPanel" aria-label="Procesos monitoreados en mobile">
+              <div className="mobileTrayHeader">
+                <strong>
+                  {mobileTrayFilter === "sin-cambios"
+                    ? "Procesos sin cambios"
+                    : mobileTrayFilter === "error-fuente" || mobileTrayFilter === "no-consultado"
+                      ? "Procesos con fallas"
+                      : "Procesos con novedad"}
+                </strong>
+                <span>Mostrando hasta 3 casos de la muestra.</span>
+              </div>
+              <div className="mobileProcessList">
+                {mobileTrayRows.map((row) => (
+                  <details className={`mobileProcessCard ${row.state}`} key={row.radicado}>
+                    <summary>
+                      <span className={`badge ${row.state}`}>{row.status}</span>
+                      <strong>{row.radicado}</strong>
+                      <p>{row.action}</p>
+                      <small>{row.owner} · {row.date}</small>
+                    </summary>
+                    <div className="mobileProcessMeta">
+                      <div>
+                        <span>Anotación</span>
+                        <p>{row.annotation}</p>
+                      </div>
+                      <div>
+                        <span>Fuente</span>
+                        <p>{row.source}</p>
+                      </div>
+                      <div>
+                        <span>Prioridad</span>
+                        <p>{row.priority}</p>
+                      </div>
                     </div>
-                    <div>
-                      <span>Fuente</span>
-                      <p>{row.source}</p>
-                    </div>
-                    <div>
-                      <span>Prioridad</span>
-                      <p>{row.priority}</p>
-                    </div>
+                  </details>
+                ))}
+                {mobileTrayRows.length === 0 ? (
+                  <div className="emptyState">
+                    No hay procesos en esta vista. Cambia el filtro para ver otra señal operativa.
                   </div>
-                </details>
-              ))}
-              {mobileTrayRows.length === 0 ? (
-                <div className="emptyState">
-                  No hay procesos en esta vista. Cambia el filtro para ver otra señal operativa.
-                </div>
-              ) : null}
-            </div>
-          </section>
+                ) : null}
+              </div>
+            </section>
+          </div>
         </div>
 
         <div className="lexFloatingLayer" aria-live="polite">
