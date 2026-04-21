@@ -11,6 +11,45 @@ import lexSymbolUrl from "./assets/lex-control-logo-symbol.png";
 import logoUrl from "./assets/lexcontrol-logo.png";
 import "./styles.css";
 
+type SpeechRecognitionAlternative = {
+  transcript: string;
+};
+
+type SpeechRecognitionResult = {
+  0: SpeechRecognitionAlternative;
+  isFinal: boolean;
+  length: number;
+};
+
+type SpeechRecognitionEvent = Event & {
+  resultIndex: number;
+  results: SpeechRecognitionResult[];
+};
+
+type SpeechRecognitionErrorEvent = Event & {
+  error: string;
+};
+
+type SpeechRecognitionInstance = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
+
+declare global {
+  interface Window {
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+  }
+}
+
 type OperationalFilter = "todos" | ProcessStatus;
 
 type TimeFilter = "24h" | "7d" | "30d" | "todos";
@@ -530,6 +569,7 @@ function App() {
   const [isLexTyping, setLexTyping] = useState(false);
   const [isMobileNavOpen, setMobileNavOpen] = useState(false);
   const [lexInput, setLexInput] = useState("");
+  const [isLexListening, setLexListening] = useState(false);
   const [lexUserName, setLexUserName] = useState<string | null>(null);
   const [hasStartedLexIntro, setHasStartedLexIntro] = useState(false);
   const [isAwaitingLexName, setAwaitingLexName] = useState(false);
@@ -538,10 +578,13 @@ function App() {
   const [lexMessages, setLexMessages] = useState<LexMessage[]>([]);
   const lexMessagesRef = useRef<HTMLDivElement | null>(null);
   const lexTypingTimeoutRef = useRef<number | null>(null);
+  const speechRecognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const rowsByTime = getRowsByTime(processRows, timeFilter);
   const rowsByOperationalState = getRowsByOperationalState(rowsByTime, operationalFilter);
   const visibleRows = rowsByOperationalState.filter((row) => ownerFilter === "todos" || row.owner === ownerFilter);
   const ownerOptions = Array.from(new Set(processRows.map((row) => row.owner))).sort();
+  const canUseSpeechRecognition =
+    typeof window !== "undefined" && Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
   const summary = {
     novedades: rowsByTime.filter((row) => row.statusType === "novedad").length,
     sinCambios: rowsByTime.filter((row) => row.statusType === "sin-cambios").length,
@@ -592,6 +635,7 @@ function App() {
       if (lexTypingTimeoutRef.current) {
         window.clearTimeout(lexTypingTimeoutRef.current);
       }
+      speechRecognitionRef.current?.stop();
     };
   }, []);
 
@@ -792,9 +836,63 @@ function App() {
     const next = !isLexOpen;
     setLexOpen(next);
 
+    if (!next) {
+      speechRecognitionRef.current?.stop();
+      setLexListening(false);
+    }
+
     if (next && !hasStartedLexIntro) {
       startLexIntro();
     }
+  }
+
+  function closeLex() {
+    speechRecognitionRef.current?.stop();
+    setLexListening(false);
+    setLexOpen(false);
+  }
+
+  function toggleLexListening() {
+    if (isLexTyping) return;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      return;
+    }
+
+    if (isLexListening) {
+      speechRecognitionRef.current?.stop();
+      setLexListening(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "es-CO";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onresult = (event) => {
+      let transcript = "";
+
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        transcript += event.results[index][0]?.transcript ?? "";
+      }
+
+      setLexInput(transcript.trimStart());
+    };
+
+    recognition.onerror = () => {
+      setLexListening(false);
+    };
+
+    recognition.onend = () => {
+      setLexListening(false);
+      speechRecognitionRef.current = null;
+    };
+
+    speechRecognitionRef.current = recognition;
+    setLexListening(true);
+    recognition.start();
   }
 
   return (
@@ -1194,7 +1292,7 @@ function App() {
         </div>
 
         <div className="lexFloatingLayer" aria-live="polite">
-          {isLexOpen ? <button className="lexBackdrop" type="button" aria-label="Cerrar Lex" onClick={() => setLexOpen(false)} /> : null}
+          {isLexOpen ? <button className="lexBackdrop" type="button" aria-label="Cerrar Lex" onClick={closeLex} /> : null}
           <button
             className="lexOrb"
             type="button"
@@ -1217,8 +1315,8 @@ function App() {
                   </span>
                   <strong>Consulta esta bandeja demo.</strong>
                 </div>
-                <button type="button" onClick={() => setLexOpen(false)} aria-label="Cerrar Lex">
-                  Cerrar
+                <button type="button" onClick={closeLex} aria-label="Cerrar Lex">
+                  ×
                 </button>
               </header>
 
@@ -1276,7 +1374,25 @@ function App() {
                   aria-label="Pregunta para Lex"
                   disabled={isLexTyping}
                 />
-                <button type="submit" disabled={isLexTyping}>Enviar</button>
+                <div className="lexInputActions">
+                  <button
+                    className={`lexMicButton ${isLexListening ? "is-listening" : ""}`}
+                    type="button"
+                    onClick={toggleLexListening}
+                    aria-label={isLexListening ? "Detener dictado" : "Iniciar dictado"}
+                    aria-pressed={isLexListening}
+                    disabled={isLexTyping || !canUseSpeechRecognition}
+                  >
+                    <span className="lexMicIcon" aria-hidden="true">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                  </button>
+                  <button className="lexSendButton" type="submit" aria-label="Enviar mensaje" disabled={isLexTyping}>
+                    ↑
+                  </button>
+                </div>
               </form>
             </section>
           ) : null}

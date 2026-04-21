@@ -1471,14 +1471,18 @@ h3 {
 }
 
 .lexModalHeader button {
-  min-height: 30px;
+  display: inline-grid;
+  place-items: center;
+  min-width: 32px;
+  min-height: 32px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 6px 9px;
+  padding: 0;
   background: #ffffff;
   color: var(--muted);
-  font-size: var(--font-micro);
-  font-weight: 760;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
 }
 
 .lexMessages {
@@ -1631,25 +1635,102 @@ h3 {
     box-shadow 150ms ease;
 }
 
-.lexInputBar button {
+.lexInputActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lexMicButton,
+.lexSendButton {
   min-height: 38px;
-  border: 1px solid var(--brand);
   border-radius: 8px;
-  padding: 9px 12px;
-  background: var(--brand);
-  color: #ffffff;
-  font-size: var(--font-small);
-  font-weight: 780;
   transition:
     background 150ms ease,
+    border-color 150ms ease,
     box-shadow 150ms ease,
     transform 150ms ease;
 }
 
-.lexInputBar button:hover {
-  background: var(--brand-hover);
+.lexMicButton {
+  display: inline-grid;
+  place-items: center;
+  min-width: 42px;
+  border: 1px solid var(--border);
+  padding: 0;
+  background: #ffffff;
+  color: var(--brand);
+}
+
+.lexMicIcon {
+  display: inline-flex;
+  align-items: end;
+  gap: 3px;
+  height: 16px;
+}
+
+.lexMicIcon i {
+  display: block;
+  width: 3px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.72;
+}
+
+.lexMicIcon i:first-child {
+  height: 8px;
+}
+
+.lexMicIcon i:nth-child(2) {
+  height: 14px;
+}
+
+.lexMicIcon i:last-child {
+  height: 10px;
+}
+
+.lexMicButton.is-listening {
+  border-color: rgb(15 43 91 / 0.28);
+  background: var(--brand-soft);
+  box-shadow: 0 0 0 4px rgb(15 43 91 / 0.08);
+}
+
+.lexMicButton.is-listening .lexMicIcon i {
+  animation: lex-listening 1s ease-in-out infinite;
+}
+
+.lexMicButton.is-listening .lexMicIcon i:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.lexMicButton.is-listening .lexMicIcon i:last-child {
+  animation-delay: 0.24s;
+}
+
+.lexSendButton {
+  min-width: 42px;
+  border: 1px solid #111827;
+  padding: 0;
+  background: #111827;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.lexSendButton:hover,
+.lexMicButton:hover {
   box-shadow: 0 8px 18px rgb(20 42 84 / 0.16);
   transform: translateY(-1px);
+}
+
+.lexMicButton:hover {
+  border-color: var(--brand-border);
+}
+
+.lexSendButton:hover {
+  background: #0f172a;
+  border-color: #0f172a;
 }
 
 @keyframes lex-breathe {
@@ -1674,6 +1755,19 @@ h3 {
 
   50% {
     transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+@keyframes lex-listening {
+  0%,
+  100% {
+    transform: scaleY(0.65);
+    opacity: 0.45;
+  }
+
+  50% {
+    transform: scaleY(1.15);
     opacity: 1;
   }
 }
