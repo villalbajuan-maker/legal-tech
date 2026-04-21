@@ -2075,29 +2075,35 @@ h3 {
 
 .addOnsGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
+  row-gap: 0;
 }
 
 .addOnsGrid article {
-  min-height: 116px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 14px;
-  background: var(--surface-subtle);
-  transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    transform 160ms ease;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  min-height: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 14px 0;
 }
 
-.addOnsGrid article:hover {
-  background: #ffffff;
+.addOnsGrid article span {
+  width: 8px;
+  height: 8px;
+  margin-top: 7px;
+  border-radius: 999px;
+  background: var(--brand-border);
+}
+
+.addOnsGrid article div {
+  display: grid;
+  gap: 4px;
 }
 
 .addOnsGrid strong {
-  display: block;
   color: var(--brand);
   font-size: var(--font-small);
   font-weight: 780;
@@ -2105,7 +2111,7 @@ h3 {
 
 .addOnsGrid p,
 .addOnsNote {
-  margin: 8px 0 0;
+  margin: 0;
   color: var(--muted);
   font-size: var(--font-small);
   line-height: 1.48;

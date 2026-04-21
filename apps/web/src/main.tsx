@@ -1949,8 +1949,11 @@ function App() {
           <div className="addOnsGrid">
             {addOns.map((addOn) => (
               <article key={addOn.name}>
-                <strong>{addOn.name}</strong>
-                <p>{addOn.description}</p>
+                <span aria-hidden="true" />
+                <div>
+                  <strong>{addOn.name}</strong>
+                  <p>{addOn.description}</p>
+                </div>
               </article>
             ))}
           </div>
