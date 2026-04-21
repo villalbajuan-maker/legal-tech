@@ -1236,7 +1236,6 @@ h3 {
 }
 
 .mobileTrayPanel {
-  display: grid;
   gap: 12px;
   border: 1px solid var(--brand-border);
   border-radius: 12px;
