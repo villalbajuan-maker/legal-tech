@@ -1,29 +1,28 @@
 # Despliegue en Vercel
 
-LexControl usa un monorepo con la landing en `apps/web`.
+LexControl usa un monorepo con la landing en `apps/web` y la API de Lex en `api/lex-chat.ts`.
 
 ## Configuración recomendada
 
 Al importar el repositorio en Vercel, configurar el proyecto con:
 
 ```txt
-Root Directory: apps/web
+Root Directory: ./
 ```
 
-El archivo `apps/web/vercel.json` define:
+El archivo `vercel.json` en la raíz del repo define:
 
 - Framework: Vite
 - Install command: `npm install`
-- Build command: `npm run build`
-- Output directory: `dist`
+- Build command: `npm run build -w apps/web`
+- Output directory: `apps/web/dist`
 
-No existe `vercel.json` en la raíz del repo para evitar que Vercel bloquee campos con configuración del monorepo.
+Esta configuración permite desplegar al mismo tiempo:
 
-No usar `npm run build -w apps/web` cuando el root ya es `apps/web`, porque Vercel intentará buscar un workspace dentro de `apps/web` y fallará con:
+- el frontend de `apps/web`
+- la función serverless en `/api/lex-chat`
 
-```txt
-npm error No workspaces found: --workspace=apps/web
-```
+No usar `Root Directory: apps/web` si se quiere que Lex converse con LLM desde Vercel, porque la carpeta `api/` vive en la raíz del repositorio.
 
 ## Variables de entorno
 
@@ -58,8 +57,7 @@ Configurar el dominio desde Vercel cuando el primer deploy esté estable.
 Antes de desplegar:
 
 ```bash
-cd apps/web
-npm run build
+npm run build -w apps/web
 ```
 
 El build debe generar `apps/web/dist`.
