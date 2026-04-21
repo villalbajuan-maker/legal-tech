@@ -2329,8 +2329,8 @@ h3 {
 .activationModal {
   position: relative;
   width: min(820px, 100%);
-  max-height: min(820px, calc(100vh - 40px));
-  overflow: auto;
+  max-height: min(760px, calc(100vh - 40px));
+  overflow: hidden;
   border: 1px solid var(--brand-border);
   border-radius: 16px;
   padding: 28px;
@@ -2441,7 +2441,9 @@ h3 {
 
 .activationStep {
   display: grid;
-  gap: 16px;
+  gap: 14px;
+  align-content: start;
+  min-height: 0;
 }
 
 .activationStep p {
@@ -2453,15 +2455,15 @@ h3 {
 .demoTerms {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 12px;
 }
 
 .demoTerms div {
   display: grid;
-  gap: 8px;
+  gap: 7px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 14px;
+  padding: 13px;
   background: var(--surface-subtle);
 }
 
@@ -2491,6 +2493,29 @@ h3 {
 .activationQuestionBlock {
   display: grid;
   gap: 10px;
+}
+
+.activationChoiceGrid,
+.activationMetaGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.activationChoiceGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.activationChoiceGrid.compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.activationChoiceGrid.compact-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.activationMetaGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
 }
 
 .activationQuestionBlock > span {
@@ -2527,14 +2552,14 @@ h3 {
 
 .activationChoiceCard {
   display: grid;
-  gap: 8px;
-  min-height: 110px;
-  padding: 16px;
+  gap: 6px;
+  min-height: 92px;
+  padding: 14px;
 }
 
 .activationChoiceCard strong {
   color: var(--brand);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
 }
 
@@ -2546,7 +2571,8 @@ h3 {
 }
 
 .activationChoiceChip {
-  padding: 12px 14px;
+  min-height: 46px;
+  padding: 10px 12px;
   color: var(--text);
   font-size: var(--font-small);
   font-weight: 760;
@@ -2566,7 +2592,7 @@ h3 {
 .activationSnapshot {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 7px;
 }
 
 .activationSnapshot span {
@@ -2612,7 +2638,7 @@ h3 {
 .activationFooter {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14px;
+  gap: 12px;
   align-items: center;
   margin-top: 4px;
 }
@@ -2810,10 +2836,17 @@ h3 {
 
   .demoTerms,
   .activationForm,
+  .activationChoiceGrid,
+  .activationChoiceGrid.compact,
   .pricingNote,
   .addOnsGrid,
   .siteFooter {
     grid-template-columns: 1fr;
+  }
+
+  .activationChoiceGrid.compact-three,
+  .activationMetaGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .tablePanel {
@@ -2941,10 +2974,16 @@ h3 {
     justify-content: space-between;
   }
 
-  .activationOptionRail,
-  .activationOptionRail.compact {
-    grid-auto-flow: row;
-    grid-auto-columns: unset;
+  .activationModal {
+    width: min(100%, 540px);
+    max-height: calc(100dvh - 24px);
+    padding: 18px;
+  }
+
+  .activationChoiceGrid.compact-three,
+  .activationMetaGrid,
+  .activationForm {
+    grid-template-columns: 1fr;
   }
 
   .stateGrid {
