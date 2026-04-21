@@ -452,26 +452,73 @@ function ActivationModal({
 }) {
   const [step, setStep] = useState(0);
   const [isSubmitted, setSubmitted] = useState(false);
+  const [caseBand, setCaseBand] = useState("");
+  const [reviewMethod, setReviewMethod] = useState("");
+  const [primaryRisk, setPrimaryRisk] = useState("");
+  const [hasAssignedOwners, setHasAssignedOwners] = useState("");
+
+  const caseBandOptions = ["Menos de 50", "50 a 100", "101 a 300", "Más de 300"];
+  const reviewMethodOptions = [
+    "Manual en Rama Judicial",
+    "Excel + revisión manual",
+    "Dependiente / asistente",
+    "Herramienta externa",
+    "No hay proceso claro",
+  ];
+  const primaryRiskOptions = [
+    "No detectar actuaciones",
+    "No saber qué no se consultó",
+    "Errores de fuente",
+    "Falta de trazabilidad",
+    "Demasiado tiempo operativo",
+  ];
+  const assignedOwnerOptions = ["Sí", "Parcialmente", "No"];
+  const canContinueFromStepOne = Boolean(caseBand);
+  const canContinueFromStepTwo = Boolean(reviewMethod && primaryRisk && hasAssignedOwners);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitted(true);
   }
 
+  function goNext() {
+    if (step === 1 && !canContinueFromStepOne) return;
+    if (step === 2 && !canContinueFromStepTwo) return;
+    setStep((current) => Math.min(current + 1, 3));
+  }
+
+  function goBack() {
+    setStep((current) => Math.max(current - 1, 0));
+  }
+
   return (
     <div className="modalLayer" role="dialog" aria-modal="true" aria-labelledby="activation-title">
       <div className="activationModal">
-        <button className="modalClose" type="button" onClick={onClose} aria-label="Cerrar activación">
-          Cerrar
-        </button>
-
         {!isSubmitted ? (
           <>
-            <p className="eyebrow">Demo gratuita controlada</p>
-            <div className="progress">
-              <span>{step + 1} de 3</span>
+            <div className="activationTopbar">
               <div>
-                <i style={{ width: `${((step + 1) / 3) * 100}%` }} />
+                <p className="eyebrow">Demo gratuita controlada</p>
+                <div className="progress">
+                  <span>{step + 1} de 4</span>
+                  <div>
+                    <i style={{ width: `${((step + 1) / 4) * 100}%` }} />
+                  </div>
+                </div>
+              </div>
+              <div className="activationChrome">
+                <button
+                  className="activationNavButton"
+                  type="button"
+                  onClick={goBack}
+                  aria-label="Volver al paso anterior"
+                  disabled={step === 0}
+                >
+                  ←
+                </button>
+                <button className="modalClose" type="button" onClick={onClose} aria-label="Cerrar activación">
+                  ×
+                </button>
               </div>
             </div>
 
@@ -501,73 +548,135 @@ function ActivationModal({
                     ))}
                   </div>
                 </div>
-                <button className="button primary" type="button" onClick={() => setStep(1)}>
-                  Continuar
-                </button>
+                <div className="activationFooter">
+                  <p>
+                    La activación se coordina con una muestra real y está pensada para equipos con volumen operativo.
+                  </p>
+                  <button className="activationPrimaryNav" type="button" onClick={goNext} aria-label="Continuar">
+                    →
+                  </button>
+                </div>
               </section>
             ) : null}
 
             {step === 1 ? (
               <section className="activationStep">
-                <h2>Cuéntanos cómo opera hoy tu vigilancia.</h2>
-                <div className="activationQuestions">
-                  <label>
-                    ¿Cuántos procesos vigilas actualmente?
-                    <select defaultValue="">
-                      <option value="" disabled>Selecciona una opción</option>
-                      <option>Menos de 50</option>
-                      <option>50 a 100</option>
-                      <option>101 a 300</option>
-                      <option>Más de 300</option>
-                    </select>
-                  </label>
-                  <label>
-                    ¿Cómo los revisan hoy?
-                    <select defaultValue="">
-                      <option value="" disabled>Selecciona una opción</option>
-                      <option>Manual en Rama Judicial</option>
-                      <option>Excel + revisión manual</option>
-                      <option>Dependiente / asistente</option>
-                      <option>Herramienta externa</option>
-                      <option>No hay proceso claro</option>
-                    </select>
-                  </label>
-                  <label>
-                    ¿Cuál es el principal riesgo hoy?
-                    <select defaultValue="">
-                      <option value="" disabled>Selecciona una opción</option>
-                      <option>No detectar actuaciones</option>
-                      <option>No saber qué no se consultó</option>
-                      <option>Errores de fuente</option>
-                      <option>Falta de trazabilidad</option>
-                      <option>Demasiado tiempo operativo</option>
-                    </select>
-                  </label>
-                  <label>
-                    ¿Tienen responsables asignados por proceso?
-                    <select defaultValue="">
-                      <option value="" disabled>Selecciona una opción</option>
-                      <option>Sí</option>
-                      <option>Parcialmente</option>
-                      <option>No</option>
-                    </select>
-                  </label>
+                <h2>¿Cuántos procesos vigilas hoy?</h2>
+                <p>
+                  Queremos entender si esta activación se ajusta al volumen real de tu operación.
+                </p>
+                <div className="activationOptionRail" aria-label="Volumen de procesos">
+                  {caseBandOptions.map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      className={`activationChoiceCard ${caseBand === option ? "selected" : ""}`}
+                      onClick={() => setCaseBand(option)}
+                    >
+                      <strong>{option}</strong>
+                      <span>Procesos activos vigilados</span>
+                    </button>
+                  ))}
                 </div>
-                <div className="modalActions">
-                  <button className="button secondary" type="button" onClick={() => setStep(0)}>
-                    Volver
-                  </button>
-                  <button className="button primary" type="button" onClick={() => setStep(2)}>
-                    Continuar
+                <div className="activationFooter">
+                  <p>{caseBand ? `Seleccionado: ${caseBand}` : "Selecciona un rango para continuar."}</p>
+                  <button
+                    className="activationPrimaryNav"
+                    type="button"
+                    onClick={goNext}
+                    aria-label="Continuar"
+                    disabled={!canContinueFromStepOne}
+                  >
+                    →
                   </button>
                 </div>
               </section>
             ) : null}
 
             {step === 2 ? (
+              <section className="activationStep">
+                <h2>¿Cómo opera hoy tu vigilancia?</h2>
+                <p>
+                  Esta parte nos ayuda a entender el punto de partida y el riesgo operativo real.
+                </p>
+
+                <div className="activationQuestionBlock">
+                  <span>¿Cómo revisan hoy las novedades?</span>
+                  <div className="activationOptionRail compact">
+                    {reviewMethodOptions.map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        className={`activationChoiceChip ${reviewMethod === option ? "selected" : ""}`}
+                        onClick={() => setReviewMethod(option)}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="activationQuestionBlock">
+                  <span>¿Cuál es el principal riesgo hoy?</span>
+                  <div className="activationOptionRail compact">
+                    {primaryRiskOptions.map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        className={`activationChoiceChip ${primaryRisk === option ? "selected" : ""}`}
+                        onClick={() => setPrimaryRisk(option)}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="activationQuestionBlock">
+                  <span>¿Tienen responsables asignados por proceso?</span>
+                  <div className="activationOptionRail compact">
+                    {assignedOwnerOptions.map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        className={`activationChoiceChip ${hasAssignedOwners === option ? "selected" : ""}`}
+                        onClick={() => setHasAssignedOwners(option)}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="activationFooter">
+                  <p>
+                    {reviewMethod && primaryRisk && hasAssignedOwners
+                      ? "Listo. Ya tenemos contexto suficiente para preparar la activación."
+                      : "Completa estas selecciones para continuar."}
+                  </p>
+                  <button
+                    className="activationPrimaryNav"
+                    type="button"
+                    onClick={goNext}
+                    aria-label="Continuar"
+                    disabled={!canContinueFromStepTwo}
+                  >
+                    →
+                  </button>
+                </div>
+              </section>
+            ) : null}
+
+            {step === 3 ? (
               <form className="activationStep" onSubmit={submit}>
                 <h2>Solicita la activación.</h2>
                 <p>No necesitas enviar radicados ni datos sensibles en este formulario.</p>
+                <div className="activationSnapshot">
+                  <span>{caseBand}</span>
+                  <span>{reviewMethod}</span>
+                  <span>{primaryRisk}</span>
+                  <span>{hasAssignedOwners}</span>
+                </div>
                 <div className="activationForm">
                   <label>
                     Nombre
@@ -598,12 +707,10 @@ function ActivationModal({
                     <textarea name="message" rows={3} />
                   </label>
                 </div>
-                <div className="modalActions">
-                  <button className="button secondary" type="button" onClick={() => setStep(1)}>
-                    Volver
-                  </button>
-                  <button className="button primary" type="submit">
-                    Solicitar activación
+                <div className="activationFooter">
+                  <p>Coordinaremos una sesión para revisar alcance, carga inicial y siguiente paso.</p>
+                  <button className="activationSubmit" type="submit" aria-label="Solicitar activación">
+                    →
                   </button>
                 </div>
               </form>
@@ -614,8 +721,8 @@ function ActivationModal({
             <p className="eyebrow">Solicitud recibida</p>
             <h2>Revisaremos si tu operación encaja con la demo controlada.</h2>
             <p>Coordinaremos una sesión de activación para revisar el alcance y preparar la carga inicial.</p>
-            <button className="button primary" type="button" onClick={onClose}>
-              Cerrar
+            <button className="activationPrimaryNav" type="button" onClick={onClose} aria-label="Cerrar activación">
+              →
             </button>
           </section>
         )}

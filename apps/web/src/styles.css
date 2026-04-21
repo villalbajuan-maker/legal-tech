@@ -2339,23 +2339,84 @@ h3 {
 }
 
 .modalClose {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  min-height: 34px;
+  display: inline-grid;
+  place-items: center;
+  min-width: 36px;
+  min-height: 36px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 6px 10px;
+  padding: 0;
   background: #ffffff;
   color: var(--muted);
-  font-size: var(--font-micro);
-  font-weight: 760;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.activationTopbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 22px;
+}
+
+.activationChrome {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.activationNavButton,
+.activationPrimaryNav,
+.activationSubmit {
+  display: inline-grid;
+  place-items: center;
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 8px;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.activationNavButton {
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--muted);
+  font-size: 18px;
+}
+
+.activationPrimaryNav,
+.activationSubmit {
+  border: 1px solid #111827;
+  background: #111827;
+  color: #ffffff;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.activationNavButton:hover,
+.activationPrimaryNav:hover,
+.activationSubmit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgb(15 23 42 / 0.12);
+}
+
+.activationNavButton:disabled,
+.activationPrimaryNav:disabled,
+.activationSubmit:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+  box-shadow: none;
 }
 
 .progress {
   display: grid;
   gap: 8px;
-  margin-bottom: 22px;
 }
 
 .progress span {
@@ -2427,6 +2488,97 @@ h3 {
   gap: 12px;
 }
 
+.activationQuestionBlock {
+  display: grid;
+  gap: 10px;
+}
+
+.activationQuestionBlock > span {
+  color: var(--text);
+  font-size: var(--font-small);
+  font-weight: 780;
+}
+
+.activationOptionRail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(220px, 1fr);
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.activationOptionRail.compact {
+  grid-auto-columns: minmax(180px, 1fr);
+}
+
+.activationChoiceCard,
+.activationChoiceChip {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+  text-align: left;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.activationChoiceCard {
+  display: grid;
+  gap: 8px;
+  min-height: 110px;
+  padding: 16px;
+}
+
+.activationChoiceCard strong {
+  color: var(--brand);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.activationChoiceCard span {
+  color: var(--muted);
+  font-size: var(--font-small);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.activationChoiceChip {
+  padding: 12px 14px;
+  color: var(--text);
+  font-size: var(--font-small);
+  font-weight: 760;
+  line-height: 1.4;
+}
+
+.activationChoiceCard:hover,
+.activationChoiceChip:hover,
+.activationChoiceCard.selected,
+.activationChoiceChip.selected {
+  border-color: var(--brand-border);
+  background: var(--brand-soft);
+  box-shadow: 0 10px 20px rgb(15 23 42 / 0.08);
+  transform: translateY(-1px);
+}
+
+.activationSnapshot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.activationSnapshot span {
+  border: 1px solid var(--brand-border);
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 760;
+}
+
 .activationQuestions label,
 .activationForm label {
   display: grid;
@@ -2457,12 +2609,19 @@ h3 {
   grid-column: 1 / -1;
 }
 
-.modalActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: flex-end;
+.activationFooter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
   margin-top: 4px;
+}
+
+.activationFooter p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--font-small);
+  line-height: 1.5;
 }
 
 .signup {
@@ -2650,7 +2809,6 @@ h3 {
   }
 
   .demoTerms,
-  .activationQuestions,
   .activationForm,
   .pricingNote,
   .addOnsGrid,
@@ -2772,6 +2930,21 @@ h3 {
 
   .controlWorkbenchBar small {
     grid-column: 1 / -1;
+  }
+
+  .activationTopbar,
+  .activationFooter {
+    grid-template-columns: 1fr;
+  }
+
+  .activationChrome {
+    justify-content: space-between;
+  }
+
+  .activationOptionRail,
+  .activationOptionRail.compact {
+    grid-auto-flow: row;
+    grid-auto-columns: unset;
   }
 
   .stateGrid {
