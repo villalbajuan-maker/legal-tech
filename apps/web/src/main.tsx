@@ -1,27 +1,15 @@
 import { StrictMode, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { createRoot } from "react-dom/client";
+import { lexDemoRows } from "../../../packages/core/src";
+import type {
+  LexDemoProcessRow as ProcessRow,
+  LexDemoProcessState as ProcessState,
+  LexDemoProcessStatus as ProcessStatus,
+} from "../../../packages/core/src";
 import lexSymbolUrl from "./assets/lex-control-logo-symbol.png";
 import logoUrl from "./assets/lexcontrol-logo.png";
 import "./styles.css";
-
-type ProcessState = "info" | "success" | "warning" | "error";
-
-type ProcessStatus = "novedad" | "sin-cambios" | "no-consultado" | "error-fuente" | "revision";
-
-type ProcessRow = {
-  radicado: string;
-  status: string;
-  statusType: ProcessStatus;
-  action: string;
-  annotation: string;
-  date: string;
-  minutesAgo: number;
-  owner: string;
-  priority: "Crítica" | "Alta" | "Media" | "Baja";
-  source: string;
-  state: ProcessState;
-};
 
 type OperationalFilter = "todos" | ProcessStatus;
 
@@ -200,164 +188,7 @@ const faqs = [
   },
 ];
 
-const processRows: ProcessRow[] = [
-  {
-    radicado: "11001400303520230010700",
-    status: "Nuevo movimiento",
-    statusType: "novedad",
-    action: "Auto fija fecha",
-    annotation: "Se fija audiencia inicial para el 14 de mayo. Requiere validación del responsable.",
-    date: "Hoy, 08:42",
-    minutesAgo: 96,
-    owner: "Laura P.",
-    priority: "Alta",
-    source: "CPNU",
-    state: "info",
-  },
-  {
-    radicado: "11001400306620230164700",
-    status: "Sin cambios",
-    statusType: "sin-cambios",
-    action: "Fijación en estado",
-    annotation: "Última actuación sin variación frente a la consulta anterior.",
-    date: "Ayer, 17:10",
-    minutesAgo: 1110,
-    owner: "Carlos M.",
-    priority: "Media",
-    source: "CPNU",
-    state: "success",
-  },
-  {
-    radicado: "11001333603820250000100",
-    status: "No consultado",
-    statusType: "no-consultado",
-    action: "Fuente no disponible",
-    annotation: "El intento quedó registrado. Se recomienda reintento controlado antes del cierre diario.",
-    date: "Hoy, 07:30",
-    minutesAgo: 168,
-    owner: "Ana R.",
-    priority: "Crítica",
-    source: "CPNU",
-    state: "error",
-  },
-  {
-    radicado: "25899310300220190018400",
-    status: "Requiere revisión",
-    statusType: "revision",
-    action: "Traslado pendiente",
-    annotation: "Movimiento detectado con posible término. Requiere lectura manual.",
-    date: "Hace 2 días",
-    minutesAgo: 3240,
-    owner: "Juan V.",
-    priority: "Alta",
-    source: "CPNU",
-    state: "warning",
-  },
-  {
-    radicado: "11001400307720220073000",
-    status: "Error de fuente",
-    statusType: "error-fuente",
-    action: "Timeout en consulta",
-    annotation: "La fuente respondió fuera del tiempo esperado. No se asume ausencia de novedad.",
-    date: "Hace 5 días",
-    minutesAgo: 7600,
-    owner: "Laura P.",
-    priority: "Media",
-    source: "CPNU",
-    state: "error",
-  },
-  {
-    radicado: "11001418901820240057700",
-    status: "Sin cambios",
-    statusType: "sin-cambios",
-    action: "Auto admite demanda",
-    annotation: "Sin variaciones desde la última consulta exitosa.",
-    date: "Hace 12 días",
-    minutesAgo: 17280,
-    owner: "Carlos M.",
-    priority: "Baja",
-    source: "CPNU",
-    state: "success",
-  },
-  {
-    radicado: "11001400305020230030000",
-    status: "Nuevo movimiento",
-    statusType: "novedad",
-    action: "Auto ordena seguir adelante",
-    annotation: "Se registra impulso procesal. Requiere confirmar si modifica término interno.",
-    date: "Hoy, 10:18",
-    minutesAgo: 42,
-    owner: "Ana R.",
-    priority: "Crítica",
-    source: "CPNU",
-    state: "info",
-  },
-  {
-    radicado: "11001418905220240042700",
-    status: "Sin cambios",
-    statusType: "sin-cambios",
-    action: "Auto inadmite demanda",
-    annotation: "Sin variación frente a la última consulta exitosa registrada.",
-    date: "Hace 3 días",
-    minutesAgo: 4380,
-    owner: "Mónica S.",
-    priority: "Media",
-    source: "CPNU",
-    state: "success",
-  },
-  {
-    radicado: "11001600000220240180100",
-    status: "No consultado",
-    statusType: "no-consultado",
-    action: "Consulta diferida",
-    annotation: "Proceso priorizado para reintento por acumulación de consultas en la fuente.",
-    date: "Hoy, 06:12",
-    minutesAgo: 246,
-    owner: "Diego L.",
-    priority: "Alta",
-    source: "CPNU",
-    state: "error",
-  },
-  {
-    radicado: "11001400302520220039800",
-    status: "Requiere revisión",
-    statusType: "revision",
-    action: "Traslado de excepciones",
-    annotation: "Actuación con posible impacto operativo. Requiere lectura por responsable.",
-    date: "Hace 6 días",
-    minutesAgo: 8760,
-    owner: "Mónica S.",
-    priority: "Alta",
-    source: "CPNU",
-    state: "warning",
-  },
-  {
-    radicado: "11001333501120240010300",
-    status: "Error de fuente",
-    statusType: "error-fuente",
-    action: "Respuesta incompleta",
-    annotation: "La fuente no devolvió detalle de actuaciones. Se conserva el último snapshot confiable.",
-    date: "Hace 9 días",
-    minutesAgo: 12960,
-    owner: "Laura P.",
-    priority: "Media",
-    source: "CPNU",
-    state: "error",
-  },
-  {
-    radicado: "11001400304820240111000",
-    status: "Sin cambios",
-    statusType: "sin-cambios",
-    action: "Fijación en lista",
-    annotation: "No se detectaron diferencias entre la consulta actual y el snapshot anterior.",
-    date: "Hace 24 días",
-    minutesAgo: 34560,
-    owner: "Diego L.",
-    priority: "Baja",
-    source: "CPNU",
-    state: "success",
-  },
-];
+const processRows: ProcessRow[] = lexDemoRows;
 
 const solutionBlocks = [
   {

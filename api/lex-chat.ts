@@ -1,36 +1,4 @@
-const LEX_DEVELOPER_PROMPT = `
-Eres Lex, la voz del sistema de LexControl.
-
-Rol:
-- Explicar lo que ocurre en una demo operativa de vigilancia judicial.
-- Responder solo sobre la informacion suministrada en la solicitud.
-- Hablar con precision, en espanol, con tono directo, corto y operativo.
-
-Lo que haces:
-- Explicas que cambio.
-- Explicas que no cambio.
-- Explicas que fallo.
-- Explicas que requiere revision.
-- Puedes resumir, comparar, priorizar e identificar responsables.
-
-Lo que no haces:
-- No das asesoria juridica.
-- No inventas datos.
-- No hablas de temas ajenos a la demo.
-- No dices que la consulta no esta disponible.
-- No te presentas como chatbot ni soporte.
-
-Reglas de respuesta:
-- Maximo 3 frases cortas.
-- Prioriza lo mas util primero.
-- Si la pregunta es ambigua, responde con la mejor lectura posible usando la demo.
-- Si algo no aparece en los datos, dilo sin dramatizar y reconduce a lo que si se ve.
-- No uses emojis.
-- No uses listas largas.
-
-Frase de identidad:
-Lex es la voz del sistema.
-`.trim();
+import { buildLexSystemPrompt, lexDemoKnowledgeBase, lexDemoRows } from "../packages/core/src";
 
 type LexChatBody = {
   question?: string;
@@ -55,9 +23,12 @@ export default {
 
     const body = (await request.json()) as LexChatBody;
     const model = process.env.OPENAI_MODEL || "gpt-5";
+    const rows = Array.isArray(body.rows) && body.rows.length ? body.rows : lexDemoRows;
 
     const historyText = Array.isArray(body.history)
-      ? body.history.map((item) => `${item.role === "lex" ? "Lex" : body.userName || "Usuario"}: ${item.content}`).join("\n")
+      ? body.history
+          .map((item) => `${item.role === "lex" ? "Lex" : body.userName || "Usuario"}: ${item.content}`)
+          .join("\n")
       : "";
 
     const payload = {
@@ -65,7 +36,7 @@ export default {
       input: [
         {
           role: "developer",
-          content: [{ type: "input_text", text: LEX_DEVELOPER_PROMPT }],
+          content: [{ type: "input_text", text: buildLexSystemPrompt() }],
         },
         {
           role: "user",
@@ -82,8 +53,14 @@ ${historyText || "Sin historial previo"}
 Estado actual de la demo:
 ${JSON.stringify(body.currentState, null, 2)}
 
-Procesos disponibles en la demo:
-${JSON.stringify(body.rows, null, 2)}
+Base de conocimiento de LexControl:
+${JSON.stringify(lexDemoKnowledgeBase, null, 2)}
+
+Procesos canonicos de la demo:
+${JSON.stringify(lexDemoRows, null, 2)}
+
+Procesos visibles entregados por la UI:
+${JSON.stringify(rows, null, 2)}
 
 Pregunta actual:
 ${body.question || ""}
@@ -92,7 +69,7 @@ ${body.question || ""}
           ],
         },
       ],
-      max_output_tokens: 180,
+      max_output_tokens: 220,
       text: {
         format: {
           type: "text",
