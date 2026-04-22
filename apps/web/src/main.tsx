@@ -126,7 +126,7 @@ const demoLimits = [
 const launchPlans = [
   {
     name: "Starter",
-    price: "$149.000 COP",
+    price: "$179.900 COP",
     scope: "Hasta 100 procesos",
     features: [
       "1 usuario",
@@ -137,7 +137,7 @@ const launchPlans = [
   },
   {
     name: "Profesional",
-    price: "$299.000 COP",
+    price: "$359.900 COP",
     scope: "Hasta 250 procesos",
     featured: true,
     features: [
@@ -150,7 +150,7 @@ const launchPlans = [
   },
   {
     name: "Firma",
-    price: "$599.000 COP",
+    price: "$719.900 COP",
     scope: "Hasta 500 procesos",
     features: [
       "Hasta 5 usuarios",
