@@ -1461,6 +1461,53 @@ h3 {
   z-index: 1;
 }
 
+.lexFloatingLayer.is-mobile-viewport {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+}
+
+.lexFloatingLayer.is-open.is-mobile-viewport {
+  inset: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  top: 0;
+  z-index: 40;
+  justify-items: stretch;
+}
+
+.lexFloatingLayer.is-open.is-mobile-viewport .lexOrb {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lexMiniModal.is-mobile-fullscreen {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: none;
+  border-radius: 0;
+  border: 0;
+}
+
+.lexMiniModal.is-mobile-fullscreen .lexMessages {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.lexMiniModal.is-mobile-fullscreen .lexPromptRail,
+.lexMiniModal.is-mobile-fullscreen .lexInputBar {
+  flex: 0 0 auto;
+}
+
 .lexModalHeader {
   display: flex;
   align-items: start;

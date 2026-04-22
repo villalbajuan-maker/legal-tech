@@ -928,6 +928,7 @@ function App() {
   const [isLexOpen, setLexOpen] = useState(false);
   const [isLexTyping, setLexTyping] = useState(false);
   const [isMobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isLexMobileViewport, setLexMobileViewport] = useState(false);
   const [lexInput, setLexInput] = useState("");
   const [isLexListening, setLexListening] = useState(false);
   const [lexSpeechTranscript, setLexSpeechTranscript] = useState("");
@@ -996,8 +997,22 @@ function App() {
   }, [lexMessages, isLexOpen, isLexTyping]);
 
   useEffect(() => {
-    const isMobileViewport = window.matchMedia("(max-width: 640px)").matches;
-    if (!isLexOpen || !isMobileViewport) return;
+    const mediaQuery = window.matchMedia("(max-width: 860px), (pointer: coarse)");
+
+    function syncLexViewportMode() {
+      setLexMobileViewport(mediaQuery.matches);
+    }
+
+    syncLexViewportMode();
+    mediaQuery.addEventListener("change", syncLexViewportMode);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncLexViewportMode);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isLexOpen || !isLexMobileViewport) return;
 
     const previousHtmlOverflow = document.documentElement.style.overflow;
     const previousBodyOverflow = document.body.style.overflow;
@@ -1008,7 +1023,7 @@ function App() {
       document.documentElement.style.overflow = previousHtmlOverflow;
       document.body.style.overflow = previousBodyOverflow;
     };
-  }, [isLexOpen]);
+  }, [isLexMobileViewport, isLexOpen]);
 
   useEffect(() => {
     return () => {
@@ -1737,7 +1752,10 @@ function App() {
           </div>
         </div>
 
-        <div className={`lexFloatingLayer ${isLexOpen ? "is-open" : ""}`} aria-live="polite">
+        <div
+          className={`lexFloatingLayer ${isLexOpen ? "is-open" : ""} ${isLexMobileViewport ? "is-mobile-viewport" : ""}`}
+          aria-live="polite"
+        >
           {isLexOpen ? <button className="lexBackdrop" type="button" aria-label="Cerrar Lex" onClick={closeLex} /> : null}
           <button
             className="lexOrb"
@@ -1752,7 +1770,11 @@ function App() {
           </button>
 
           {isLexOpen ? (
-            <section className="lexMiniModal" id="lex-demo-panel" aria-label="Lex demo conversacional">
+            <section
+              className={`lexMiniModal ${isLexMobileViewport ? "is-mobile-fullscreen" : ""}`}
+              id="lex-demo-panel"
+              aria-label="Lex demo conversacional"
+            >
               <header className="lexModalHeader">
                 <div>
                   <span className="lexModalBrand">
