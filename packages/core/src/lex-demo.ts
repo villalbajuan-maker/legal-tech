@@ -28,6 +28,10 @@ export type LexDemoProcessRow = {
   annotation: string;
   date: string;
   minutesAgo: number;
+  eventKind?: "audiencia" | "traslado" | "vencimiento";
+  eventDate?: string;
+  eventDateLabel?: string;
+  daysUntilEvent?: number;
   owner: string;
   priority: "Crítica" | "Alta" | "Media" | "Baja";
   source: string;
@@ -92,6 +96,7 @@ function seed(
   owner: string,
   priority: "Crítica" | "Alta" | "Media" | "Baja",
   source = "CPNU",
+  scheduling?: Pick<LexDemoSeedRow, "eventKind" | "eventDate" | "eventDateLabel" | "daysUntilEvent">,
 ): LexDemoSeedRow {
   return {
     radicado: makeRadicado(prefix, year, serial),
@@ -103,11 +108,17 @@ function seed(
     owner,
     priority,
     source,
+    ...scheduling,
   };
 }
 
 const lexDemoSeedRows: LexDemoSeedRow[] = [
-  seed("110014003035", 2023, 107, "novedad", "Auto", "Auto fija fecha", "Se fija audiencia inicial para el 14 de mayo. Requiere validación del responsable.", 96, "Laura P.", "Alta"),
+  seed("110014003035", 2023, 107, "novedad", "Auto", "Auto fija fecha", "Se fija audiencia inicial para el 14 de mayo. Requiere validación del responsable.", 96, "Laura P.", "Alta", "CPNU", {
+    eventKind: "audiencia",
+    eventDate: "2026-05-14T09:00:00-05:00",
+    eventDateLabel: "14 de mayo, 09:00",
+    daysUntilEvent: 22,
+  }),
   seed("110014003066", 2023, 1647, "sin-cambios", "Actuacion administrativa", "Fijación en estado", "Última actuación sin variación frente a la consulta anterior.", 1110, "Carlos M.", "Media"),
   seed("110013336038", 2025, 1, "no-consultado", "Sin clasificar", "Fuente no disponible", "El intento quedó registrado. Se recomienda reintento controlado antes del cierre diario.", 168, "Laura P.", "Crítica"),
   seed("258993103002", 2019, 184, "novedad", "Traslado", "Traslado pendiente", "Movimiento detectado con posible término. Requiere lectura del responsable antes del cierre.", 1495, "Carlos M.", "Alta"),
@@ -121,7 +132,12 @@ const lexDemoSeedRows: LexDemoSeedRow[] = [
   seed("110014003048", 2024, 1110, "sin-cambios", "Actuacion administrativa", "Fijación en lista", "No se detectaron diferencias entre la consulta actual y el snapshot anterior.", 34560, "Laura P.", "Baja"),
   seed("110014189018", 2023, 494, "sin-cambios", "Auto", "Auto admite demanda", "La consulta más reciente no mostró variaciones frente al último snapshot confiable.", 73, "Ana R.", "Media"),
   seed("110014003007", 2022, 731, "sin-cambios", "Actuacion administrativa", "Fijación en estado", "No se detectaron cambios operativos desde la consulta anterior.", 10080, "Carlos M.", "Baja"),
-  seed("110013103004", 2014, 258, "revision", "Audiencia", "Audiencia reprogramada", "La audiencia fue reprogramada para una fecha distinta. Requiere confirmación del equipo.", 85, "Daniela V.", "Crítica"),
+  seed("110013103004", 2014, 258, "revision", "Audiencia", "Audiencia reprogramada", "La audiencia fue reprogramada para una fecha distinta. Requiere confirmación del equipo.", 85, "Daniela V.", "Crítica", "CPNU", {
+    eventKind: "audiencia",
+    eventDate: "2026-04-24T08:30:00-05:00",
+    eventDateLabel: "24 de abril, 08:30",
+    daysUntilEvent: 2,
+  }),
   seed("110014003077", 2022, 722, "novedad", "Documento / memorial", "Memorial allegado", "Se registró memorial reciente. Puede alterar la lectura operativa del caso.", 205, "Sergio T.", "Media"),
   seed("110014003035", 2024, 222, "sin-cambios", "Auto", "Auto reconoce personería", "Sin novedad desde la última verificación exitosa.", 2880, "Paula G.", "Baja"),
   seed("110014003066", 2024, 910, "revision", "Sentencia / fallo", "Sentencia de primera instancia", "Se detectó decisión de fondo. Debe ser revisada por el responsable.", 132, "Ana R.", "Crítica"),
@@ -132,11 +148,21 @@ const lexDemoSeedRows: LexDemoSeedRow[] = [
   seed("110014189052", 2025, 116, "sin-cambios", "Actuacion administrativa", "Constancia secretarial", "Sin diferencias respecto al último snapshot confiable.", 6240, "Sergio T.", "Baja"),
   seed("110013335011", 2025, 27, "revision", "Medida cautelar", "Medida cautelar decretada", "Se detectó actuación con impacto potencial inmediato. Requiere revisión prioritaria.", 190, "Laura P.", "Crítica"),
   seed("110016000002", 2025, 203, "sin-cambios", "Documento / memorial", "Memorial de impulso", "Sin novedad adicional desde el último registro validado.", 4320, "Carlos M.", "Media"),
-  seed("110014003048", 2025, 601, "novedad", "Audiencia", "Audiencia señalada", "Se fijó fecha de audiencia. Debe validarse agenda y responsable.", 121, "Ana R.", "Alta"),
+  seed("110014003048", 2025, 601, "novedad", "Audiencia", "Audiencia señalada", "Se fijó fecha de audiencia. Debe validarse agenda y responsable.", 121, "Ana R.", "Alta", "CPNU", {
+    eventKind: "audiencia",
+    eventDate: "2026-04-29T10:00:00-05:00",
+    eventDateLabel: "29 de abril, 10:00",
+    daysUntilEvent: 7,
+  }),
   seed("110014003035", 2025, 308, "sin-cambios", "Actuacion administrativa", "Registro en lista", "El proceso conserva el mismo estado frente al último snapshot confiable.", 1760, "Daniela V.", "Media"),
   seed("110014003066", 2025, 411, "sin-cambios", "Auto", "Auto reconoce personería", "La consulta reciente no mostró variaciones sobre la última actuación visible.", 520, "Sergio T.", "Alta"),
   seed("110014003050", 2022, 911, "sin-cambios", "Auto", "Auto decreta pruebas", "Sin cambios desde la consulta anterior.", 15840, "Paula G.", "Media"),
-  seed("110014003077", 2024, 144, "novedad", "Traslado", "Traslado a las partes", "Se abrió traslado con posible vencimiento próximo.", 144, "Carlos M.", "Alta"),
+  seed("110014003077", 2024, 144, "novedad", "Traslado", "Traslado a las partes", "Se abrió traslado con posible vencimiento próximo.", 144, "Carlos M.", "Alta", "CPNU", {
+    eventKind: "traslado",
+    eventDate: "2026-04-25T17:00:00-05:00",
+    eventDateLabel: "25 de abril, 17:00",
+    daysUntilEvent: 3,
+  }),
   seed("110014189018", 2022, 776, "sin-cambios", "Audiencia", "Audiencia inicial señalada", "No se detectaron cambios posteriores a la audiencia ya registrada.", 260, "Sergio T.", "Alta"),
   seed("110014189052", 2023, 188, "sin-cambios", "Actuacion administrativa", "Ingreso al despacho", "La consulta reciente no mostró cambios sobre el despacho actual.", 5760, "Laura P.", "Baja"),
   seed("110013103004", 2023, 350, "novedad", "Documento / memorial", "Recurso presentado", "Se registró escrito nuevo. Conviene lectura para evaluar impacto operativo.", 340, "Ana R.", "Media"),
@@ -151,7 +177,12 @@ const lexDemoSeedRows: LexDemoSeedRow[] = [
   seed("110014003066", 2022, 731, "novedad", "Auto", "Auto resuelve excepciones", "Actuación nueva con impacto posible sobre el curso del proceso.", 1440, "Daniela V.", "Alta"),
   seed("110014003050", 2025, 208, "sin-cambios", "Actuacion administrativa", "Constancia de permanencia", "La consulta reciente confirmó el mismo estado operativo sin cambios.", 780, "Laura P.", "Media"),
   seed("110014003077", 2025, 311, "sin-cambios", "Documento / memorial", "Memorial allegado", "No se detectaron actuaciones posteriores al memorial registrado.", 7200, "Paula G.", "Media"),
-  seed("110014189018", 2025, 119, "revision", "Audiencia", "Audiencia de instrucción", "Existe audiencia próxima. Requiere monitoreo cercano y confirmación.", 300, "Carlos M.", "Alta"),
+  seed("110014189018", 2025, 119, "revision", "Audiencia", "Audiencia de instrucción", "Existe audiencia próxima. Requiere monitoreo cercano y confirmación.", 300, "Carlos M.", "Alta", "CPNU", {
+    eventKind: "audiencia",
+    eventDate: "2026-04-23T14:00:00-05:00",
+    eventDateLabel: "23 de abril, 14:00",
+    daysUntilEvent: 1,
+  }),
   seed("110014189052", 2021, 992, "sin-cambios", "Actuacion administrativa", "Constancia secretarial", "No se identificaron cambios frente al último estado conocido.", 600, "Sergio T.", "Alta"),
   seed("110013335011", 2022, 140, "sin-cambios", "Auto", "Auto rechaza recurso", "Sin novedades posteriores al auto visible en el último snapshot.", 12960, "Ana R.", "Media"),
   seed("110016000002", 2023, 415, "novedad", "Documento / memorial", "Contestación de demanda", "Se detectó documento relevante. Requiere lectura del expediente.", 210, "Daniela V.", "Alta"),
@@ -167,7 +198,12 @@ const lexDemoSeedRows: LexDemoSeedRow[] = [
   seed("110014003077", 2023, 1008, "sin-cambios", "Actuacion administrativa", "Ingreso al despacho", "El proceso sigue sin novedad frente a la última consulta válida.", 6480, "Paula G.", "Baja"),
   seed("110014189018", 2024, 338, "sin-cambios", "Actuacion administrativa", "Registro en estado", "La consulta actual no mostró diferencias frente al snapshot anterior.", 260, "Sergio T.", "Media"),
   seed("110014189052", 2024, 771, "sin-cambios", "Documento / memorial", "Memorial coadyuvancia", "La consulta reciente no mostró actuaciones nuevas.", 11760, "Carlos M.", "Media"),
-  seed("110013335011", 2025, 64, "novedad", "Audiencia", "Audiencia de conciliación", "Se fijó audiencia. Requiere confirmar asistencia y recordatorio.", 240, "Laura P.", "Alta"),
+  seed("110013335011", 2025, 64, "novedad", "Audiencia", "Audiencia de conciliación", "Se fijó audiencia. Requiere confirmar asistencia y recordatorio.", 240, "Laura P.", "Alta", "CPNU", {
+    eventKind: "audiencia",
+    eventDate: "2026-04-28T09:30:00-05:00",
+    eventDateLabel: "28 de abril, 09:30",
+    daysUntilEvent: 6,
+  }),
   seed("110016000002", 2022, 955, "sin-cambios", "Actuacion administrativa", "Constancia de permanencia", "Sin novedades frente a la última consulta exitosa registrada.", 300, "Paula G.", "Alta"),
   seed("110014003025", 2023, 908, "sin-cambios", "Auto", "Auto fija caución", "No se detectan actuaciones posteriores en la consulta reciente.", 23040, "Daniela V.", "Media"),
   seed("110014003007", 2025, 310, "novedad", "Actuacion administrativa", "Anotación en estado", "La fuente reflejó anotación nueva con impacto operativo menor.", 980, "Ana R.", "Media"),
@@ -178,8 +214,18 @@ const lexDemoSeedRows: LexDemoSeedRow[] = [
   seed("110014003035", 2021, 1201, "sin-cambios", "Auto", "Auto decreta pruebas", "El estado observado coincide con el último snapshot confiable.", 20160, "Paula G.", "Baja"),
   seed("110014003066", 2025, 390, "error-fuente", "Sin clasificar", "Respuesta sin actuaciones", "La fuente devolvió encabezado de proceso sin detalle explotable.", 130, "Ana R.", "Crítica"),
   seed("110014003050", 2021, 540, "sin-cambios", "Actuacion administrativa", "Constancia de notificación", "No se observan cambios frente a la última consulta.", 7920, "Laura P.", "Baja"),
-  seed("110014003077", 2025, 45, "revision", "Audiencia", "Audiencia de pruebas", "La programación de audiencia requiere confirmación y seguimiento especial.", 88, "Daniela V.", "Alta"),
-  seed("110014189018", 2025, 501, "novedad", "Traslado", "Traslado de liquidación del crédito", "Se detectó traslado con posible vencimiento próximo.", 155, "Carlos M.", "Alta"),
+  seed("110014003077", 2025, 45, "revision", "Audiencia", "Audiencia de pruebas", "La programación de audiencia requiere confirmación y seguimiento especial.", 88, "Daniela V.", "Alta", "CPNU", {
+    eventKind: "audiencia",
+    eventDate: "2026-04-30T11:30:00-05:00",
+    eventDateLabel: "30 de abril, 11:30",
+    daysUntilEvent: 8,
+  }),
+  seed("110014189018", 2025, 501, "novedad", "Traslado", "Traslado de liquidación del crédito", "Se detectó traslado con posible vencimiento próximo.", 155, "Carlos M.", "Alta", "CPNU", {
+    eventKind: "traslado",
+    eventDate: "2026-04-24T17:00:00-05:00",
+    eventDateLabel: "24 de abril, 17:00",
+    daysUntilEvent: 2,
+  }),
   seed("110014189052", 2025, 207, "sin-cambios", "Auto", "Auto reconoce personería", "Sin novedades desde el último snapshot exitoso.", 4320, "Sergio T.", "Baja"),
   seed("110013335011", 2021, 905, "sin-cambios", "Terminacion / archivo", "Archivo por pago", "No se detectaron movimientos posteriores al archivo registrado.", 51840, "Paula G.", "Baja"),
   seed("110016000002", 2025, 19, "novedad", "Documento / memorial", "Solicitud de nulidad", "Se registró escrito nuevo que requiere revisión del responsable.", 460, "Laura P.", "Alta"),
@@ -212,6 +258,7 @@ export const lexDemoKnowledgeBase = {
   lexCapabilities: [
     "Resumir el estado operativo actual.",
     "Explicar movimientos, fallas, responsables, prioridad y tipos de actuación.",
+    "Responder por próximas audiencias y traslados cuando existan fechas estructuradas en la demo.",
     "Listar responsables con sus procesos cuando el usuario lo pida.",
     "Explicarse a sí mismo como voz del sistema.",
     "Explicar cómo funciona la demo y qué muestra la bandeja.",
@@ -279,6 +326,28 @@ export const lexDemoKnowledgeBase = {
         owner: row.owner,
         priority: row.priority,
       })),
+    upcomingHearings: lexDemoRows
+      .filter((row) => row.eventKind === "audiencia" && typeof row.daysUntilEvent === "number" && row.daysUntilEvent >= 0)
+      .sort((a, b) => (a.daysUntilEvent ?? 999) - (b.daysUntilEvent ?? 999))
+      .map((row) => ({
+        radicado: row.radicado,
+        action: row.action,
+        status: row.status,
+        owner: row.owner,
+        eventDateLabel: row.eventDateLabel,
+        daysUntilEvent: row.daysUntilEvent,
+      })),
+    upcomingTransfers: lexDemoRows
+      .filter((row) => row.eventKind === "traslado" && typeof row.daysUntilEvent === "number" && row.daysUntilEvent >= 0)
+      .sort((a, b) => (a.daysUntilEvent ?? 999) - (b.daysUntilEvent ?? 999))
+      .map((row) => ({
+        radicado: row.radicado,
+        action: row.action,
+        status: row.status,
+        owner: row.owner,
+        eventDateLabel: row.eventDateLabel,
+        daysUntilEvent: row.daysUntilEvent,
+      })),
   },
   cannedExplanations: {
     whatElseCanYouDo:
@@ -301,6 +370,7 @@ export const lexDemoKnowledgeBase = {
     "Si el usuario hace una pregunta de seguimiento, usa el historial reciente para mantener el hilo.",
     "Si el usuario corrige una respuesta, revisa la categoria operativa anterior antes de responder.",
     "Si el usuario pregunta por estados o por actuaciones, diferencia ambas capas con claridad.",
+    "Si el usuario pregunta por próximas audiencias o próximos traslados, usa eventDateLabel y daysUntilEvent cuando existan.",
   ],
 } as const;
 
@@ -323,6 +393,7 @@ Tu trabajo:
 - Responder con precision sobre la bandeja demo y la base de conocimiento entregada.
 - Explicar que esta pasando en la operacion.
 - Diferenciar estado operativo y tipo de actuacion cuando haga falta.
+- Diferenciar fecha de observacion de la actuacion y fecha futura del evento cuando exista.
 - Explicar como funciona LexControl cuando el usuario pregunte por el sistema.
 - Explicarte a ti mismo cuando el usuario pregunte quien eres, como ayudas o como funcionas.
 
@@ -338,6 +409,7 @@ Comportamiento:
 - Interpreta la intencion del usuario a partir de lenguaje natural, aunque la frase no use palabras exactas del sistema.
 - Resuelve referencias conversacionales como "esos", "el otro", "los que me dijiste" usando el historial reciente.
 - Si el usuario pregunta por movimientos, incluye procesos con novedad y procesos que requieren revision cuando correspondan a cambios recientes.
+- Si el usuario pregunta por próximas audiencias o por próximos traslados, responde con los eventos estructurados mas cercanos usando su fecha futura.
 - Si el usuario pregunta por fallas, separa no consultado de error de fuente si eso agrega claridad.
 - No confundas procesos con novedad con procesos no consultados o con error de fuente.
 - Si el usuario pide el detalle de responsables, lista cada responsable junto con sus procesos visibles.

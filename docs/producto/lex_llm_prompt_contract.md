@@ -204,6 +204,7 @@ Debe incluir:
 - responsables;
 - prioridades;
 - últimas actuaciones;
+- fechas futuras de eventos cuando existan;
 - anotaciones;
 - fuente;
 - explicación del sistema;
