@@ -1752,146 +1752,6 @@ function App() {
           </div>
         </div>
 
-        <div
-          className={`lexFloatingLayer ${isLexOpen ? "is-open" : ""} ${isLexMobileViewport ? "is-mobile-viewport" : ""}`}
-          aria-live="polite"
-        >
-          {isLexOpen ? <button className="lexBackdrop" type="button" aria-label="Cerrar Lex" onClick={closeLex} /> : null}
-          <button
-            className="lexOrb"
-            type="button"
-            onClick={toggleLex}
-            aria-expanded={isLexOpen}
-            aria-controls="lex-demo-panel"
-          >
-            <img src={lexSymbolUrl} alt="" aria-hidden="true" />
-            <span>Lex</span>
-            <i />
-          </button>
-
-          {isLexOpen ? (
-            <section
-              className={`lexMiniModal ${isLexMobileViewport ? "is-mobile-fullscreen" : ""}`}
-              id="lex-demo-panel"
-              aria-label="Lex demo conversacional"
-            >
-              <header className="lexModalHeader">
-                <div>
-                  <span className="lexModalBrand">
-                    <img src={lexSymbolUrl} alt="" aria-hidden="true" />
-                    Lex · voz del sistema
-                  </span>
-                  <strong>Consulta esta bandeja demo.</strong>
-                </div>
-                <button type="button" onClick={closeLex} aria-label="Cerrar Lex">
-                  ×
-                </button>
-              </header>
-
-              <div className="lexMessages" ref={lexMessagesRef}>
-                {lexMessages.map((message) => (
-                  <article className={`lexMessage ${message.role}`} key={message.id}>
-                    {message.role === "lex" ? (
-                      <span className="lexSpeaker">
-                        <img src={lexSymbolUrl} alt="" aria-hidden="true" />
-                        Lex
-                      </span>
-                    ) : (
-                      <span>{lexUserName ?? "Usuario"}</span>
-                    )}
-                    <p>{message.content}</p>
-                  </article>
-                ))}
-                {isLexTyping ? (
-                  <article className="lexMessage lex typing" aria-label="Lex está escribiendo">
-                    <span className="lexSpeaker">
-                      <img src={lexSymbolUrl} alt="" aria-hidden="true" />
-                      Lex
-                    </span>
-                    <p>
-                      <i />
-                      <i />
-                      <i />
-                    </p>
-                  </article>
-                ) : null}
-              </div>
-
-              {visibleLexPrompts.length ? (
-                <div className="lexPromptRail" aria-label="Consultas sugeridas">
-                  {visibleLexPrompts.map((prompt) => (
-                    <button
-                      type="button"
-                      key={prompt.value}
-                      onClick={() => {
-                        void askLex(prompt.value, prompt.label);
-                      }}
-                      disabled={isLexTyping}
-                    >
-                      {prompt.label}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-
-              <form className="lexInputBar" onSubmit={submitLexQuestion}>
-                {isLexListening ? (
-                  <div className="lexListeningField" aria-live="polite" aria-label="Grabación en curso">
-                    <div className="lexListeningMeta">
-                      <span>Escuchando</span>
-                      <strong>{formatLexRecordingTime(lexListeningSeconds)}</strong>
-                    </div>
-                    <div className="lexListeningWave" aria-hidden="true">
-                      <div className="lexListeningWaveTrack">
-                        <i />
-                        <i />
-                        <i />
-                        <i />
-                        <i />
-                        <i />
-                        <i />
-                        <i />
-                        <i />
-                        <i />
-                        <i />
-                        <i />
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <input
-                    value={lexInput}
-                    onChange={(event) => setLexInput(event.target.value)}
-                    placeholder={isAwaitingLexName ? "Escribe tu nombre" : "Pregunta por movimientos, fallas o responsables"}
-                    aria-label="Pregunta para Lex"
-                    disabled={isLexTyping}
-                  />
-                )}
-                <div className="lexInputActions">
-                  <button
-                    className={`lexMicButton ${isLexListening ? "is-listening" : ""}`}
-                    type="button"
-                    onClick={toggleLexListening}
-                    aria-label={isLexListening ? "Detener dictado" : "Iniciar dictado"}
-                    aria-pressed={isLexListening}
-                    disabled={isLexTyping || !canUseSpeechRecognition}
-                  >
-                    {isLexListening ? (
-                      <span className="lexStopIcon" aria-hidden="true" />
-                    ) : (
-                      <svg className="lexMicSvg" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M12 15.25A3.25 3.25 0 0 0 15.25 12V7a3.25 3.25 0 1 0-6.5 0v5A3.25 3.25 0 0 0 12 15.25Zm5.25-3.5a.75.75 0 0 0-1.5 0 3.75 3.75 0 0 1-7.5 0 .75.75 0 0 0-1.5 0 5.26 5.26 0 0 0 4.5 5.19V19H9.5a.75.75 0 0 0 0 1.5h5a.75.75 0 0 0 0-1.5h-1.75v-2.06a5.26 5.26 0 0 0 4.5-5.19Z" />
-                      </svg>
-                    )}
-                  </button>
-                  <button className="lexSendButton" type="submit" aria-label="Enviar mensaje" disabled={isLexTyping}>
-                    ↑
-                  </button>
-                </div>
-              </form>
-            </section>
-          ) : null}
-        </div>
       </section>
 
       <section className="beta" id="demo" data-reveal>
@@ -2031,6 +1891,147 @@ function App() {
           <p>LexControl 2026 · Todos los derechos reservados.</p>
         </div>
       </footer>
+
+      <div
+        className={`lexFloatingLayer ${isLexOpen ? "is-open" : ""} ${isLexMobileViewport ? "is-mobile-viewport" : ""}`}
+        aria-live="polite"
+      >
+        {isLexOpen ? <button className="lexBackdrop" type="button" aria-label="Cerrar Lex" onClick={closeLex} /> : null}
+        <button
+          className="lexOrb"
+          type="button"
+          onClick={toggleLex}
+          aria-expanded={isLexOpen}
+          aria-controls="lex-demo-panel"
+        >
+          <img src={lexSymbolUrl} alt="" aria-hidden="true" />
+          <span>Lex</span>
+          <i />
+        </button>
+
+        {isLexOpen ? (
+          <section
+            className={`lexMiniModal ${isLexMobileViewport ? "is-mobile-fullscreen" : ""}`}
+            id="lex-demo-panel"
+            aria-label="Lex demo conversacional"
+          >
+            <header className="lexModalHeader">
+              <div>
+                <span className="lexModalBrand">
+                  <img src={lexSymbolUrl} alt="" aria-hidden="true" />
+                  Lex · voz del sistema
+                </span>
+                <strong>Consulta esta bandeja demo.</strong>
+              </div>
+              <button type="button" onClick={closeLex} aria-label="Cerrar Lex">
+                ×
+              </button>
+            </header>
+
+            <div className="lexMessages" ref={lexMessagesRef}>
+              {lexMessages.map((message) => (
+                <article className={`lexMessage ${message.role}`} key={message.id}>
+                  {message.role === "lex" ? (
+                    <span className="lexSpeaker">
+                      <img src={lexSymbolUrl} alt="" aria-hidden="true" />
+                      Lex
+                    </span>
+                  ) : (
+                    <span>{lexUserName ?? "Usuario"}</span>
+                  )}
+                  <p>{message.content}</p>
+                </article>
+              ))}
+              {isLexTyping ? (
+                <article className="lexMessage lex typing" aria-label="Lex está escribiendo">
+                  <span className="lexSpeaker">
+                    <img src={lexSymbolUrl} alt="" aria-hidden="true" />
+                    Lex
+                  </span>
+                  <p>
+                    <i />
+                    <i />
+                    <i />
+                  </p>
+                </article>
+              ) : null}
+            </div>
+
+            {visibleLexPrompts.length ? (
+              <div className="lexPromptRail" aria-label="Consultas sugeridas">
+                {visibleLexPrompts.map((prompt) => (
+                  <button
+                    type="button"
+                    key={prompt.value}
+                    onClick={() => {
+                      void askLex(prompt.value, prompt.label);
+                    }}
+                    disabled={isLexTyping}
+                  >
+                    {prompt.label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            <form className="lexInputBar" onSubmit={submitLexQuestion}>
+              {isLexListening ? (
+                <div className="lexListeningField" aria-live="polite" aria-label="Grabación en curso">
+                  <div className="lexListeningMeta">
+                    <span>Escuchando</span>
+                    <strong>{formatLexRecordingTime(lexListeningSeconds)}</strong>
+                  </div>
+                  <div className="lexListeningWave" aria-hidden="true">
+                    <div className="lexListeningWaveTrack">
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <input
+                  value={lexInput}
+                  onChange={(event) => setLexInput(event.target.value)}
+                  placeholder={isAwaitingLexName ? "Escribe tu nombre" : "Pregunta por movimientos, fallas o responsables"}
+                  aria-label="Pregunta para Lex"
+                  disabled={isLexTyping}
+                />
+              )}
+              <div className="lexInputActions">
+                <button
+                  className={`lexMicButton ${isLexListening ? "is-listening" : ""}`}
+                  type="button"
+                  onClick={toggleLexListening}
+                  aria-label={isLexListening ? "Detener dictado" : "Iniciar dictado"}
+                  aria-pressed={isLexListening}
+                  disabled={isLexTyping || !canUseSpeechRecognition}
+                >
+                  {isLexListening ? (
+                    <span className="lexStopIcon" aria-hidden="true" />
+                  ) : (
+                    <svg className="lexMicSvg" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 15.25A3.25 3.25 0 0 0 15.25 12V7a3.25 3.25 0 1 0-6.5 0v5A3.25 3.25 0 0 0 12 15.25Zm5.25-3.5a.75.75 0 0 0-1.5 0 3.75 3.75 0 0 1-7.5 0 .75.75 0 0 0-1.5 0 5.26 5.26 0 0 0 4.5 5.19V19H9.5a.75.75 0 0 0 0 1.5h5a.75.75 0 0 0 0-1.5h-1.75v-2.06a5.26 5.26 0 0 0 4.5-5.19Z" />
+                    </svg>
+                  )}
+                </button>
+                <button className="lexSendButton" type="submit" aria-label="Enviar mensaje" disabled={isLexTyping}>
+                  ↑
+                </button>
+              </div>
+            </form>
+          </section>
+        ) : null}
+      </div>
 
       {isActivationOpen ? <ActivationModal onClose={() => setActivationOpen(false)} /> : null}
     </main>
