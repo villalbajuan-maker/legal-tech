@@ -711,6 +711,7 @@ h3 {
 }
 
 .controlWorkbenchFrame {
+  position: relative;
   display: grid;
   gap: 18px;
   margin-top: 18px;
@@ -858,8 +859,9 @@ h3 {
   display: grid;
 }
 
-.mobileTrayIntro,
-.mobileTrayPanel {
+.mobileTrayLauncher,
+.mobileTrayPanel,
+.mobileTrayFullscreen {
   display: none;
 }
 
@@ -1374,6 +1376,100 @@ h3 {
   line-height: 1.45;
 }
 
+.mobileTrayLauncher {
+  gap: 14px;
+  margin: 18px 0 8px;
+  border: 1px solid rgb(15 43 91 / 0.14);
+  border-radius: 12px;
+  padding: 12px;
+  background: linear-gradient(180deg, #fcfdff 0%, #f5f8fd 100%);
+}
+
+.mobileTrayLauncherBody {
+  display: grid;
+  gap: 12px;
+}
+
+.mobileTrayLauncherBody strong {
+  display: block;
+  color: var(--brand);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.mobileTrayLauncherBody p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.mobileTrayFullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 32;
+  background: rgb(248 250 252 / 0.98);
+}
+
+.mobileTrayFullscreenPanel {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100dvh;
+  background: linear-gradient(180deg, #f7f9fc 0%, #ffffff 100%);
+}
+
+.mobileTrayFullscreenHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: max(16px, env(safe-area-inset-top)) 16px 14px;
+  border-bottom: 1px solid var(--border);
+  background: rgb(255 255 255 / 0.92);
+  backdrop-filter: blur(10px);
+}
+
+.mobileTrayFullscreenHeader span {
+  display: block;
+  color: var(--brand);
+  font-size: 11px;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.mobileTrayFullscreenHeader strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.mobileTrayFullscreenHeader button {
+  display: inline-grid;
+  place-items: center;
+  min-width: 36px;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--brand);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.mobileTrayFullscreenBody {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px calc(88px + env(safe-area-inset-bottom));
+}
+
 .lexFloatingLayer {
   position: absolute;
   right: 24px;
@@ -1465,6 +1561,12 @@ h3 {
   position: fixed;
   right: 12px;
   bottom: 12px;
+}
+
+.lexFloatingLayer.is-tray-context {
+  right: 16px;
+  bottom: 16px;
+  z-index: 8;
 }
 
 .lexFloatingLayer.is-open.is-mobile-viewport {
@@ -2969,6 +3071,24 @@ h3 {
 }
 
 @media (max-width: 860px) {
+  .desktopTrayPanel,
+  .stateGrid {
+    display: none;
+  }
+
+  .mobileTrayLauncher,
+  .mobileTrayPanel {
+    display: grid;
+  }
+
+  .workbench {
+    gap: 0;
+  }
+
+  .mobileTrayFullscreen {
+    display: block;
+  }
+
   .lexFloatingLayer {
     position: fixed;
     right: 12px;
@@ -3158,7 +3278,7 @@ h3 {
     display: none;
   }
 
-  .mobileTrayIntro {
+  .mobileTrayLauncher {
     display: grid;
     gap: 12px;
     margin: 18px 0 14px;
@@ -3228,20 +3348,6 @@ h3 {
 }
 
 @media (max-width: 640px) {
-  .desktopTrayPanel,
-  .stateGrid {
-    display: none;
-  }
-
-  .mobileTrayIntro,
-  .mobileTrayPanel {
-    display: grid;
-  }
-
-  .workbench {
-    gap: 0;
-  }
-
   .tablePanel {
     overflow: visible;
     border: 0;

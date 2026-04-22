@@ -922,6 +922,7 @@ function ActivationModal({
 
 function App() {
   const [isActivationOpen, setActivationOpen] = useState(false);
+  const [isMobileTrayOpen, setMobileTrayOpen] = useState(false);
   const [operationalFilter, setOperationalFilter] = useState<OperationalFilter>("todos");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("todos");
   const [ownerFilter, setOwnerFilter] = useState("todos");
@@ -1012,7 +1013,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!isLexOpen || !isLexMobileViewport) return;
+    if ((!isLexOpen && !isMobileTrayOpen) || !isLexMobileViewport) return;
 
     const previousHtmlOverflow = document.documentElement.style.overflow;
     const previousBodyOverflow = document.body.style.overflow;
@@ -1023,7 +1024,7 @@ function App() {
       document.documentElement.style.overflow = previousHtmlOverflow;
       document.body.style.overflow = previousBodyOverflow;
     };
-  }, [isLexMobileViewport, isLexOpen]);
+  }, [isLexMobileViewport, isLexOpen, isMobileTrayOpen]);
 
   useEffect(() => {
     return () => {
@@ -1276,6 +1277,16 @@ function App() {
     setLexOpen(false);
   }
 
+  function openMobileTray() {
+    setMobileTrayOpen(true);
+  }
+
+  function closeMobileTray() {
+    stopLexListening({ preserveTranscript: true });
+    setLexOpen(false);
+    setMobileTrayOpen(false);
+  }
+
   function startLexListeningSession() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -1354,6 +1365,151 @@ function App() {
       setLexListeningSeconds((current) => current + 1);
     }, 1000);
     startLexListeningSession();
+  }
+
+  function renderLexLayer({ withinTrayFullscreen = false }: { withinTrayFullscreen?: boolean } = {}) {
+    return (
+      <div
+        className={`lexFloatingLayer ${isLexOpen ? "is-open" : ""} ${isLexMobileViewport && isLexOpen ? "is-mobile-viewport" : ""} ${withinTrayFullscreen ? "is-tray-context" : ""}`}
+        aria-live="polite"
+      >
+        {isLexOpen ? <button className="lexBackdrop" type="button" aria-label="Cerrar Lex" onClick={closeLex} /> : null}
+        <button
+          className="lexOrb"
+          type="button"
+          onClick={toggleLex}
+          aria-expanded={isLexOpen}
+          aria-controls="lex-demo-panel"
+        >
+          <img src={lexSymbolUrl} alt="" aria-hidden="true" />
+          <span>Lex</span>
+          <i />
+        </button>
+
+        {isLexOpen ? (
+          <section
+            className={`lexMiniModal ${isLexMobileViewport ? "is-mobile-fullscreen" : ""}`}
+            id="lex-demo-panel"
+            aria-label="Lex demo conversacional"
+          >
+            <header className="lexModalHeader">
+              <div>
+                <span className="lexModalBrand">
+                  <img src={lexSymbolUrl} alt="" aria-hidden="true" />
+                  Lex · voz del sistema
+                </span>
+                <strong>Consulta esta bandeja demo.</strong>
+              </div>
+              <button type="button" onClick={closeLex} aria-label="Cerrar Lex">
+                ×
+              </button>
+            </header>
+
+            <div className="lexMessages" ref={lexMessagesRef}>
+              {lexMessages.map((message) => (
+                <article className={`lexMessage ${message.role}`} key={message.id}>
+                  {message.role === "lex" ? (
+                    <span className="lexSpeaker">
+                      <img src={lexSymbolUrl} alt="" aria-hidden="true" />
+                      Lex
+                    </span>
+                  ) : (
+                    <span>{lexUserName ?? "Usuario"}</span>
+                  )}
+                  <p>{message.content}</p>
+                </article>
+              ))}
+              {isLexTyping ? (
+                <article className="lexMessage lex typing" aria-label="Lex está escribiendo">
+                  <span className="lexSpeaker">
+                    <img src={lexSymbolUrl} alt="" aria-hidden="true" />
+                    Lex
+                  </span>
+                  <p>
+                    <i />
+                    <i />
+                    <i />
+                  </p>
+                </article>
+              ) : null}
+            </div>
+
+            {visibleLexPrompts.length ? (
+              <div className="lexPromptRail" aria-label="Consultas sugeridas">
+                {visibleLexPrompts.map((prompt) => (
+                  <button
+                    type="button"
+                    key={prompt.value}
+                    onClick={() => {
+                      void askLex(prompt.value, prompt.label);
+                    }}
+                    disabled={isLexTyping}
+                  >
+                    {prompt.label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            <form className="lexInputBar" onSubmit={submitLexQuestion}>
+              {isLexListening ? (
+                <div className="lexListeningField" aria-live="polite" aria-label="Grabación en curso">
+                  <div className="lexListeningMeta">
+                    <span>Escuchando</span>
+                    <strong>{formatLexRecordingTime(lexListeningSeconds)}</strong>
+                  </div>
+                  <div className="lexListeningWave" aria-hidden="true">
+                    <div className="lexListeningWaveTrack">
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <input
+                  value={lexInput}
+                  onChange={(event) => setLexInput(event.target.value)}
+                  placeholder={isAwaitingLexName ? "Escribe tu nombre" : "Pregunta por movimientos, fallas o responsables"}
+                  aria-label="Pregunta para Lex"
+                  disabled={isLexTyping}
+                />
+              )}
+              <div className="lexInputActions">
+                <button
+                  className={`lexMicButton ${isLexListening ? "is-listening" : ""}`}
+                  type="button"
+                  onClick={toggleLexListening}
+                  aria-label={isLexListening ? "Detener dictado" : "Iniciar dictado"}
+                  aria-pressed={isLexListening}
+                  disabled={isLexTyping || !canUseSpeechRecognition}
+                >
+                  {isLexListening ? (
+                    <span className="lexStopIcon" aria-hidden="true" />
+                  ) : (
+                    <svg className="lexMicSvg" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 15.25A3.25 3.25 0 0 0 15.25 12V7a3.25 3.25 0 1 0-6.5 0v5A3.25 3.25 0 0 0 12 15.25Zm5.25-3.5a.75.75 0 0 0-1.5 0 3.75 3.75 0 0 1-7.5 0 .75.75 0 0 0-1.5 0 5.26 5.26 0 0 0 4.5 5.19V19H9.5a.75.75 0 0 0 0 1.5h5a.75.75 0 0 0 0-1.5h-1.75v-2.06a5.26 5.26 0 0 0 4.5-5.19Z" />
+                    </svg>
+                  )}
+                </button>
+                <button className="lexSendButton" type="submit" aria-label="Enviar mensaje" disabled={isLexTyping}>
+                  ↑
+                </button>
+              </div>
+            </form>
+          </section>
+        ) : null}
+      </div>
+    );
   }
 
   return (
@@ -1550,7 +1706,7 @@ function App() {
             </button>
           </div>
 
-          <section className="mobileTrayIntro" aria-label="Resumen mobile de la bandeja">
+          <section className="mobileTrayLauncher" aria-label="Abrir bandeja demo en mobile">
             <div className="mobileSignalStrip">
               <article>
                 <strong>{rowsByTime.length}</strong>
@@ -1569,67 +1725,14 @@ function App() {
                 <span>sin cambios</span>
               </article>
             </div>
-
-            <div className="mobileTrayTabs" role="tablist" aria-label="Estados principales de la bandeja">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mobileTrayState === "novedad"}
-                className={mobileTrayState === "novedad" ? "active" : ""}
-                onClick={() => setOperationalFilter("novedad")}
-              >
-                Novedades
+            <div className="mobileTrayLauncherBody">
+              <div>
+                <strong>Abrir bandeja demo</strong>
+                <p>Explora filtros, procesos y Lex dentro de una vista operativa completa.</p>
+              </div>
+              <button className="button secondary" type="button" onClick={openMobileTray}>
+                Abrir bandeja demo
               </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mobileTrayState === "error-fuente" || mobileTrayState === "no-consultado"}
-                className={mobileTrayState === "error-fuente" || mobileTrayState === "no-consultado" ? "active" : ""}
-                onClick={() => setOperationalFilter("error-fuente")}
-              >
-                Fallas
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mobileTrayState === "sin-cambios"}
-                className={mobileTrayState === "sin-cambios" ? "active" : ""}
-                onClick={() => setOperationalFilter("sin-cambios")}
-              >
-                Sin cambios
-              </button>
-            </div>
-
-            <div className="mobileFilterBar" aria-label="Filtros mobile">
-              <label>
-                Fecha
-                <select
-                  value={timeFilter}
-                  onChange={(event) => setTimeFilter(event.target.value as TimeFilter)}
-                  aria-label="Filtrar por fecha en mobile"
-                >
-                  {timeFilters.map((item) => (
-                    <option value={item.value} key={item.value}>
-                      {item.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Responsable
-                <select
-                  value={ownerFilter}
-                  onChange={(event) => setOwnerFilter(event.target.value)}
-                  aria-label="Filtrar por responsable en mobile"
-                >
-                  <option value="todos">Todos</option>
-                  {mobileOwnerOptions.map((owner) => (
-                    <option value={owner} key={owner}>
-                      {owner}
-                    </option>
-                  ))}
-                </select>
-              </label>
             </div>
           </section>
 
@@ -1705,51 +1808,8 @@ function App() {
               ) : null}
             </div>
             </section>
-
-            <section className="mobileTrayPanel" aria-label="Procesos monitoreados en mobile">
-              <div className="mobileTrayHeader">
-                <strong>
-                  {mobileTrayState === "sin-cambios"
-                    ? "Procesos sin cambios"
-                    : mobileTrayState === "error-fuente" || mobileTrayState === "no-consultado"
-                      ? "Procesos con fallas"
-                      : "Procesos con novedad"}
-                </strong>
-                <span>{pluralize(mobileTrayRows.length, "proceso visible", "procesos visibles")} en esta vista.</span>
-              </div>
-              <div className="mobileProcessList">
-                {mobileTrayRows.map((row) => (
-                  <details className={`mobileProcessCard ${row.state}`} key={row.radicado}>
-                    <summary>
-                      <span className={`badge ${row.state}`}>{row.status}</span>
-                      <strong>{row.radicado}</strong>
-                      <p>{row.action}</p>
-                      <small>{row.owner} · {row.date}</small>
-                    </summary>
-                    <div className="mobileProcessMeta">
-                      <div>
-                        <span>Anotación</span>
-                        <p>{row.annotation}</p>
-                      </div>
-                      <div>
-                        <span>Fuente</span>
-                        <p>{row.source}</p>
-                      </div>
-                      <div>
-                        <span>Prioridad</span>
-                        <p>{row.priority}</p>
-                      </div>
-                    </div>
-                  </details>
-                ))}
-                {mobileTrayRows.length === 0 ? (
-                  <div className="emptyState">
-                    No hay procesos en esta vista. Cambia el filtro para ver otra señal operativa.
-                  </div>
-                ) : null}
-              </div>
-            </section>
           </div>
+          {!isLexMobileViewport ? renderLexLayer() : null}
         </div>
 
       </section>
@@ -1892,146 +1952,150 @@ function App() {
         </div>
       </footer>
 
-      <div
-        className={`lexFloatingLayer ${isLexOpen ? "is-open" : ""} ${isLexMobileViewport ? "is-mobile-viewport" : ""}`}
-        aria-live="polite"
-      >
-        {isLexOpen ? <button className="lexBackdrop" type="button" aria-label="Cerrar Lex" onClick={closeLex} /> : null}
-        <button
-          className="lexOrb"
-          type="button"
-          onClick={toggleLex}
-          aria-expanded={isLexOpen}
-          aria-controls="lex-demo-panel"
-        >
-          <img src={lexSymbolUrl} alt="" aria-hidden="true" />
-          <span>Lex</span>
-          <i />
-        </button>
-
-        {isLexOpen ? (
-          <section
-            className={`lexMiniModal ${isLexMobileViewport ? "is-mobile-fullscreen" : ""}`}
-            id="lex-demo-panel"
-            aria-label="Lex demo conversacional"
-          >
-            <header className="lexModalHeader">
+      {isLexMobileViewport && isMobileTrayOpen ? (
+        <section className="mobileTrayFullscreen" aria-label="Bandeja demo en mobile">
+          <div className="mobileTrayFullscreenPanel">
+            <header className="mobileTrayFullscreenHeader">
               <div>
-                <span className="lexModalBrand">
-                  <img src={lexSymbolUrl} alt="" aria-hidden="true" />
-                  Lex · voz del sistema
-                </span>
-                <strong>Consulta esta bandeja demo.</strong>
+                <span>Bandeja demo</span>
+                <strong>Vista operativa de muestra</strong>
               </div>
-              <button type="button" onClick={closeLex} aria-label="Cerrar Lex">
+              <button type="button" onClick={closeMobileTray} aria-label="Cerrar bandeja demo">
                 ×
               </button>
             </header>
 
-            <div className="lexMessages" ref={lexMessagesRef}>
-              {lexMessages.map((message) => (
-                <article className={`lexMessage ${message.role}`} key={message.id}>
-                  {message.role === "lex" ? (
-                    <span className="lexSpeaker">
-                      <img src={lexSymbolUrl} alt="" aria-hidden="true" />
-                      Lex
-                    </span>
-                  ) : (
-                    <span>{lexUserName ?? "Usuario"}</span>
-                  )}
-                  <p>{message.content}</p>
+            <div className="mobileTrayFullscreenBody">
+              <div className="mobileSignalStrip">
+                <article>
+                  <strong>{rowsByTime.length}</strong>
+                  <span>procesos</span>
                 </article>
-              ))}
-              {isLexTyping ? (
-                <article className="lexMessage lex typing" aria-label="Lex está escribiendo">
-                  <span className="lexSpeaker">
-                    <img src={lexSymbolUrl} alt="" aria-hidden="true" />
-                    Lex
-                  </span>
-                  <p>
-                    <i />
-                    <i />
-                    <i />
-                  </p>
+                <article>
+                  <strong>{summary.novedades}</strong>
+                  <span>novedad</span>
                 </article>
-              ) : null}
+                <article>
+                  <strong>{summary.noConsultados + summary.errores}</strong>
+                  <span>fallas</span>
+                </article>
+                <article>
+                  <strong>{summary.sinCambios}</strong>
+                  <span>sin cambios</span>
+                </article>
+              </div>
+
+              <div className="mobileTrayTabs" role="tablist" aria-label="Estados principales de la bandeja">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mobileTrayState === "novedad"}
+                  className={mobileTrayState === "novedad" ? "active" : ""}
+                  onClick={() => setOperationalFilter("novedad")}
+                >
+                  Novedades
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mobileTrayState === "error-fuente" || mobileTrayState === "no-consultado"}
+                  className={mobileTrayState === "error-fuente" || mobileTrayState === "no-consultado" ? "active" : ""}
+                  onClick={() => setOperationalFilter("error-fuente")}
+                >
+                  Fallas
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mobileTrayState === "sin-cambios"}
+                  className={mobileTrayState === "sin-cambios" ? "active" : ""}
+                  onClick={() => setOperationalFilter("sin-cambios")}
+                >
+                  Sin cambios
+                </button>
+              </div>
+
+              <div className="mobileFilterBar" aria-label="Filtros mobile">
+                <label>
+                  Fecha
+                  <select
+                    value={timeFilter}
+                    onChange={(event) => setTimeFilter(event.target.value as TimeFilter)}
+                    aria-label="Filtrar por fecha en mobile"
+                  >
+                    {timeFilters.map((item) => (
+                      <option value={item.value} key={item.value}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Responsable
+                  <select
+                    value={ownerFilter}
+                    onChange={(event) => setOwnerFilter(event.target.value)}
+                    aria-label="Filtrar por responsable en mobile"
+                  >
+                    <option value="todos">Todos</option>
+                    {mobileOwnerOptions.map((owner) => (
+                      <option value={owner} key={owner}>
+                        {owner}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <section className="mobileTrayPanel" aria-label="Procesos monitoreados en mobile">
+                <div className="mobileTrayHeader">
+                  <strong>
+                    {mobileTrayState === "sin-cambios"
+                      ? "Procesos sin cambios"
+                      : mobileTrayState === "error-fuente" || mobileTrayState === "no-consultado"
+                        ? "Procesos con fallas"
+                        : "Procesos con novedad"}
+                  </strong>
+                  <span>{pluralize(mobileTrayRows.length, "proceso visible", "procesos visibles")} en esta vista.</span>
+                </div>
+                <div className="mobileProcessList">
+                  {mobileTrayRows.map((row) => (
+                    <details className={`mobileProcessCard ${row.state}`} key={row.radicado}>
+                      <summary>
+                        <span className={`badge ${row.state}`}>{row.status}</span>
+                        <strong>{row.radicado}</strong>
+                        <p>{row.action}</p>
+                        <small>{row.owner} · {row.date}</small>
+                      </summary>
+                      <div className="mobileProcessMeta">
+                        <div>
+                          <span>Anotación</span>
+                          <p>{row.annotation}</p>
+                        </div>
+                        <div>
+                          <span>Fuente</span>
+                          <p>{row.source}</p>
+                        </div>
+                        <div>
+                          <span>Prioridad</span>
+                          <p>{row.priority}</p>
+                        </div>
+                      </div>
+                    </details>
+                  ))}
+                  {mobileTrayRows.length === 0 ? (
+                    <div className="emptyState">
+                      No hay procesos en esta vista. Cambia el filtro para ver otra señal operativa.
+                    </div>
+                  ) : null}
+                </div>
+              </section>
             </div>
 
-            {visibleLexPrompts.length ? (
-              <div className="lexPromptRail" aria-label="Consultas sugeridas">
-                {visibleLexPrompts.map((prompt) => (
-                  <button
-                    type="button"
-                    key={prompt.value}
-                    onClick={() => {
-                      void askLex(prompt.value, prompt.label);
-                    }}
-                    disabled={isLexTyping}
-                  >
-                    {prompt.label}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-
-            <form className="lexInputBar" onSubmit={submitLexQuestion}>
-              {isLexListening ? (
-                <div className="lexListeningField" aria-live="polite" aria-label="Grabación en curso">
-                  <div className="lexListeningMeta">
-                    <span>Escuchando</span>
-                    <strong>{formatLexRecordingTime(lexListeningSeconds)}</strong>
-                  </div>
-                  <div className="lexListeningWave" aria-hidden="true">
-                    <div className="lexListeningWaveTrack">
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <input
-                  value={lexInput}
-                  onChange={(event) => setLexInput(event.target.value)}
-                  placeholder={isAwaitingLexName ? "Escribe tu nombre" : "Pregunta por movimientos, fallas o responsables"}
-                  aria-label="Pregunta para Lex"
-                  disabled={isLexTyping}
-                />
-              )}
-              <div className="lexInputActions">
-                <button
-                  className={`lexMicButton ${isLexListening ? "is-listening" : ""}`}
-                  type="button"
-                  onClick={toggleLexListening}
-                  aria-label={isLexListening ? "Detener dictado" : "Iniciar dictado"}
-                  aria-pressed={isLexListening}
-                  disabled={isLexTyping || !canUseSpeechRecognition}
-                >
-                  {isLexListening ? (
-                    <span className="lexStopIcon" aria-hidden="true" />
-                  ) : (
-                    <svg className="lexMicSvg" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M12 15.25A3.25 3.25 0 0 0 15.25 12V7a3.25 3.25 0 1 0-6.5 0v5A3.25 3.25 0 0 0 12 15.25Zm5.25-3.5a.75.75 0 0 0-1.5 0 3.75 3.75 0 0 1-7.5 0 .75.75 0 0 0-1.5 0 5.26 5.26 0 0 0 4.5 5.19V19H9.5a.75.75 0 0 0 0 1.5h5a.75.75 0 0 0 0-1.5h-1.75v-2.06a5.26 5.26 0 0 0 4.5-5.19Z" />
-                    </svg>
-                  )}
-                </button>
-                <button className="lexSendButton" type="submit" aria-label="Enviar mensaje" disabled={isLexTyping}>
-                  ↑
-                </button>
-              </div>
-            </form>
-          </section>
-        ) : null}
-      </div>
+            {renderLexLayer({ withinTrayFullscreen: true })}
+          </div>
+        </section>
+      ) : null}
 
       {isActivationOpen ? <ActivationModal onClose={() => setActivationOpen(false)} /> : null}
     </main>
