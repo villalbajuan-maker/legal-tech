@@ -210,6 +210,13 @@ Debe incluir:
 - explicación del sistema;
 - identidad y capacidades de Lex.
 
+Adicionalmente, debe permitir responder:
+
+- conteos exactos del dataset;
+- listados exactos por estado o actuacion;
+- preguntas de seguimiento sobre conjuntos ya mencionados;
+- preguntas sobre proximas audiencias y proximos traslados cuando esos eventos esten estructurados.
+
 ## Fuente Canónica
 
 La fuente canónica de la demo vive en:
@@ -218,7 +225,7 @@ La fuente canónica de la demo vive en:
 
 Ese archivo concentra:
 
-- los 12 procesos de la muestra;
+- los procesos de la muestra congelada;
 - la identidad del sistema;
 - las capacidades de Lex;
 - los límites de respuesta;
@@ -229,6 +236,10 @@ Ese archivo concentra:
 Los estados operativos y la taxonomia de actuaciones del producto se rigen por:
 
 - [docs/producto/contrato-estados-y-actuaciones-mvp.md](/Users/juanvillalba/Documents/legal-tech/docs/producto/contrato-estados-y-actuaciones-mvp.md)
+
+El contrato de base de conocimiento y memoria conversacional de Lex se rige por:
+
+- [docs/producto/companion-knowledge-contract.md](/Users/juanvillalba/Documents/legal-tech/docs/producto/companion-knowledge-contract.md)
 
 ## Regla Final
 
