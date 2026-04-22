@@ -1332,6 +1332,7 @@ El producto esta listo para beta cuando cumple:
 - El diagnostico queda como CTA secundario e instrumento de conciencia/calificacion.
 - La activacion se rige por `docs/producto/demo_gratuita_controlada_contract.md`.
 - La landing debe mostrar precios visibles bajo la etiqueta `Precios de lanzamiento`.
+- Los estados operativos y la taxonomia de actuaciones del MVP se rigen por `docs/producto/contrato-estados-y-actuaciones-mvp.md`.
 
 ### 18. Preguntas Pendientes
 

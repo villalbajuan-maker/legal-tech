@@ -200,6 +200,7 @@ Debe incluir:
 
 - radicados;
 - estados;
+- tipos de actuacion;
 - responsables;
 - prioridades;
 - últimas actuaciones;
@@ -221,6 +222,12 @@ Ese archivo concentra:
 - las capacidades de Lex;
 - los límites de respuesta;
 - el prompt maestro.
+
+## Contrato Operativo Relacionado
+
+Los estados operativos y la taxonomia de actuaciones del producto se rigen por:
+
+- [docs/producto/contrato-estados-y-actuaciones-mvp.md](/Users/juanvillalba/Documents/legal-tech/docs/producto/contrato-estados-y-actuaciones-mvp.md)
 
 ## Regla Final
 
