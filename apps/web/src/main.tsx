@@ -318,7 +318,9 @@ const LEX_INTRO_DELAY = 1640;
 const LEX_AFTER_NAME_DELAY = 1520;
 
 function getLexAnswer(intent: LexIntent, rows: ProcessRow[]) {
-  const movedToday = rows.filter((row) => row.statusType === "novedad" && row.minutesAgo <= 24 * 60);
+  const movedToday = rows.filter(
+    (row) => (row.statusType === "novedad" || row.statusType === "revision") && row.minutesAgo <= 24 * 60,
+  );
   const failed = rows.filter((row) => row.statusType === "no-consultado" || row.statusType === "error-fuente");
   const stale = rows.filter((row) => row.statusType === "sin-cambios").sort((a, b) => b.minutesAgo - a.minutesAgo);
   const critical = rows.filter((row) => row.priority === "Crítica" || row.priority === "Alta");
@@ -957,10 +959,14 @@ function App() {
     sinCambios: rowsByTime.filter((row) => row.statusType === "sin-cambios").length,
     noConsultados: rowsByTime.filter((row) => row.statusType === "no-consultado").length,
     errores: rowsByTime.filter((row) => row.statusType === "error-fuente").length,
+    revision: rowsByTime.filter((row) => row.statusType === "revision").length,
     responsables: new Set(rowsByTime.map((row) => row.owner)).size,
   };
   const mobileTrayState =
-    operationalFilter === "sin-cambios" || operationalFilter === "error-fuente" || operationalFilter === "no-consultado"
+    operationalFilter === "sin-cambios" ||
+    operationalFilter === "error-fuente" ||
+    operationalFilter === "no-consultado" ||
+    operationalFilter === "revision"
       ? operationalFilter
       : operationalFilter === "todos"
         ? "novedad"
@@ -970,6 +976,7 @@ function App() {
     .filter((row) => ownerFilter === "todos" || row.owner === ownerFilter)
     .filter((row) => {
       if (mobileTrayState === "sin-cambios") return row.statusType === "sin-cambios";
+      if (mobileTrayState === "revision") return row.statusType === "revision";
       if (mobileTrayState === "error-fuente" || mobileTrayState === "no-consultado") {
         return row.statusType === "error-fuente" || row.statusType === "no-consultado";
       }
@@ -981,6 +988,7 @@ function App() {
     { label: "Sin cambios", value: "sin-cambios" },
     { label: "No consultados", value: "no-consultado" },
     { label: "Errores de fuente", value: "error-fuente" },
+    { label: "Requiere revisión", value: "revision" },
   ];
   const timeFilters: { label: string; value: TimeFilter }[] = [
     { label: "24 horas", value: "24h" },
@@ -1700,9 +1708,9 @@ function App() {
               <strong>{summary.responsables}</strong>
               <span>Responsables activos</span>
             </button>
-            <button type="button" onClick={() => askLex("prioridad", "¿Qué requiere prioridad?")}>
-              <strong>{rowsByTime.filter((row) => row.priority === "Alta" || row.priority === "Crítica").length}</strong>
-              <span>Prioridades altas</span>
+            <button type="button" onClick={() => { setOperationalFilter("revision"); setOwnerFilter("todos"); }}>
+              <strong>{summary.revision}</strong>
+              <span>Requiere revisión</span>
             </button>
           </div>
 
@@ -2013,6 +2021,15 @@ function App() {
                 >
                   Sin cambios
                 </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mobileTrayState === "revision"}
+                  className={mobileTrayState === "revision" ? "active" : ""}
+                  onClick={() => setOperationalFilter("revision")}
+                >
+                  Revisión
+                </button>
               </div>
 
               <div className="mobileFilterBar" aria-label="Filtros mobile">
@@ -2052,6 +2069,8 @@ function App() {
                   <strong>
                     {mobileTrayState === "sin-cambios"
                       ? "Procesos sin cambios"
+                      : mobileTrayState === "revision"
+                        ? "Procesos que requieren revisión"
                       : mobileTrayState === "error-fuente" || mobileTrayState === "no-consultado"
                         ? "Procesos con fallas"
                         : "Procesos con novedad"}
