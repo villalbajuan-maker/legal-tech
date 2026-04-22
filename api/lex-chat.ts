@@ -9,6 +9,69 @@ type LexChatBody = {
   currentState?: unknown;
 };
 
+type LexRowLike = {
+  radicado?: string;
+  status?: string;
+  statusType?: string;
+  action?: string;
+  actionType?: string;
+  owner?: string;
+  priority?: string;
+  eventKind?: string;
+  eventDateLabel?: string;
+  daysUntilEvent?: number;
+};
+
+function buildOperationalFallback(question: string, rows: unknown) {
+  const value = question
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .trim();
+
+  const typedRows = Array.isArray(rows) ? (rows as LexRowLike[]) : [];
+  const upcomingHearings = typedRows
+    .filter((row) => row.eventKind === "audiencia" && typeof row.daysUntilEvent === "number")
+    .sort((a, b) => (a.daysUntilEvent ?? 999) - (b.daysUntilEvent ?? 999));
+  const upcomingTransfers = typedRows
+    .filter((row) => row.eventKind === "traslado" && typeof row.daysUntilEvent === "number")
+    .sort((a, b) => (a.daysUntilEvent ?? 999) - (b.daysUntilEvent ?? 999));
+
+  if (value.includes("audiencia")) {
+    if (!upcomingHearings.length) {
+      return "No veo audiencias próximas estructuradas en esta demo. Sí puedo decirte qué actuaciones de audiencia existen en la muestra actual.";
+    }
+
+    return upcomingHearings
+      .slice(0, 6)
+      .map((row) => `${row.radicado}: ${row.action} · ${row.eventDateLabel} · ${row.owner}`)
+      .join(". ");
+  }
+
+  if (value.includes("traslado")) {
+    if (!upcomingTransfers.length) {
+      return "No veo traslados próximos estructurados en esta demo. Sí puedo listar actuaciones de traslado visibles en la muestra actual.";
+    }
+
+    return upcomingTransfers
+      .slice(0, 6)
+      .map((row) => `${row.radicado}: ${row.action} · ${row.eventDateLabel} · ${row.owner}`)
+      .join(". ");
+  }
+
+  if (value.includes("estabilidad") || value.includes("salud operativa") || value.includes("estado operativo")) {
+    const counts = typedRows.reduce<Record<string, number>>((acc, row) => {
+      const key = row.statusType || "desconocido";
+      acc[key] = (acc[key] ?? 0) + 1;
+      return acc;
+    }, {});
+
+    return `La muestra se ve estable. ${counts["sin-cambios"] ?? 0} procesos están sin cambios, ${counts["novedad"] ?? 0} tienen novedad, ${counts["revision"] ?? 0} requieren revisión, ${counts["no-consultado"] ?? 0} no fueron consultados y ${counts["error-fuente"] ?? 0} tienen error de fuente.`;
+  }
+
+  return "";
+}
+
 function extractOpenAIText(data: unknown) {
   if (!data || typeof data !== "object") return "";
 
@@ -139,9 +202,15 @@ export default {
       return Response.json({
         answer:
           answer ||
+          buildOperationalFallback(body.question || "", rows) ||
           "No estoy seguro de haber entendido esa pregunta. ¿Podrías decirme si te refieres a movimientos, fallas, responsables o prioridad?",
       });
     } catch (error) {
+      const fallback = buildOperationalFallback(body.question || "", rows);
+      if (fallback) {
+        return Response.json({ answer: fallback });
+      }
+
       const message = error instanceof Error ? error.message : "Lex request failed";
       return Response.json({ error: message }, { status: 500 });
     }

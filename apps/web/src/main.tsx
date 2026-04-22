@@ -946,6 +946,9 @@ function App() {
   const lexTypingTimeoutRef = useRef<number | null>(null);
   const speechRecognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const lexListeningTimerRef = useRef<number | null>(null);
+  const lexSpeechFlushTimeoutRef = useRef<number | null>(null);
+  const lexSpeechFlushResolverRef = useRef<((text: string) => void) | null>(null);
+  const lexSpeechTranscriptRef = useRef("");
   const lexSpeechFinalRef = useRef("");
   const lexShouldResumeListeningRef = useRef(false);
   const rowsByTime = getRowsByTime(processRows, timeFilter);
@@ -1041,6 +1044,9 @@ function App() {
       }
       if (lexListeningTimerRef.current) {
         window.clearInterval(lexListeningTimerRef.current);
+      }
+      if (lexSpeechFlushTimeoutRef.current) {
+        window.clearTimeout(lexSpeechFlushTimeoutRef.current);
       }
       speechRecognitionRef.current?.stop();
     };
@@ -1226,8 +1232,34 @@ function App() {
 
     if (!options?.preserveTranscript) {
       lexSpeechFinalRef.current = "";
+      lexSpeechTranscriptRef.current = "";
       setLexSpeechTranscript("");
     }
+  }
+
+  async function stopLexListeningAndCollect() {
+    if (!isLexListening) {
+      return (lexSpeechTranscriptRef.current || lexInput).trim();
+    }
+
+    lexShouldResumeListeningRef.current = false;
+
+    return new Promise<string>((resolve) => {
+      lexSpeechFlushResolverRef.current = resolve;
+      speechRecognitionRef.current?.stop();
+
+      if (lexSpeechFlushTimeoutRef.current) {
+        window.clearTimeout(lexSpeechFlushTimeoutRef.current);
+      }
+
+      lexSpeechFlushTimeoutRef.current = window.setTimeout(() => {
+        if (!lexSpeechFlushResolverRef.current) return;
+        const resolver = lexSpeechFlushResolverRef.current;
+        lexSpeechFlushResolverRef.current = null;
+        stopLexListening({ preserveTranscript: true });
+        resolver(lexSpeechTranscriptRef.current.trim());
+      }, 900);
+    });
   }
 
   async function submitLexContent(content: string) {
@@ -1255,16 +1287,18 @@ function App() {
   async function submitLexQuestion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isLexTyping) return;
-    const question = (isLexListening ? lexSpeechTranscript : lexInput).trim();
+    const question = (isLexListening ? lexSpeechTranscriptRef.current : lexInput).trim();
     if (!question) return;
 
+    let finalQuestion = question;
     if (isLexListening) {
-      stopLexListening();
+      finalQuestion = await stopLexListeningAndCollect();
     }
 
-    await submitLexContent(question);
+    await submitLexContent(finalQuestion);
     setLexInput("");
     setLexSpeechTranscript("");
+    lexSpeechTranscriptRef.current = "";
   }
 
   function toggleLex() {
@@ -1321,10 +1355,23 @@ function App() {
       }
 
       lexSpeechFinalRef.current = finalTranscript;
-      setLexSpeechTranscript(`${finalTranscript} ${interimTranscript}`.trim());
+      const combinedTranscript = `${finalTranscript} ${interimTranscript}`.trim();
+      lexSpeechTranscriptRef.current = combinedTranscript;
+      setLexSpeechTranscript(combinedTranscript);
     };
 
     recognition.onerror = () => {
+      if (lexSpeechFlushResolverRef.current) {
+        const resolver = lexSpeechFlushResolverRef.current;
+        lexSpeechFlushResolverRef.current = null;
+        if (lexSpeechFlushTimeoutRef.current) {
+          window.clearTimeout(lexSpeechFlushTimeoutRef.current);
+          lexSpeechFlushTimeoutRef.current = null;
+        }
+        stopLexListening({ preserveTranscript: true });
+        resolver(lexSpeechTranscriptRef.current.trim());
+        return;
+      }
       stopLexListening({ preserveTranscript: true });
     };
 
@@ -1336,6 +1383,20 @@ function App() {
           if (!lexShouldResumeListeningRef.current) return;
           startLexListeningSession();
         }, 180);
+        return;
+      }
+
+      if (lexSpeechFlushResolverRef.current) {
+        const resolver = lexSpeechFlushResolverRef.current;
+        lexSpeechFlushResolverRef.current = null;
+        if (lexSpeechFlushTimeoutRef.current) {
+          window.clearTimeout(lexSpeechFlushTimeoutRef.current);
+          lexSpeechFlushTimeoutRef.current = null;
+        }
+        stopLexListening({ preserveTranscript: true });
+        window.setTimeout(() => {
+          resolver(lexSpeechTranscriptRef.current.trim());
+        }, 160);
         return;
       }
 
@@ -1355,8 +1416,9 @@ function App() {
     }
 
     if (isLexListening) {
-      stopLexListening({ preserveTranscript: true });
-      setLexInput(lexSpeechTranscript.trim());
+      void stopLexListeningAndCollect().then((text) => {
+        setLexInput(text);
+      });
       return;
     }
 
@@ -1364,6 +1426,7 @@ function App() {
     setLexListening(true);
     setLexInput("");
     lexSpeechFinalRef.current = "";
+    lexSpeechTranscriptRef.current = "";
     setLexSpeechTranscript("");
     setLexListeningSeconds(0);
     if (lexListeningTimerRef.current) {
