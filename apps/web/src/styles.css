@@ -1518,6 +1518,7 @@ h3 {
 .lexMessages {
   display: grid;
   align-content: start;
+  min-height: 0;
   gap: 14px;
   overflow-y: auto;
   padding: 14px;
@@ -3065,6 +3066,15 @@ h3 {
     bottom: 12px;
   }
 
+  .lexFloatingLayer.is-open {
+    inset: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    top: 0;
+    justify-items: stretch;
+  }
+
   .lexBackdrop {
     background: rgb(15 23 42 / 0.14);
   }
@@ -3085,10 +3095,14 @@ h3 {
     right: 0;
     left: 0;
     bottom: 0;
-    width: auto;
-    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100svh;
+    min-height: 100svh;
     max-height: none;
     border-radius: 0;
+    border: 0;
   }
 
   .lexModalHeader {
@@ -3096,10 +3110,13 @@ h3 {
   }
 
   .lexMessages {
+    flex: 1 1 auto;
     padding-bottom: max(14px, env(safe-area-inset-bottom));
   }
 
+  .lexPromptRail,
   .lexInputBar {
+    flex: 0 0 auto;
     padding-bottom: max(12px, calc(env(safe-area-inset-bottom) + 12px));
   }
 

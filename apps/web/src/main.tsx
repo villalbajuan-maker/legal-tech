@@ -1737,7 +1737,7 @@ function App() {
           </div>
         </div>
 
-        <div className="lexFloatingLayer" aria-live="polite">
+        <div className={`lexFloatingLayer ${isLexOpen ? "is-open" : ""}`} aria-live="polite">
           {isLexOpen ? <button className="lexBackdrop" type="button" aria-label="Cerrar Lex" onClick={closeLex} /> : null}
           <button
             className="lexOrb"
