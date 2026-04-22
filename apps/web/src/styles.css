@@ -1393,6 +1393,7 @@ h3 {
 .lexBackdrop {
   position: fixed;
   inset: 0;
+  z-index: 0;
   border: 0;
   background: rgb(15 23 42 / 0.08);
   cursor: default;
@@ -1457,6 +1458,7 @@ h3 {
   background: #ffffff;
   box-shadow: 0 18px 48px rgb(15 23 42 / 0.22);
   animation: lex-panel-in 180ms ease-out;
+  z-index: 1;
 }
 
 .lexModalHeader {
@@ -2919,6 +2921,65 @@ h3 {
   }
 }
 
+@media (max-width: 860px) {
+  .lexFloatingLayer {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .lexFloatingLayer.is-open {
+    inset: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    top: 0;
+    z-index: 40;
+    justify-items: stretch;
+  }
+
+  .lexFloatingLayer.is-open .lexOrb {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .lexBackdrop {
+    background: rgb(15 23 42 / 0.14);
+  }
+
+  .lexMiniModal {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100dvh;
+    min-height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+    border: 0;
+  }
+
+  .lexModalHeader {
+    padding-top: max(16px, env(safe-area-inset-top));
+  }
+
+  .lexMessages {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
+  .lexPromptRail,
+  .lexInputBar {
+    flex: 0 0 auto;
+    padding-bottom: max(12px, calc(env(safe-area-inset-bottom) + 12px));
+  }
+}
+
 @media (max-width: 640px) {
   .topbar {
     min-height: 66px;
@@ -3060,25 +3121,6 @@ h3 {
     min-height: 72px;
   }
 
-  .lexFloatingLayer {
-    position: fixed;
-    right: 12px;
-    bottom: 12px;
-  }
-
-  .lexFloatingLayer.is-open {
-    inset: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    top: 0;
-    justify-items: stretch;
-  }
-
-  .lexBackdrop {
-    background: rgb(15 23 42 / 0.14);
-  }
-
   .lexOrb {
     min-height: 48px;
     padding: 7px 10px 7px 7px;
@@ -3087,37 +3129,6 @@ h3 {
   .lexOrb img {
     width: 58px;
     height: 30px;
-  }
-
-  .lexMiniModal {
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    display: flex;
-    flex-direction: column;
-    width: 100vw;
-    height: 100svh;
-    min-height: 100svh;
-    max-height: none;
-    border-radius: 0;
-    border: 0;
-  }
-
-  .lexModalHeader {
-    padding-top: max(16px, env(safe-area-inset-top));
-  }
-
-  .lexMessages {
-    flex: 1 1 auto;
-    padding-bottom: max(14px, env(safe-area-inset-bottom));
-  }
-
-  .lexPromptRail,
-  .lexInputBar {
-    flex: 0 0 auto;
-    padding-bottom: max(12px, calc(env(safe-area-inset-bottom) + 12px));
   }
 
   .summaryGrid,
