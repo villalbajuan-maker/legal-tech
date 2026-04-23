@@ -8,15 +8,15 @@ type DatabaseCaseSourceRow = {
   source_id: string;
   external_reference: string | null;
   metadata: Record<string, unknown> | null;
-  legal_case: Array<{
+  legal_case: {
     id: string;
     radicado: string;
     normalized_radicado: string;
-  }> | null;
-  source: Array<{
+  } | null;
+  source: {
     id: string;
     name: string;
-  }> | null;
+  } | null;
 };
 
 const connectors = [cpnuSourceConnector, manualSourceConnector];
@@ -34,8 +34,8 @@ function getSupabaseEnv() {
 }
 
 function mapToInput(row: DatabaseCaseSourceRow): CaseSourceInput | null {
-  const legalCase = row.legal_case?.[0];
-  const source = row.source?.[0];
+  const legalCase = row.legal_case;
+  const source = row.source;
   if (!legalCase || !source) return null;
 
   return {
