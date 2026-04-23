@@ -2244,13 +2244,13 @@ function App() {
                 </div>
                 <div className="mobileProcessList">
                   {mobileTrayRows.map((row) => (
-                    <details className={`mobileProcessCard ${row.state}`} key={row.radicado}>
-                      <summary>
+                    <article className={`mobileProcessCard ${row.state}`} key={row.radicado}>
+                      <div className="mobileProcessSummary">
                         <span className={`badge ${row.state}`}>{row.status}</span>
                         <strong>{row.radicado}</strong>
                         <p>{row.action}</p>
                         <small>{row.owner} · {row.date}</small>
-                      </summary>
+                      </div>
                       <div className="mobileProcessMeta">
                         <div>
                           <span>Anotación</span>
@@ -2265,7 +2265,7 @@ function App() {
                           <p>{row.priority}</p>
                         </div>
                       </div>
-                    </details>
+                    </article>
                   ))}
                   {mobileTrayRows.length === 0 ? (
                     <div className="emptyState">

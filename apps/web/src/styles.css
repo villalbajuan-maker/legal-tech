@@ -1290,6 +1290,7 @@ h3 {
 }
 
 .mobileProcessCard {
+  height: max-content;
   border: 1px solid var(--border);
   border-left: 4px solid var(--border);
   border-radius: 8px;
@@ -1313,38 +1314,32 @@ h3 {
   border-left-color: var(--error);
 }
 
-.mobileProcessCard summary {
+.mobileProcessSummary {
   display: grid;
   gap: 7px;
   padding: 12px;
-  cursor: pointer;
-  list-style: none;
 }
 
-.mobileProcessCard summary::-webkit-details-marker {
-  display: none;
-}
-
-.mobileProcessCard summary strong {
+.mobileProcessSummary strong {
   color: var(--brand);
   font-size: 14px;
   font-weight: 780;
   overflow-wrap: anywhere;
 }
 
-.mobileProcessCard summary p,
-.mobileProcessCard summary small {
+.mobileProcessSummary p,
+.mobileProcessSummary small {
   margin: 0;
 }
 
-.mobileProcessCard summary p {
+.mobileProcessSummary p {
   color: var(--text);
   font-size: 13px;
   font-weight: 700;
   line-height: 1.4;
 }
 
-.mobileProcessCard summary small {
+.mobileProcessSummary small {
   color: var(--muted);
   font-size: 12px;
   font-weight: 650;
