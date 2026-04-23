@@ -130,6 +130,8 @@ type TeamMembersResponse = {
   limit: number;
 };
 
+type AppView = "inicio" | "bandeja" | "procesos" | "equipo" | "consultas";
+
 function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error && error.message) {
     return error.message;
@@ -218,6 +220,69 @@ const internalModules = [
     description: "Novedades, cambios y revisión de actuaciones.",
   },
 ];
+
+const internalNavItems: Array<{ view: AppView; label: string }> = [
+  { view: "inicio", label: "Inicio" },
+  { view: "bandeja", label: "Bandeja" },
+  { view: "procesos", label: "Procesos" },
+  { view: "equipo", label: "Equipo" },
+  { view: "consultas", label: "Consultas" },
+];
+
+const internalViewMeta: Record<
+  AppView,
+  {
+    eyebrow: string;
+    title: string;
+    description: string;
+  }
+> = {
+  inicio: {
+    eyebrow: "Vista general",
+    title: "Inicio",
+    description: "Estado de demo, capacidad disponible y salud operativa de la cuenta.",
+  },
+  bandeja: {
+    eyebrow: "Operación diaria",
+    title: "Bandeja",
+    description: "Procesos consultados, errores visibles y decisiones pendientes.",
+  },
+  procesos: {
+    eyebrow: "Inventario operativo",
+    title: "Procesos",
+    description: "Carga, administra y revisa el inventario vigilado por la cuenta.",
+  },
+  equipo: {
+    eyebrow: "Equipo de trabajo",
+    title: "Equipo",
+    description: "Responsables reales de la cuenta y capacidad disponible para operar.",
+  },
+  consultas: {
+    eyebrow: "Trazabilidad",
+    title: "Consultas",
+    description: "Estado de fuente, snapshots y alertas que sostienen la operación.",
+  },
+};
+
+function getViewFromHash(hash: string): AppView {
+  const cleaned = hash.replace(/^#\/?/, "").trim().toLowerCase();
+
+  if (
+    cleaned === "inicio" ||
+    cleaned === "bandeja" ||
+    cleaned === "procesos" ||
+    cleaned === "equipo" ||
+    cleaned === "consultas"
+  ) {
+    return cleaned;
+  }
+
+  return "inicio";
+}
+
+function buildViewHash(view: AppView) {
+  return `#/${view}`;
+}
 
 async function loadPrimaryMembership(userId: string) {
   if (!supabase) return null;
@@ -881,8 +946,10 @@ function DemoStatusPanel({
 
 function InternalProcessManager({
   organizationId,
+  view,
 }: {
   organizationId: string;
+  view: AppView;
 }) {
   const [cases, setCases] = useState<InternalCaseRow[]>([]);
   const [operationalRows, setOperationalRows] = useState<OperationalCaseRow[]>([]);
@@ -1058,6 +1125,415 @@ function InternalProcessManager({
   );
   const selectedEvents = legalEvents.filter((event) => event.case_id === selectedCase?.caseId);
   const selectedAlerts = alerts.filter((alert) => alert.case_id === selectedCase?.caseId);
+  const consultationSummary = {
+    sourcesTracked: caseSources.length,
+    fuentesActivas: caseSources.filter((caseSource) => caseSource.status === "active").length,
+    erroresFuente: caseSources.filter((caseSource) => caseSource.status === "error").length,
+    bloqueosFuente: caseSources.filter((caseSource) => caseSource.status === "blocked").length,
+    noEncontrados: caseSources.filter((caseSource) => caseSource.status === "not_found").length,
+    snapshots: snapshots.length,
+    alertas: alerts.length,
+  };
+
+  if (view === "inicio") {
+    return (
+      <section className="internalProcessManager">
+        <section className="internalSummaryGrid">
+          <article>
+            <strong>{operationalSummary.total}</strong>
+            <p>Procesos visibles hoy en la cuenta.</p>
+          </article>
+          <article>
+            <strong>{operationalSummary.conNovedad}</strong>
+            <p>Procesos con novedad operativa visible.</p>
+          </article>
+          <article>
+            <strong>{alerts.length}</strong>
+            <p>Alertas activas registradas para esta cuenta.</p>
+          </article>
+        </section>
+
+        <section className="internalModuleList">
+          <header>
+            <span className="internalEyebrow">Panorama</span>
+            <h2>Lo que hoy merece atención.</h2>
+          </header>
+
+          <div className="internalModuleCards">
+            <article>
+              <div>
+                <strong>Bandeja</strong>
+                <span>{operationalSummary.requiereRevision} revisión</span>
+              </div>
+              <p>Los estados operativos ya distinguen novedad, error de fuente y revisión humana.</p>
+            </article>
+            <article>
+              <div>
+                <strong>Equipo</strong>
+                <span>{availableOwners.length} responsables</span>
+              </div>
+              <p>La cuenta ya puede operar con responsables reales y asignación sobre procesos.</p>
+            </article>
+            <article>
+              <div>
+                <strong>Consultas</strong>
+                <span>{consultationSummary.snapshots} snapshots</span>
+              </div>
+              <p>Cada corrida deja trazabilidad persistida para comparar cambios y eventos.</p>
+            </article>
+            <article>
+              <div>
+                <strong>Alertas</strong>
+                <span>{consultationSummary.alertas} activas</span>
+              </div>
+              <p>La cuenta ya hace visible cuando una fuente falla o un proceso requiere intervención.</p>
+            </article>
+          </div>
+        </section>
+      </section>
+    );
+  }
+
+  if (view === "bandeja") {
+    return (
+      <section className="internalProcessManager">
+        <section className="internalPanel" id="bandeja">
+          <div className="internalPanelHeader">
+            <div>
+              <strong>Bandeja operativa real</strong>
+              <span>Procesos consultados, última actuación, eventos y señales de acción.</span>
+            </div>
+            <button className="internalGhostButton" type="button" onClick={() => void refreshCases()}>
+              Recargar
+            </button>
+          </div>
+
+          <div className="internalIntakeResult internalTraySummary">
+            <article>
+              <strong>{operationalSummary.total}</strong>
+              <span>Procesos visibles</span>
+            </article>
+            <article>
+              <strong>{operationalSummary.conNovedad}</strong>
+              <span>Con novedad</span>
+            </article>
+            <article>
+              <strong>{operationalSummary.requiereRevision}</strong>
+              <span>Requieren revisión</span>
+            </article>
+            <article>
+              <strong>{operationalSummary.erroresFuente}</strong>
+              <span>Errores de fuente</span>
+            </article>
+            <article>
+              <strong>{operationalSummary.eventosActivos}</strong>
+              <span>Eventos activos</span>
+            </article>
+          </div>
+
+          {isLoadingCases ? <p className="internalPanelEmpty">Cargando bandeja operativa...</p> : null}
+          {loadError ? <p className="internalAuthError">{loadError}</p> : null}
+          {!isLoadingCases && !loadError && operationalRows.length === 0 ? (
+            <p className="internalPanelEmpty">
+              Aún no hay datos suficientes para la bandeja. Carga procesos y ejecuta consultas para poblarla.
+            </p>
+          ) : null}
+
+          {!isLoadingCases && !loadError && operationalRows.length > 0 ? (
+            <>
+              <div className="internalTrayFilters">
+                <label>
+                  Estado operativo
+                  <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+                    <option value="todos">Todos</option>
+                    <option value="con_novedad">Con novedad</option>
+                    <option value="requiere_revision">Requiere revisión</option>
+                    <option value="sin_cambios">Sin cambios</option>
+                    <option value="no_consultado">No consultado</option>
+                    <option value="error_fuente">Error de fuente</option>
+                  </select>
+                </label>
+                <label>
+                  Responsable
+                  <select value={ownerFilter} onChange={(event) => setOwnerFilter(event.target.value)}>
+                    <option value="todos">Todos</option>
+                    <option value="Sin responsable">Sin responsable</option>
+                    {availableOwners.map((owner) => (
+                      <option key={owner} value={owner}>
+                        {owner}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Prioridad
+                  <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value)}>
+                    <option value="todos">Todas</option>
+                    <option value="critical">Crítica</option>
+                    <option value="high">Alta</option>
+                    <option value="normal">Normal</option>
+                    <option value="low">Baja</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="internalTrayLayout">
+                <div className="internalCasesTable internalTrayTable">
+                  <div className="internalCasesTableHead internalTrayTableHead">
+                    <span>Radicado</span>
+                    <span>Estado operativo</span>
+                    <span>Última actuación</span>
+                    <span>Próximo evento</span>
+                    <span>Responsable</span>
+                    <span>Fuente</span>
+                  </div>
+                  {filteredOperationalRows.length === 0 ? (
+                    <p className="internalPanelEmpty">
+                      No hay procesos que coincidan con los filtros actuales.
+                    </p>
+                  ) : null}
+                  {filteredOperationalRows.map((row) => (
+                    <article
+                      key={row.caseId}
+                      className={`internalCasesRow internalTrayRow ${selectedCase?.caseId === row.caseId ? "is-selected" : ""}`}
+                      onClick={() =>
+                        setSelectedCaseId((current) => (current === row.caseId ? null : row.caseId))
+                      }
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setSelectedCaseId((current) => (current === row.caseId ? null : row.caseId));
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div className="internalTrayPrimary">
+                        <strong>{row.radicado}</strong>
+                        <span>{row.lastCheckedAt ? `Última consulta: ${formatCaseTimestamp(row.lastCheckedAt)}` : "Sin consulta aún"}</span>
+                      </div>
+                      <div className="internalTrayStack">
+                        <span className={`internalStatusBadge is-${getOperationalTone(row.operationalStatus)}`}>
+                          {formatOperationalStatus(row.operationalStatus)}
+                        </span>
+                        <span className={`internalStatusBadge is-${getSourceStatusTone(row.sourceStatus)}`}>
+                          Fuente {row.sourceStatus}
+                        </span>
+                      </div>
+                      <div className="internalTrayStack">
+                        <strong>{row.latestActionTitle || "Sin actuación resumida"}</strong>
+                        <span>{row.latestActionDate ? formatShortDate(row.latestActionDate) : "Sin fecha"}</span>
+                        {row.latestActionDescription ? <span>{row.latestActionDescription}</span> : null}
+                      </div>
+                      <div className="internalTrayStack">
+                        <strong>{row.latestEventTitle || "Sin evento activo"}</strong>
+                        <span>{row.latestEventDate ? formatShortDate(row.latestEventDate) : "Sin fecha"}</span>
+                        {row.latestEventType ? <span>{row.latestEventType}</span> : null}
+                      </div>
+                      <div className="internalTrayStack">
+                        <span>{row.responsible || "Sin responsable"}</span>
+                        <span className={`internalPriorityBadge is-${row.priority}`}>{row.priority}</span>
+                      </div>
+                      <div className="internalTrayStack">
+                        <span>{row.sourceName}</span>
+                        <span>{row.legalEventsCount} evento{row.legalEventsCount === 1 ? "" : "s"}</span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+
+                <aside className="internalPanel internalDetailPanel">
+                  {selectedCase ? (
+                    <>
+                      <div className="internalPanelHeader">
+                        <div>
+                          <strong>Detalle del proceso</strong>
+                          <span>{selectedCase.radicado}</span>
+                        </div>
+                        <button
+                          className="internalGhostButton"
+                          type="button"
+                          onClick={() => setSelectedCaseId(null)}
+                        >
+                          Cerrar detalle
+                        </button>
+                      </div>
+
+                      <div className="internalDetailSummary">
+                        <div>
+                          <span>Estado operativo</span>
+                          <strong>{formatOperationalStatus(selectedCase.operationalStatus)}</strong>
+                        </div>
+                        <div>
+                          <span>Responsable</span>
+                          <strong>{selectedCase.responsible || "Sin responsable"}</strong>
+                        </div>
+                        <div>
+                          <span>Prioridad</span>
+                          <strong>{selectedCase.priority}</strong>
+                        </div>
+                        <div>
+                          <span>Fuente</span>
+                          <strong>{selectedCase.sourceName}</strong>
+                        </div>
+                      </div>
+
+                      <div className="internalDetailSection">
+                        <div className="internalPanelHeader">
+                          <strong>Eventos jurídicos</strong>
+                          <span>{selectedEvents.length} activo{selectedEvents.length === 1 ? "" : "s"}</span>
+                        </div>
+                        {selectedEvents.length > 0 ? (
+                          <div className="internalDetailList">
+                            {selectedEvents.map((event) => (
+                              <article key={event.id}>
+                                <strong>{event.title}</strong>
+                                <span>{event.event_type} · {formatDateTimeLabel(event.event_date)}</span>
+                                <span>Estado: {event.change_status}</span>
+                              </article>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="internalPanelEmpty">No hay eventos activos para este proceso.</p>
+                        )}
+                      </div>
+
+                      <div className="internalDetailSection">
+                        <div className="internalPanelHeader">
+                          <strong>Alertas</strong>
+                          <span>{selectedAlerts.length} activa{selectedAlerts.length === 1 ? "" : "s"}</span>
+                        </div>
+                        {selectedAlerts.length > 0 ? (
+                          <div className="internalDetailList">
+                            {selectedAlerts.map((alert) => (
+                              <article key={alert.id}>
+                                <div className="internalDetailTitleLine">
+                                  <strong>{alert.title}</strong>
+                                  <span className={`internalStatusBadge is-${getAlertTone(alert.severity)}`}>
+                                    {formatAlertType(alert.alert_type)}
+                                  </span>
+                                </div>
+                                <span>{alert.message}</span>
+                                <span>{formatDateTimeLabel(alert.created_at)}</span>
+                              </article>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="internalPanelEmpty">No hay alertas activas para este proceso.</p>
+                        )}
+                      </div>
+
+                      <div className="internalDetailSection">
+                        <div className="internalPanelHeader">
+                          <strong>Historial de snapshots</strong>
+                          <span>{selectedSnapshots.length} registro{selectedSnapshots.length === 1 ? "" : "s"}</span>
+                        </div>
+                        {selectedSnapshots.length > 0 ? (
+                          <div className="internalDetailList">
+                            {selectedSnapshots.slice(0, 12).map((snapshot) => (
+                              <article key={snapshot.id}>
+                                <div className="internalDetailTitleLine">
+                                  <strong>{formatDateTimeLabel(snapshot.fetched_at)}</strong>
+                                  <span className={`internalStatusBadge is-${getSnapshotStatusTone(snapshot.fetch_status)}`}>
+                                    {snapshot.fetch_status}
+                                  </span>
+                                </div>
+                                <span>
+                                  {snapshot.duration_ms ? `${snapshot.duration_ms} ms` : "Sin duración reportada"}
+                                </span>
+                                {snapshot.error_message ? <span>{snapshot.error_message}</span> : null}
+                              </article>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="internalPanelEmpty">No hay snapshots para este proceso.</p>
+                        )}
+                      </div>
+                    </>
+                  ) : filteredOperationalRows.length === 0 ? (
+                    <p className="internalPanelEmpty">
+                      Ajusta o limpia los filtros para volver a ver el detalle de un proceso.
+                    </p>
+                  ) : (
+                    <p className="internalPanelEmpty">
+                      Selecciona un proceso para abrir su detalle operativo.
+                    </p>
+                  )}
+                </aside>
+              </div>
+            </>
+          ) : null}
+        </section>
+      </section>
+    );
+  }
+
+  if (view === "consultas") {
+    return (
+      <section className="internalProcessManager">
+        <section className="internalSummaryGrid">
+          <article>
+            <strong>{consultationSummary.sourcesTracked}</strong>
+            <p>Fuentes rastreadas sobre procesos activos.</p>
+          </article>
+          <article>
+            <strong>{consultationSummary.snapshots}</strong>
+            <p>Snapshots disponibles para trazabilidad.</p>
+          </article>
+          <article>
+            <strong>{consultationSummary.alertas}</strong>
+            <p>Alertas registradas por novedades o fallas.</p>
+          </article>
+        </section>
+
+        <section className="internalPanel">
+          <div className="internalPanelHeader">
+            <div>
+              <strong>Estado de consultas y fuentes</strong>
+              <span>Visibilidad operativa sobre salud de ejecución.</span>
+            </div>
+            <button className="internalGhostButton" type="button" onClick={() => void refreshCases()}>
+              Recargar
+            </button>
+          </div>
+
+          <section className="internalIntakeResult">
+            <article>
+              <strong>{consultationSummary.fuentesActivas}</strong>
+              <span>Fuentes activas</span>
+            </article>
+            <article>
+              <strong>{consultationSummary.erroresFuente}</strong>
+              <span>Errores de fuente</span>
+            </article>
+            <article>
+              <strong>{consultationSummary.bloqueosFuente}</strong>
+              <span>Fuentes bloqueadas</span>
+            </article>
+          </section>
+
+          <div className="internalDetailList">
+            <article>
+              <strong>Fuentes no encontradas</strong>
+              <span>{consultationSummary.noEncontrados} procesos devolvieron `not_found` en la última lectura.</span>
+            </article>
+            <article>
+              <strong>Alertas activas</strong>
+              <span>{alerts.length} alertas visibles hoy en la cuenta.</span>
+            </article>
+            <article>
+              <strong>Snapshots persistidos</strong>
+              <span>{snapshots.length} registros disponibles para comparación e historial.</span>
+            </article>
+          </div>
+        </section>
+      </section>
+    );
+  }
+
+  if (view !== "procesos") {
+    return null;
+  }
 
   return (
     <section className="internalProcessManager" id="procesos">
@@ -1647,6 +2123,24 @@ function InternalShell({
     );
   }, [session.user.email, session.user.user_metadata.full_name, session.user.user_metadata.name]);
   const canManageTeam = membership.role === "account_admin" || membership.role === "platform_admin";
+  const [activeView, setActiveView] = useState<AppView>(() => getViewFromHash(window.location.hash));
+  const currentViewMeta = internalViewMeta[activeView];
+
+  useEffect(() => {
+    const syncView = () => setActiveView(getViewFromHash(window.location.hash));
+    window.addEventListener("hashchange", syncView);
+    syncView();
+    return () => window.removeEventListener("hashchange", syncView);
+  }, []);
+
+  function navigateTo(view: AppView) {
+    const nextHash = buildViewHash(view);
+    if (window.location.hash !== nextHash) {
+      window.location.hash = nextHash;
+    } else {
+      setActiveView(view);
+    }
+  }
 
   async function handleSignOut() {
     if (!supabase) return;
@@ -1661,17 +2155,33 @@ function InternalShell({
         <div className="internalSidebarBlock">
           <span className="internalSidebarLabel">Cuenta</span>
           <strong>{membership.organization?.name ?? "Sin organización"}</strong>
-          <span>{membership.role.replace("_", " ")}</span>
+          <span>{getDemoStatusLabel(membership.organization?.account_status)}</span>
+        </div>
+
+        <div className="internalSidebarBlock internalSidebarStatus">
+          <span className="internalSidebarLabel">Demo</span>
+          <strong>
+            {getDaysRemaining(membership.organization?.trial_ends_at ?? null) ?? "-"} días
+          </strong>
+          <span>
+            {membership.organization?.process_limit ?? 100} procesos · {membership.organization?.member_limit ?? 4} responsables
+          </span>
         </div>
 
         <nav className="internalSidebarNav" aria-label="Módulos internos">
-          <a href="#resumen" className="is-active">
-            Resumen
-          </a>
-          <a href="#equipo">Equipo</a>
-          <a href="#procesos">Procesos</a>
-          <a href="#bandeja">Bandeja</a>
-          <a href="#consultas">Consultas</a>
+          {internalNavItems.map((item) => (
+            <a
+              key={item.view}
+              href={buildViewHash(item.view)}
+              className={activeView === item.view ? "is-active" : undefined}
+              onClick={(event) => {
+                event.preventDefault();
+                navigateTo(item.view);
+              }}
+            >
+              {item.label}
+            </a>
+          ))}
         </nav>
 
         <button className="internalGhostButton" type="button" onClick={handleSignOut}>
@@ -1680,59 +2190,62 @@ function InternalShell({
       </aside>
 
       <section className="internalContent">
-        <header className="internalHeader" id="resumen">
+        <header className="internalHeader">
           <div>
-            <span className="internalEyebrow">Beta operativa interna</span>
-            <h1>Hola, {userName}.</h1>
-            <p>
-              Ya tenemos autenticación, membresía y organización activa. El
-              producto empieza aquí de verdad.
-            </p>
+            <span className="internalEyebrow">{currentViewMeta.eyebrow}</span>
+            <h1>{currentViewMeta.title}</h1>
+            <p>{currentViewMeta.description}</p>
           </div>
           <div className="internalHeaderMeta">
+            <span>{membership.organization?.name ?? "Sin organización"}</span>
+            <span>Hola, {userName}</span>
             <span>Rol: {membership.role.replace("_", " ")}</span>
-            <span>Estado: {membership.status}</span>
           </div>
         </header>
 
-        <section className="internalSummaryGrid">
-          <article>
-            <strong>Identidad</strong>
-            <p>Sesión activa y usuario vinculado a Supabase Auth.</p>
-          </article>
-          <article>
-            <strong>Aislamiento</strong>
-            <p>Lectura y escritura sujetas a RLS por organización.</p>
-          </article>
-          <article>
-            <strong>Base lista</strong>
-            <p>Este shell ya permite montar carga de procesos y bandeja real.</p>
-          </article>
-        </section>
+        {activeView === "inicio" ? (
+          <>
+            <DemoStatusPanel accessToken={session.access_token} membership={membership} />
+            <section className="internalModuleList">
+              <header>
+                <span className="internalEyebrow">Ruta actual</span>
+                <h2>La cuenta ya opera sobre una arquitectura clara.</h2>
+              </header>
 
-        <DemoStatusPanel accessToken={session.access_token} membership={membership} />
+              <div className="internalModuleCards">
+                {internalModules.map((module) => (
+                  <article key={module.name}>
+                    <div>
+                      <strong>{module.name}</strong>
+                      <span>{module.status}</span>
+                    </div>
+                    <p>{module.description}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+            <InternalProcessManager organizationId={membership.organization_id} view="inicio" />
+          </>
+        ) : null}
 
-        <section className="internalModuleList" id="procesos">
-          <header>
-            <span className="internalEyebrow">Ruta inmediata</span>
-            <h2>Los siguientes módulos se montan sobre esta base.</h2>
-          </header>
+        {activeView === "equipo" ? (
+          <>
+            <DemoStatusPanel accessToken={session.access_token} membership={membership} />
+            <TeamManager accessToken={session.access_token} canManage={canManageTeam} />
+          </>
+        ) : null}
 
-          <div className="internalModuleCards">
-            {internalModules.map((module) => (
-              <article key={module.name}>
-                <div>
-                  <strong>{module.name}</strong>
-                  <span>{module.status}</span>
-                </div>
-                <p>{module.description}</p>
-              </article>
-            ))}
-          </div>
-        </section>
+        {activeView === "bandeja" ? (
+          <InternalProcessManager organizationId={membership.organization_id} view="bandeja" />
+        ) : null}
 
-        <TeamManager accessToken={session.access_token} canManage={canManageTeam} />
-        <InternalProcessManager organizationId={membership.organization_id} />
+        {activeView === "procesos" ? (
+          <InternalProcessManager organizationId={membership.organization_id} view="procesos" />
+        ) : null}
+
+        {activeView === "consultas" ? (
+          <InternalProcessManager organizationId={membership.organization_id} view="consultas" />
+        ) : null}
       </section>
     </main>
   );
