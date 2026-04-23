@@ -388,6 +388,210 @@ button {
   font-weight: 700;
 }
 
+.internalProcessManager {
+  display: grid;
+  gap: 18px;
+}
+
+.internalProcessGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.internalPanel {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px;
+  background: #ffffff;
+}
+
+.internalPanelHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.internalPanelHeader strong {
+  color: var(--brand);
+  font-size: 1.02rem;
+}
+
+.internalPanelHeader span {
+  color: var(--muted);
+  font-size: var(--font-small);
+}
+
+.internalPanel label {
+  display: grid;
+  gap: 8px;
+  color: var(--brand);
+  font-size: var(--font-small);
+  font-weight: 700;
+}
+
+.internalPanel input,
+.internalPanel select,
+.internalPanel textarea {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #ffffff;
+  color: var(--text);
+  resize: vertical;
+}
+
+.internalPanel textarea {
+  min-height: 96px;
+}
+
+.internalPanel input:focus-visible,
+.internalPanel select:focus-visible,
+.internalPanel textarea:focus-visible {
+  outline: 2px solid rgba(31, 95, 191, 0.22);
+  outline-offset: 1px;
+}
+
+.internalFormMeta {
+  display: grid;
+  gap: 4px;
+  margin-top: -4px;
+  color: var(--muted);
+  font-size: var(--font-small);
+}
+
+.internalIntakeResult {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.internalIntakeResult article {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.internalIntakeResult strong {
+  color: var(--brand);
+  font-size: 1.9rem;
+  line-height: 1;
+}
+
+.internalIntakeResult span {
+  color: var(--muted);
+  font-size: var(--font-small);
+  font-weight: 650;
+}
+
+.internalIntakeStatus {
+  display: grid;
+  gap: 12px;
+}
+
+.internalIntakeStatusBlock {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: var(--surface-subtle);
+}
+
+.internalIntakeStatusBlock strong {
+  display: block;
+  color: var(--brand);
+}
+
+.internalIntakeStatusBlock p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.internalPanelEmpty {
+  margin: 0;
+  color: var(--muted);
+}
+
+.internalCasesTable {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--border);
+}
+
+.internalCasesTableHead,
+.internalCasesRow {
+  display: grid;
+  grid-template-columns: minmax(200px, 2fr) minmax(140px, 1fr) 110px 100px 170px;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 0;
+}
+
+.internalCasesTableHead {
+  color: var(--subtle);
+  font-size: var(--font-micro);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.internalCasesRow {
+  border-top: 1px solid var(--border);
+}
+
+.internalCasesRow strong {
+  color: var(--brand);
+  word-break: break-all;
+}
+
+.internalCasesRow span {
+  color: var(--muted);
+  font-size: var(--font-small);
+}
+
+.internalPriorityBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  border-radius: 999px;
+  padding: 0 10px;
+  font-size: var(--font-micro);
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.internalPriorityBadge.is-low {
+  border: 1px solid var(--success-border);
+  background: var(--success-soft);
+  color: var(--success-text);
+}
+
+.internalPriorityBadge.is-normal {
+  border: 1px solid var(--brand-border);
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.internalPriorityBadge.is-high {
+  border: 1px solid var(--warning-border);
+  background: var(--warning-soft);
+  color: var(--warning-text);
+}
+
+.internalPriorityBadge.is-critical {
+  border: 1px solid var(--error-border);
+  background: var(--error-soft);
+  color: var(--error-text);
+}
+
 @media (max-width: 980px) {
   .internalShell {
     grid-template-columns: 1fr;
@@ -408,12 +612,24 @@ button {
   }
 
   .internalSummaryGrid,
-  .internalModuleCards {
+  .internalModuleCards,
+  .internalProcessGrid,
+  .internalIntakeResult {
     grid-template-columns: 1fr;
   }
 
   .internalContent {
     padding: 28px 20px 36px;
+  }
+
+  .internalCasesTableHead {
+    display: none;
+  }
+
+  .internalCasesRow {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 14px 0;
   }
 }
 
