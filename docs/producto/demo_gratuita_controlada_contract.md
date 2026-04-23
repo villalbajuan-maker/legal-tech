@@ -2,7 +2,7 @@
 
 Producto: LexControl  
 Instrumento: Activacion comercial inicial  
-Version: v1.0 MVP
+Version: v1.1 MVP
 
 ---
 
@@ -164,72 +164,30 @@ No comunicar numero exacto de cupos en esta etapa.
 
 ## 9. Flujo Del Modal
 
-El modal de activacion debe tener 3 pasos.
-
-### Paso 1: Condiciones De La Demo
-
-Objetivo:
-
-Explicar que se recibe y que no se promete.
-
-Contenido:
-
-- Demo gratuita controlada.
-- Grupo reducido.
-- Hasta 100 procesos.
-- Hasta 4 responsables.
-- Bandeja operativa.
-- Lex sobre datos de la demo.
-- Sesion de activacion.
-- Revision de resultados.
-
-CTA:
+Decision actualizada:
 
 ```text
-Continuar
+El flujo detallado de activacion queda definido en:
+docs/producto/contrato-flujo-activacion-demo.md
 ```
 
-### Paso 2: Calificacion Operativa
+Este documento conserva la tesis comercial de la demo.
+El contrato especifico define:
 
-Objetivo:
+- Pasos del flujo.
+- Preguntas permitidas.
+- Datos que no deben repetirse.
+- Criterios de calificacion.
+- Salida hacia calendario o revision.
 
-Entender si el prospecto opera volumen real y donde esta el riesgo.
+Reglas congeladas:
 
-Preguntas:
+- Una pantalla pide una sola decision.
+- No combinar dos preguntas en un mismo paso.
+- No volver a pedir numero de procesos en datos de contacto.
+- Solo mostrar calendario si el prospecto califica.
 
-- Cuantos procesos vigilas actualmente?
-- Como los revisan hoy?
-- Cual es el principal riesgo hoy?
-- Tienen responsables asignados por proceso?
-
-### Paso 3: Datos De Contacto
-
-Objetivo:
-
-Recibir informacion suficiente para coordinar activacion.
-
-Campos:
-
-- Nombre.
-- Correo.
-- WhatsApp.
-- Firma o empresa.
-- Ciudad.
-- Numero aproximado de procesos.
-- Mensaje opcional.
-
-CTA final:
-
-```text
-Solicitar activacion
-```
-
-Mensaje de confirmacion:
-
-```text
-Solicitud recibida.
-Revisaremos si tu operacion encaja con la demo controlada y coordinaremos una sesion de activacion.
-```
+La version anterior de 3 pasos queda reemplazada por el contrato granular de activacion.
 
 ---
 
