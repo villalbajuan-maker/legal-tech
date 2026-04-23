@@ -39,6 +39,23 @@ type CaseIntakeResponse = {
   invalid_radicados: string[] | null;
 };
 
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof (error as { message?: unknown }).message === "string"
+  ) {
+    return (error as { message: string }).message;
+  }
+
+  return fallback;
+}
+
 const internalModules = [
   {
     name: "Procesos",
@@ -176,7 +193,7 @@ function InternalProcessManager({
     const { data, error } = await supabase.rpc("submit_case_intake", {
       target_organization_id: organizationId,
       entries,
-    });
+    }).single();
 
     if (error) {
       throw error;
@@ -210,7 +227,7 @@ function InternalProcessManager({
       setSingleNotes("");
       await refreshCases();
     } catch (error) {
-      setIntakeError(error instanceof Error ? error.message : "No fue posible registrar el proceso.");
+      setIntakeError(getErrorMessage(error, "No fue posible registrar el proceso."));
     } finally {
       setSubmittingSingle(false);
     }
@@ -247,7 +264,7 @@ function InternalProcessManager({
       setBulkNotes("");
       await refreshCases();
     } catch (error) {
-      setIntakeError(error instanceof Error ? error.message : "No fue posible completar la carga masiva.");
+      setIntakeError(getErrorMessage(error, "No fue posible completar la carga masiva."));
     } finally {
       setSubmittingBulk(false);
     }
