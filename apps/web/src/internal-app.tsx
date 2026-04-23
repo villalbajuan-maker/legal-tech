@@ -31,6 +31,52 @@ type InternalCaseRow = {
   created_at: string;
 };
 
+type InternalCaseSourceRow = {
+  id: string;
+  case_id: string;
+  status: "pending" | "active" | "paused" | "error" | "blocked" | "not_found";
+  last_checked_at: string | null;
+  last_success_at: string | null;
+  last_error_at: string | null;
+  metadata: Record<string, unknown> | null;
+  source: Array<{
+    id: string;
+    name: string;
+  }> | null;
+};
+
+type InternalLegalEventRow = {
+  id: string;
+  case_id: string;
+  event_type: "audiencia" | "termino" | "vencimiento" | "actuacion" | "otro";
+  event_date: string;
+  title: string;
+  description: string | null;
+  change_status: "new" | "unchanged" | "changed" | "cancelled";
+  status: "active" | "cancelled" | "completed" | "superseded";
+};
+
+type OperationalCaseRow = {
+  caseId: string;
+  radicado: string;
+  responsible: string | null;
+  priority: InternalCaseRow["priority"];
+  caseStatus: InternalCaseRow["status"];
+  sourceStatus: InternalCaseSourceRow["status"] | "pending";
+  sourceName: string;
+  operationalStatus: string;
+  latestActionTitle: string | null;
+  latestActionDescription: string | null;
+  latestActionDate: string | null;
+  latestEventTitle: string | null;
+  latestEventDate: string | null;
+  latestEventType: InternalLegalEventRow["event_type"] | null;
+  newMovementsCount: number;
+  legalEventsCount: number;
+  bootstrapMode: boolean;
+  lastCheckedAt: string | null;
+};
+
 type CaseIntakeResponse = {
   inserted_count: number;
   duplicate_count: number;
@@ -60,12 +106,12 @@ function getErrorMessage(error: unknown, fallback: string) {
 const internalModules = [
   {
     name: "Procesos",
-    status: "Siguiente",
+    status: "Activo",
     description: "Carga individual y masiva de radicados por cuenta.",
   },
   {
     name: "Bandeja",
-    status: "En construcción",
+    status: "Activo parcial",
     description: "Vista operativa autenticada sobre datos reales consultados.",
   },
   {
@@ -115,12 +161,167 @@ async function loadOrganizationCases(organizationId: string) {
   return (data as InternalCaseRow[]) ?? [];
 }
 
+async function loadOrganizationCaseSources(caseIds: string[]) {
+  if (!supabase || caseIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("case_sources")
+    .select("id, case_id, status, last_checked_at, last_success_at, last_error_at, metadata, source:sources(id, name)")
+    .in("case_id", caseIds);
+
+  if (error) {
+    throw error;
+  }
+
+  return (data as InternalCaseSourceRow[]) ?? [];
+}
+
+async function loadOrganizationLegalEvents(caseIds: string[]) {
+  if (!supabase || caseIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("legal_events")
+    .select("id, case_id, event_type, event_date, title, description, change_status, status")
+    .in("case_id", caseIds)
+    .eq("status", "active")
+    .order("event_date", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data as InternalLegalEventRow[]) ?? [];
+}
+
 function formatCaseTimestamp(value: string) {
   return new Intl.DateTimeFormat("es-CO", {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "America/Bogota",
   }).format(new Date(value));
+}
+
+function formatShortDate(value: string | null) {
+  if (!value) return "Sin fecha";
+
+  return new Intl.DateTimeFormat("es-CO", {
+    dateStyle: "medium",
+    timeZone: "America/Bogota",
+  }).format(new Date(value));
+}
+
+function formatOperationalStatus(value: string) {
+  switch (value) {
+    case "con_novedad":
+      return "Con novedad";
+    case "sin_cambios":
+      return "Sin cambios";
+    case "no_consultado":
+      return "No consultado";
+    case "error_fuente":
+      return "Error de fuente";
+    case "requiere_revision":
+      return "Requiere revisión";
+    default:
+      return value.replace(/_/g, " ");
+  }
+}
+
+function getSourceStatusTone(value: OperationalCaseRow["sourceStatus"]) {
+  switch (value) {
+    case "active":
+      return "ok";
+    case "blocked":
+    case "error":
+      return "error";
+    case "not_found":
+      return "warning";
+    case "pending":
+    case "paused":
+      return "neutral";
+    default:
+      return "neutral";
+  }
+}
+
+function getOperationalTone(value: string) {
+  switch (value) {
+    case "con_novedad":
+      return "info";
+    case "sin_cambios":
+      return "ok";
+    case "no_consultado":
+      return "warning";
+    case "error_fuente":
+      return "error";
+    case "requiere_revision":
+      return "review";
+    default:
+      return "neutral";
+  }
+}
+
+function buildOperationalRows(
+  cases: InternalCaseRow[],
+  caseSources: InternalCaseSourceRow[],
+  legalEvents: InternalLegalEventRow[],
+) {
+  const sourceByCaseId = new Map<string, InternalCaseSourceRow[]>();
+  const eventsByCaseId = new Map<string, InternalLegalEventRow[]>();
+
+  caseSources.forEach((caseSource) => {
+    const current = sourceByCaseId.get(caseSource.case_id) || [];
+    current.push(caseSource);
+    sourceByCaseId.set(caseSource.case_id, current);
+  });
+
+  legalEvents.forEach((event) => {
+    const current = eventsByCaseId.get(event.case_id) || [];
+    current.push(event);
+    eventsByCaseId.set(event.case_id, current);
+  });
+
+  return cases.map<OperationalCaseRow>((legalCase) => {
+    const caseSourcesForCase = (sourceByCaseId.get(legalCase.id) || []).slice();
+    caseSourcesForCase.sort((left, right) => (right.last_checked_at || "").localeCompare(left.last_checked_at || ""));
+    const primarySource = caseSourcesForCase[0] || null;
+    const metadata = (primarySource?.metadata || {}) as Record<string, unknown>;
+    const latestSummary =
+      typeof metadata.latest_summary === "object" && metadata.latest_summary !== null
+        ? (metadata.latest_summary as Record<string, unknown>)
+        : null;
+    const nextEvent = (eventsByCaseId.get(legalCase.id) || [])[0] || null;
+
+    return {
+      caseId: legalCase.id,
+      radicado: legalCase.radicado,
+      responsible: legalCase.internal_owner,
+      priority: legalCase.priority,
+      caseStatus: legalCase.status,
+      sourceStatus: primarySource?.status || "pending",
+      sourceName: primarySource?.source?.[0]?.name || "Sin fuente",
+      operationalStatus:
+        typeof metadata.operational_status === "string" ? metadata.operational_status : "no_consultado",
+      latestActionTitle: latestSummary && typeof latestSummary.title === "string" ? latestSummary.title : null,
+      latestActionDescription:
+        latestSummary && typeof latestSummary.description === "string" ? latestSummary.description : null,
+      latestActionDate:
+        latestSummary && typeof latestSummary.movement_date === "string" ? latestSummary.movement_date : null,
+      latestEventTitle: nextEvent?.title || null,
+      latestEventDate: nextEvent?.event_date || null,
+      latestEventType: nextEvent?.event_type || null,
+      newMovementsCount:
+        typeof metadata.new_movements_count === "number"
+          ? metadata.new_movements_count
+          : Number(metadata.new_movements_count || 0),
+      legalEventsCount:
+        typeof metadata.legal_events_count === "number"
+          ? metadata.legal_events_count
+          : Number(metadata.legal_events_count || 0),
+      bootstrapMode: Boolean(metadata.bootstrap_mode),
+      lastCheckedAt: primarySource?.last_checked_at || null,
+    };
+  });
 }
 
 function splitRadicadosFromTextarea(value: string) {
@@ -153,6 +354,7 @@ function InternalProcessManager({
   organizationId: string;
 }) {
   const [cases, setCases] = useState<InternalCaseRow[]>([]);
+  const [operationalRows, setOperationalRows] = useState<OperationalCaseRow[]>([]);
   const [isLoadingCases, setLoadingCases] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [singleRadicado, setSingleRadicado] = useState("");
@@ -175,6 +377,12 @@ function InternalProcessManager({
     try {
       const nextCases = await loadOrganizationCases(organizationId);
       setCases(nextCases);
+      const caseIds = nextCases.map((legalCase) => legalCase.id);
+      const [caseSources, legalEvents] = await Promise.all([
+        loadOrganizationCaseSources(caseIds),
+        loadOrganizationLegalEvents(caseIds),
+      ]);
+      setOperationalRows(buildOperationalRows(nextCases, caseSources, legalEvents));
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : "No fue posible cargar los procesos.");
     } finally {
@@ -273,6 +481,13 @@ function InternalProcessManager({
 
   const normalizedPreview = normalizeRadicado(singleRadicado);
   const bulkPreviewCount = splitRadicadosFromTextarea(bulkRadicados).length;
+  const operationalSummary = {
+    total: operationalRows.length,
+    conNovedad: operationalRows.filter((row) => row.operationalStatus === "con_novedad").length,
+    requiereRevision: operationalRows.filter((row) => row.operationalStatus === "requiere_revision").length,
+    erroresFuente: operationalRows.filter((row) => row.operationalStatus === "error_fuente").length,
+    eventosActivos: operationalRows.filter((row) => Boolean(row.latestEventDate)).length,
+  };
 
   return (
     <section className="internalProcessManager" id="procesos">
@@ -284,6 +499,96 @@ function InternalProcessManager({
           inicial para CPNU.
         </p>
       </header>
+
+      <section className="internalPanel" id="bandeja">
+        <div className="internalPanelHeader">
+          <div>
+            <strong>Bandeja operativa real</strong>
+            <span>Procesos consultados, última actuación y eventos jurídicos activos.</span>
+          </div>
+          <button className="internalGhostButton" type="button" onClick={() => void refreshCases()}>
+            Recargar
+          </button>
+        </div>
+
+        <div className="internalIntakeResult internalTraySummary">
+          <article>
+            <strong>{operationalSummary.total}</strong>
+            <span>Procesos visibles</span>
+          </article>
+          <article>
+            <strong>{operationalSummary.conNovedad}</strong>
+            <span>Con novedad</span>
+          </article>
+          <article>
+            <strong>{operationalSummary.requiereRevision}</strong>
+            <span>Requieren revisión</span>
+          </article>
+          <article>
+            <strong>{operationalSummary.erroresFuente}</strong>
+            <span>Errores de fuente</span>
+          </article>
+          <article>
+            <strong>{operationalSummary.eventosActivos}</strong>
+            <span>Eventos activos</span>
+          </article>
+        </div>
+
+        {isLoadingCases ? <p className="internalPanelEmpty">Cargando bandeja operativa...</p> : null}
+        {loadError ? <p className="internalAuthError">{loadError}</p> : null}
+        {!isLoadingCases && !loadError && operationalRows.length === 0 ? (
+          <p className="internalPanelEmpty">
+            Aún no hay datos suficientes para la bandeja. Carga procesos y ejecuta consultas para poblarla.
+          </p>
+        ) : null}
+
+        {!isLoadingCases && !loadError && operationalRows.length > 0 ? (
+          <div className="internalCasesTable internalTrayTable">
+            <div className="internalCasesTableHead internalTrayTableHead">
+              <span>Radicado</span>
+              <span>Estado operativo</span>
+              <span>Última actuación</span>
+              <span>Próximo evento</span>
+              <span>Responsable</span>
+              <span>Fuente</span>
+            </div>
+            {operationalRows.map((row) => (
+              <article key={row.caseId} className="internalCasesRow internalTrayRow">
+                <div className="internalTrayPrimary">
+                  <strong>{row.radicado}</strong>
+                  <span>{row.lastCheckedAt ? `Última consulta: ${formatCaseTimestamp(row.lastCheckedAt)}` : "Sin consulta aún"}</span>
+                </div>
+                <div className="internalTrayStack">
+                  <span className={`internalStatusBadge is-${getOperationalTone(row.operationalStatus)}`}>
+                    {formatOperationalStatus(row.operationalStatus)}
+                  </span>
+                  <span className={`internalStatusBadge is-${getSourceStatusTone(row.sourceStatus)}`}>
+                    Fuente {row.sourceStatus}
+                  </span>
+                </div>
+                <div className="internalTrayStack">
+                  <strong>{row.latestActionTitle || "Sin actuación resumida"}</strong>
+                  <span>{row.latestActionDate ? formatShortDate(row.latestActionDate) : "Sin fecha"}</span>
+                  {row.latestActionDescription ? <span>{row.latestActionDescription}</span> : null}
+                </div>
+                <div className="internalTrayStack">
+                  <strong>{row.latestEventTitle || "Sin evento activo"}</strong>
+                  <span>{row.latestEventDate ? formatShortDate(row.latestEventDate) : "Sin fecha"}</span>
+                  {row.latestEventType ? <span>{row.latestEventType}</span> : null}
+                </div>
+                <div className="internalTrayStack">
+                  <span>{row.responsible || "Sin responsable"}</span>
+                  <span className={`internalPriorityBadge is-${row.priority}`}>{row.priority}</span>
+                </div>
+                <div className="internalTrayStack">
+                  <span>{row.sourceName}</span>
+                  <span>{row.legalEventsCount} evento{row.legalEventsCount === 1 ? "" : "s"}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : null}
+      </section>
 
       <div className="internalProcessGrid">
         <form className="internalPanel" onSubmit={handleSingleSubmit}>

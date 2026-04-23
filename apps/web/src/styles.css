@@ -471,6 +471,10 @@ button {
   gap: 16px;
 }
 
+.internalTraySummary {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .internalIntakeResult article {
   display: grid;
   gap: 4px;
@@ -525,6 +529,10 @@ button {
   border-top: 1px solid var(--border);
 }
 
+.internalTrayTable {
+  border-top: 0;
+}
+
 .internalCasesTableHead,
 .internalCasesRow {
   display: grid;
@@ -554,6 +562,83 @@ button {
 .internalCasesRow span {
   color: var(--muted);
   font-size: var(--font-small);
+}
+
+.internalTrayTableHead,
+.internalTrayRow {
+  grid-template-columns:
+    minmax(190px, 1.3fr)
+    minmax(180px, 0.95fr)
+    minmax(220px, 1.2fr)
+    minmax(200px, 1.05fr)
+    minmax(160px, 0.85fr)
+    minmax(120px, 0.7fr);
+}
+
+.internalTrayPrimary,
+.internalTrayStack {
+  display: grid;
+  gap: 4px;
+}
+
+.internalTrayPrimary strong,
+.internalTrayStack strong {
+  color: var(--brand);
+  font-size: var(--font-small);
+}
+
+.internalTrayPrimary span,
+.internalTrayStack span {
+  color: var(--muted);
+  font-size: var(--font-small);
+}
+
+.internalStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 28px;
+  border-radius: 999px;
+  padding: 0 10px;
+  font-size: var(--font-micro);
+  font-weight: 700;
+}
+
+.internalStatusBadge.is-ok {
+  border: 1px solid var(--success-border);
+  background: var(--success-soft);
+  color: var(--success-text);
+}
+
+.internalStatusBadge.is-info {
+  border: 1px solid var(--brand-border);
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.internalStatusBadge.is-warning {
+  border: 1px solid var(--warning-border);
+  background: var(--warning-soft);
+  color: var(--warning-text);
+}
+
+.internalStatusBadge.is-error {
+  border: 1px solid var(--error-border);
+  background: var(--error-soft);
+  color: var(--error-text);
+}
+
+.internalStatusBadge.is-review {
+  border: 1px solid rgba(135, 91, 255, 0.24);
+  background: rgba(135, 91, 255, 0.09);
+  color: #6f44d4;
+}
+
+.internalStatusBadge.is-neutral {
+  border: 1px solid var(--border);
+  background: var(--surface-subtle);
+  color: var(--muted);
 }
 
 .internalPriorityBadge {
@@ -616,6 +701,10 @@ button {
   .internalProcessGrid,
   .internalIntakeResult {
     grid-template-columns: 1fr;
+  }
+
+  .internalTraySummary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .internalContent {
