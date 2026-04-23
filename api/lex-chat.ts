@@ -2,8 +2,8 @@ import {
   buildLexDemoKnowledgeBase,
   buildLexSystemPrompt,
   createLexDemoRows,
-} from "../packages/core/src";
-import type { LexDemoProcessRow } from "../packages/core/src";
+} from "../packages/core/src/index.js";
+import type { LexDemoProcessRow } from "../packages/core/src/index.js";
 
 type LexChatBody = {
   question?: string;
