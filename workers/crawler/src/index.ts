@@ -33,6 +33,22 @@ type PersistedMovementRow = {
   metadata: Record<string, unknown> | null;
 };
 
+type PendingLegalEvent = {
+  case_id: string;
+  source_id: string;
+  movement_id: string;
+  event_type: "audiencia" | "termino" | "vencimiento" | "actuacion" | "otro";
+  event_date: string;
+  end_date: string | null;
+  title: string;
+  description: string | null;
+  confidence: number;
+  status: "active";
+  change_status: "new" | "unchanged";
+};
+
+const EVENT_ELIGIBLE_MOVEMENT_TYPES = ["Audiencia", "Traslado", "Sentencia / fallo", "Medida cautelar"];
+
 function getSupabaseEnv() {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -79,6 +95,14 @@ function normalizeText(value?: string | null) {
     .replace(/\p{Diacritic}/gu, "")
     .toLowerCase()
     .trim();
+}
+
+function toEventTimestamp(value: string | null) {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.includes("T")) return trimmed;
+  return `${trimmed}T00:00:00.000Z`;
 }
 
 function getLatestMovementSummary(result: SourceFetchResult) {
@@ -139,18 +163,23 @@ function inferEventPayload(input: CaseSourceInput, movement: PersistedMovementRo
     return null;
   }
 
+  const normalizedEventDate = toEventTimestamp(eventDate);
+  if (!normalizedEventDate) {
+    return null;
+  }
+
   return {
     case_id: input.caseId,
     source_id: input.sourceId,
     movement_id: movement.id,
     event_type: eventType,
-    event_date: `${eventDate}T00:00:00.000Z`,
-    end_date: eventType === "audiencia" && fechaFinal ? `${fechaFinal}T00:00:00.000Z` : null,
+    event_date: normalizedEventDate,
+    end_date: eventType === "audiencia" ? toEventTimestamp(fechaFinal) : null,
     title: movement.title,
     description: movement.description,
     confidence: eventType === "actuacion" ? 0.8 : 0.95,
-    status: "active",
-    change_status: "new",
+    status: "active" as const,
+    change_status: "new" as const,
   };
 }
 
@@ -260,22 +289,54 @@ async function persistMovementsAndEvents(
 
   let eventCount = 0;
 
-  if (hasPreviousSuccessfulSnapshot && !bootstrapMode && insertedMovements.length > 0) {
-    const eventRows = insertedMovements
-      .map((movement) => inferEventPayload(input, movement))
-      .filter(Boolean);
+  if (insertedMovements.length > 0) {
+    const eventRows: PendingLegalEvent[] = insertedMovements
+      .map((movement): PendingLegalEvent | null => {
+        const event = inferEventPayload(input, movement);
+        if (!event) return null;
+
+        return {
+          ...event,
+          change_status: bootstrapMode || !hasPreviousSuccessfulSnapshot ? "unchanged" : "new",
+        };
+      })
+      .filter((event): event is PendingLegalEvent => Boolean(event));
 
     if (eventRows.length > 0) {
-      const { data, error } = await supabase
+      const movementIds = eventRows.map((event) => event.movement_id);
+      const eventTypes = [...new Set(eventRows.map((event) => event.event_type))];
+      const { data: existingEvents, error: existingEventsError } = await supabase
         .from("legal_events")
-        .insert(eventRows)
-        .select("id");
+        .select("movement_id, event_type")
+        .in("movement_id", movementIds)
+        .in("event_type", eventTypes);
 
-      if (error) {
-        throw error;
+      if (existingEventsError) {
+        throw existingEventsError;
       }
 
-      eventCount = data?.length || 0;
+      const existingKeys = new Set(
+        ((existingEvents as Array<{ movement_id: string | null; event_type: string }> | null) || [])
+          .filter((event) => event.movement_id)
+          .map((event) => `${event.movement_id}:${event.event_type}`),
+      );
+
+      const newEventRows = eventRows.filter(
+        (event) => !existingKeys.has(`${event.movement_id}:${event.event_type}`),
+      );
+
+      if (newEventRows.length > 0) {
+        const { data, error } = await supabase
+          .from("legal_events")
+          .insert(newEventRows)
+          .select("id");
+
+        if (error) {
+          throw error;
+        }
+
+        eventCount = data?.length || 0;
+      }
     }
   }
 
@@ -295,6 +356,69 @@ async function persistMovementsAndEvents(
     bootstrapMode,
     operationalStatus,
   };
+}
+
+async function backfillBaselineEvents(
+  supabase: ReturnType<typeof createClient<any>>,
+  input: CaseSourceInput,
+) {
+  const { data: movements, error: movementsError } = await supabase
+    .from("case_movements")
+    .select("id, normalized_hash, title, description, movement_type, movement_date, metadata")
+    .eq("case_id", input.caseId)
+    .eq("source_id", input.sourceId)
+    .in("movement_type", EVENT_ELIGIBLE_MOVEMENT_TYPES);
+
+  if (movementsError) {
+    throw movementsError;
+  }
+
+  const typedMovements = (movements as PersistedMovementRow[] | null) || [];
+
+  if (typedMovements.length === 0) {
+    return 0;
+  }
+
+  const movementIds = typedMovements.map((movement) => movement.id);
+  const { data: existingEvents, error: existingEventsError } = await supabase
+    .from("legal_events")
+    .select("movement_id, event_type")
+    .in("movement_id", movementIds);
+
+  if (existingEventsError) {
+    throw existingEventsError;
+  }
+
+  const existingKeys = new Set(
+    ((existingEvents as Array<{ movement_id: string | null; event_type: string }> | null) || [])
+      .filter((event) => event.movement_id)
+      .map((event) => `${event.movement_id}:${event.event_type}`),
+  );
+
+  const backfillRows: PendingLegalEvent[] = typedMovements
+    .map((movement): PendingLegalEvent | null => {
+      const event = inferEventPayload(input, movement);
+      if (!event) return null;
+      if (existingKeys.has(`${movement.id}:${event.event_type}`)) return null;
+
+      return {
+        ...event,
+        change_status: "unchanged" as const,
+      };
+    })
+    .filter((event): event is PendingLegalEvent => Boolean(event));
+
+  if (backfillRows.length === 0) {
+    return 0;
+  }
+
+  const { data, error } = await supabase.from("legal_events").insert(backfillRows).select("id");
+
+  if (error) {
+    throw error;
+  }
+
+  return data?.length || 0;
 }
 
 async function loadPendingCaseSources() {
@@ -385,6 +509,16 @@ async function persistSnapshot(
       result,
       Boolean(previousSuccessfulSnapshot),
     );
+
+    if (movementOutcome.eventCount === 0) {
+      const backfilledCount = await backfillBaselineEvents(supabase, input);
+      if (backfilledCount > 0) {
+        movementOutcome = {
+          ...movementOutcome,
+          eventCount: backfilledCount,
+        };
+      }
+    }
   }
 
   const nextStatus = nextCaseSourceStatus(result.status);
