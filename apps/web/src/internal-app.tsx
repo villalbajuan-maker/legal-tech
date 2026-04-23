@@ -7,6 +7,7 @@ import { isSupabaseConfigured, supabase } from "./supabase";
 
 type MembershipRecord = {
   id: string;
+  organization_id: string;
   role: "platform_admin" | "account_admin" | "operator";
   status: "active" | "invited" | "disabled";
   organization: {
@@ -84,7 +85,7 @@ async function loadPrimaryMembership(userId: string) {
 
   const { data, error } = await supabase
     .from("organization_memberships")
-    .select("id, role, status, organization:organizations(id, name)")
+    .select("id, organization_id, role, status, organization:organizations(id, name)")
     .eq("user_id", userId)
     .eq("status", "active")
     .limit(1)
@@ -673,7 +674,7 @@ function InternalShell({
           </div>
         </section>
 
-        <InternalProcessManager organizationId={membership.organization?.id ?? ""} />
+        <InternalProcessManager organizationId={membership.organization_id} />
       </section>
     </main>
   );
@@ -800,7 +801,7 @@ export function InternalApp() {
     return <InternalNoMembershipState email={session.user.email} />;
   }
 
-  if (!membership.organization?.id) {
+  if (!membership.organization_id) {
     return (
       <main className="internalStatePage">
         <section className="internalStateCard">
