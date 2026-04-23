@@ -57,6 +57,19 @@ Durante estas 72 horas no vamos a construir todo el SaaS.
 
 Vamos a construir una beta asistida con estas capacidades minimas:
 
+Nota de producto:
+
+```text
+La palabra beta describe la fase interna de validacion.
+No describe la percepcion que debe tener el usuario activado.
+```
+
+Hacia afuera, toda cuenta activada debe sentirse como producto real.
+
+El contrato exacto de esa experiencia queda definido en:
+
+`docs/producto/contrato-demo-operativa-produccion.md`
+
 ### Beta asistida significa
 
 - El equipo de LexControl crea o activa la cuenta.

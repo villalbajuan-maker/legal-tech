@@ -106,6 +106,24 @@ La demo gratuita controlada puede incluir:
 - Sesion inicial de activacion.
 - Revision de resultados con el equipo.
 
+Decision actualizada:
+
+```text
+El alcance entregable y las reglas operativas de esta modalidad
+quedan definidos en:
+docs/producto/contrato-demo-operativa-produccion.md
+```
+
+Este documento conserva la tesis comercial.
+
+El contrato de demo operativa en produccion define:
+
+- que recibe exactamente la cuenta activada
+- como se mide el limite de procesos
+- como operan los responsables
+- que debe existir en bandeja y Lex
+- que debe sentirse como producto real y no como beta
+
 ---
 
 ## 6. Que No Incluye
