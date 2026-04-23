@@ -3,6 +3,7 @@ import type { FormEvent } from "react";
 import { createRoot } from "react-dom/client";
 import { createLexDemoRows } from "../../../packages/core/src";
 import { InternalApp } from "./internal-app";
+import { supabase } from "./supabase";
 import type {
   LexDemoProcessRow as ProcessRow,
   LexDemoProcessState as ProcessState,
@@ -456,9 +457,18 @@ function ActivationModal({
 }: {
   onClose: () => void;
 }) {
+  type ActivationRequestSubmission = {
+    request_id: string;
+    qualification_status: "qualified" | "deferred";
+    request_status: "qualified" | "deferred" | "new" | "sent_to_calendar" | "activated" | "rejected";
+  };
+
   const [step, setStep] = useState(0);
   const [isSubmitted, setSubmitted] = useState(false);
   const [qualifiedForScheduling, setQualifiedForScheduling] = useState(false);
+  const [requestId, setRequestId] = useState<string | null>(null);
+  const [isSubmitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [profileType, setProfileType] = useState("");
   const [caseBand, setCaseBand] = useState("");
   const [reviewMethods, setReviewMethods] = useState<string[]>([]);
@@ -467,6 +477,11 @@ function ActivationModal({
   const [urgencyLevel, setUrgencyLevel] = useState("");
   const [sampleReadiness, setSampleReadiness] = useState("");
   const [decisionWindow, setDecisionWindow] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [city, setCity] = useState("");
   const totalSteps = 10;
 
   const profileTypeOptions = [
@@ -533,10 +548,58 @@ function ActivationModal({
     return hasOperationalVolume || hasStrategicProfile || hasUrgency || canActivateSoon || hasVisiblePain || hasFragmentedReview;
   }
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setQualifiedForScheduling(qualifiesForScheduling());
+    if (isSubmitting) return;
+
+    const nextQualifiedForScheduling = qualifiesForScheduling();
+    setSubmitError(null);
+
+    if (!supabase) {
+      setSubmitError("La activación todavía no está conectada al backend. Intenta de nuevo en unos minutos.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    const payload = {
+      source: "landing_modal",
+      qualified_for_scheduling: nextQualifiedForScheduling,
+      profile_type: profileType,
+      case_band: caseBand,
+      review_methods: reviewMethods,
+      operational_risks: operationalRisks,
+      has_assigned_owners: hasAssignedOwners,
+      urgency_level: urgencyLevel,
+      sample_readiness: sampleReadiness,
+      decision_window: decisionWindow,
+      contact_name: contactName.trim(),
+      contact_email: contactEmail.trim().toLowerCase(),
+      contact_phone: contactPhone.trim(),
+      company_name: companyName.trim(),
+      city: city.trim(),
+      calendar_url: activationCalendarUrl,
+    };
+
+    const { data, error } = await supabase
+      .rpc("submit_activation_request", {
+        payload,
+      })
+      .single<ActivationRequestSubmission>();
+
+    if (error || !data) {
+      setSubmitError(
+        error?.message ||
+          "No fue posible registrar tu solicitud de activación. Intenta nuevamente.",
+      );
+      setSubmitting(false);
+      return;
+    }
+
+    setRequestId(data.request_id);
+    setQualifiedForScheduling(data.qualification_status === "qualified");
     setSubmitted(true);
+    setSubmitting(false);
   }
 
   function canProceed(currentStep: number) {
@@ -549,8 +612,21 @@ function ActivationModal({
     if (currentStep === 6) return Boolean(urgencyLevel);
     if (currentStep === 7) return Boolean(sampleReadiness);
     if (currentStep === 8) return Boolean(decisionWindow);
-    if (currentStep === 9) return true;
+    if (currentStep === 9) {
+      return Boolean(contactName.trim() && contactEmail.trim() && contactPhone.trim());
+    }
     return false;
+  }
+
+  async function openCalendarFromActivation() {
+    if (requestId && supabase) {
+      await supabase.rpc("mark_activation_request_calendar_presented", {
+        target_request_id: requestId,
+        presented_calendar_url: activationCalendarUrl,
+      });
+    }
+
+    window.open(activationCalendarUrl, "_blank", "noopener,noreferrer");
   }
 
   function goNext() {
@@ -951,38 +1027,69 @@ function ActivationModal({
                 <div className="activationForm">
                   <label>
                     Nombre
-                    <input required name="name" autoComplete="name" />
+                    <input
+                      required
+                      name="name"
+                      autoComplete="name"
+                      value={contactName}
+                      onChange={(event) => setContactName(event.target.value)}
+                    />
                   </label>
                   <label>
                     Correo
-                    <input required type="email" name="email" autoComplete="email" />
+                    <input
+                      required
+                      type="email"
+                      name="email"
+                      autoComplete="email"
+                      value={contactEmail}
+                      onChange={(event) => setContactEmail(event.target.value)}
+                    />
                   </label>
                   <label>
                     WhatsApp
-                    <input required name="phone" autoComplete="tel" />
+                    <input
+                      required
+                      name="phone"
+                      autoComplete="tel"
+                      value={contactPhone}
+                      onChange={(event) => setContactPhone(event.target.value)}
+                    />
                   </label>
                   <label>
                     Firma o empresa
-                    <input name="company" autoComplete="organization" />
+                    <input
+                      name="company"
+                      autoComplete="organization"
+                      value={companyName}
+                      onChange={(event) => setCompanyName(event.target.value)}
+                    />
                   </label>
                   <label>
                     Ciudad
-                    <input name="city" autoComplete="address-level2" />
+                    <input
+                      name="city"
+                      autoComplete="address-level2"
+                      value={city}
+                      onChange={(event) => setCity(event.target.value)}
+                    />
                   </label>
                 </div>
                 <div className="activationFooter">
                   <p>
-                    {canProceed(step)
-                      ? "Con estos datos podemos validar la activación sin pedir información sensible."
-                      : "Completa los datos de contacto para solicitar la activación."}
+                    {submitError
+                      ? submitError
+                      : canProceed(step)
+                        ? "Con estos datos podemos validar la activación sin pedir información sensible."
+                        : "Completa los datos de contacto para solicitar la activación."}
                   </p>
                   <button
                     className="activationSubmit"
                     type="submit"
                     aria-label="Solicitar activación"
-                    disabled={!canProceed(step)}
+                    disabled={!canProceed(step) || isSubmitting}
                   >
-                    →
+                    {isSubmitting ? "..." : "→"}
                   </button>
                 </div>
               </form>
@@ -999,9 +1106,9 @@ function ActivationModal({
                   responsables.
                 </p>
                 <div className="activationResultActions">
-                  <a className="button primary" href={activationCalendarUrl} target="_blank" rel="noreferrer">
+                  <button className="button primary" type="button" onClick={() => void openCalendarFromActivation()}>
                     Agendar activación
-                  </a>
+                  </button>
                   <button className="button secondary" type="button" onClick={onClose}>
                     Cerrar
                   </button>
