@@ -125,7 +125,8 @@ const demoLimits = [
   "La activación se coordina con el equipo de LexControl",
 ];
 
-const activationCalendarUrl = import.meta.env.VITE_ACTIVATION_CALENDAR_URL || "https://calendar.google.com/calendar/u/0/r";
+const activationCalendarUrl =
+  import.meta.env.VITE_ACTIVATION_CALENDAR_URL || "https://calendar.app.google/vFv5Ab4tkbRsXv739";
 
 const launchPlans = [
   {
