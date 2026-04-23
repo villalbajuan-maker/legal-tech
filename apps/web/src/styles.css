@@ -475,6 +475,49 @@ button {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+.internalTeamSummary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.internalTeamGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 18px;
+}
+
+.internalTeamList {
+  display: grid;
+  gap: 12px;
+}
+
+.internalTeamList article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: #ffffff;
+}
+
+.internalTeamList strong {
+  color: var(--brand);
+  font-size: var(--font-small);
+}
+
+.internalTeamList span {
+  color: var(--muted);
+  font-size: var(--font-small);
+}
+
+.internalTeamMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .internalTrayFilters {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -818,7 +861,9 @@ button {
 
   .internalTrayFilters,
   .internalTrayLayout,
-  .internalDetailSummary {
+  .internalDetailSummary,
+  .internalTeamSummary,
+  .internalTeamGrid {
     grid-template-columns: 1fr;
   }
 

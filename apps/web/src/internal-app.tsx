@@ -16,6 +16,16 @@ type MembershipRecord = {
   } | null;
 };
 
+type TeamMemberRecord = {
+  id: string;
+  user_id: string;
+  role: "platform_admin" | "account_admin" | "operator";
+  status: "active" | "invited" | "disabled";
+  created_at: string;
+  email: string | null;
+  full_name: string | null;
+};
+
 type AuthFormState = {
   email: string;
   password: string;
@@ -107,6 +117,12 @@ type CaseIntakeResponse = {
   invalid_radicados: string[] | null;
 };
 
+type TeamMembersResponse = {
+  team: TeamMemberRecord[];
+  activeCount: number;
+  limit: number;
+};
+
 function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error && error.message) {
     return error.message;
@@ -122,6 +138,55 @@ function getErrorMessage(error: unknown, fallback: string) {
   }
 
   return fallback;
+}
+
+async function fetchTeamMembers(accessToken: string) {
+  const response = await fetch("/api/team-members", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  const payload = (await response.json()) as TeamMembersResponse | { error?: string };
+
+  if (!response.ok) {
+    throw new Error(
+      "error" in payload && typeof payload.error === "string"
+        ? payload.error
+        : "No fue posible cargar el equipo de la cuenta.",
+    );
+  }
+
+  return payload as TeamMembersResponse;
+}
+
+async function createTeamMember(
+  accessToken: string,
+  input: { fullName: string; email: string; password: string },
+) {
+  const response = await fetch("/api/team-members", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(input),
+  });
+
+  const payload = (await response.json()) as
+    | (TeamMembersResponse & { member?: TeamMemberRecord | null })
+    | { error?: string };
+
+  if (!response.ok) {
+    throw new Error(
+      "error" in payload && typeof payload.error === "string"
+        ? payload.error
+        : "No fue posible crear el responsable.",
+    );
+  }
+
+  return payload as TeamMembersResponse & { member?: TeamMemberRecord | null };
 }
 
 const internalModules = [
@@ -456,6 +521,218 @@ function IntakeStatus({
       <strong>{title}</strong>
       <p>{items.join(", ")}</p>
     </div>
+  );
+}
+
+function formatMemberRole(role: TeamMemberRecord["role"]) {
+  switch (role) {
+    case "account_admin":
+      return "Administrador";
+    case "platform_admin":
+      return "Platform admin";
+    case "operator":
+      return "Responsable";
+    default:
+      return role;
+  }
+}
+
+function TeamManager({
+  accessToken,
+  canManage,
+}: {
+  accessToken: string;
+  canManage: boolean;
+}) {
+  const [teamMembers, setTeamMembers] = useState<TeamMemberRecord[]>([]);
+  const [activeCount, setActiveCount] = useState(0);
+  const [limit, setLimit] = useState(4);
+  const [isLoading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+  });
+  const availableSlots = Math.max(limit - activeCount, 0);
+
+  async function refreshTeam() {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const next = await fetchTeamMembers(accessToken);
+      setTeamMembers(next.team);
+      setActiveCount(next.activeCount);
+      setLimit(next.limit);
+    } catch (nextError) {
+      setError(getErrorMessage(nextError, "No fue posible cargar los responsables."));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void refreshTeam();
+  }, [accessToken]);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (isSubmitting || !canManage) return;
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const next = await createTeamMember(accessToken, form);
+      setTeamMembers(next.team);
+      setActiveCount(next.activeCount);
+      setLimit(next.limit);
+      setForm({
+        fullName: "",
+        email: "",
+        password: "",
+      });
+    } catch (submitError) {
+      setError(getErrorMessage(submitError, "No fue posible crear el responsable."));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <section className="internalPanel" id="equipo">
+      <div className="internalPanelHeader">
+        <div>
+          <strong>Responsables de la cuenta</strong>
+          <span>Gestiona el equipo real que operará la demo.</span>
+        </div>
+        <button className="internalGhostButton" type="button" onClick={() => void refreshTeam()}>
+          Recargar
+        </button>
+      </div>
+
+      <section className="internalIntakeResult internalTeamSummary">
+        <article>
+          <strong>{activeCount}</strong>
+          <span>Responsables activos</span>
+        </article>
+        <article>
+          <strong>{limit}</strong>
+          <span>Límite de la demo</span>
+        </article>
+        <article>
+          <strong>{availableSlots}</strong>
+          <span>Cupos disponibles</span>
+        </article>
+      </section>
+
+      <div className="internalTeamGrid">
+        <div className="internalPanel">
+          <div className="internalPanelHeader">
+            <strong>Equipo actual</strong>
+            <span>{teamMembers.length} registro{teamMembers.length === 1 ? "" : "s"}</span>
+          </div>
+
+          {isLoading ? <p className="internalPanelEmpty">Cargando responsables...</p> : null}
+          {!isLoading && teamMembers.length === 0 ? (
+            <p className="internalPanelEmpty">Aún no hay responsables creados en esta cuenta.</p>
+          ) : null}
+
+          {!isLoading && teamMembers.length > 0 ? (
+            <div className="internalTeamList">
+              {teamMembers.map((member) => (
+                <article key={member.id}>
+                  <div>
+                    <strong>{member.full_name || "Sin nombre"}</strong>
+                    <span>{member.email || "Sin correo"}</span>
+                  </div>
+                  <div className="internalTeamMeta">
+                    <span className={`internalStatusBadge is-${member.role === "operator" ? "info" : "review"}`}>
+                      {formatMemberRole(member.role)}
+                    </span>
+                    <span className={`internalStatusBadge is-${member.status === "active" ? "ok" : "neutral"}`}>
+                      {member.status}
+                    </span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        <form className="internalPanel" onSubmit={handleSubmit}>
+          <div className="internalPanelHeader">
+            <strong>Crear responsable</strong>
+            <span>Alta directa dentro de la cuenta</span>
+          </div>
+
+          {!canManage ? (
+            <p className="internalPanelEmpty">
+              Solo un administrador puede crear responsables en esta cuenta.
+            </p>
+          ) : null}
+
+          {canManage ? (
+            <>
+              <label>
+                Nombre completo
+                <input
+                  value={form.fullName}
+                  onChange={(event) => setForm((current) => ({ ...current, fullName: event.target.value }))}
+                  placeholder="Laura Pérez"
+                  required
+                />
+              </label>
+
+              <label>
+                Correo
+                <input
+                  type="email"
+                  autoComplete="off"
+                  value={form.email}
+                  onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+                  placeholder="laura@firma.com"
+                  required
+                />
+              </label>
+
+              <label>
+                Contraseña inicial
+                <input
+                  type="password"
+                  autoComplete="new-password"
+                  value={form.password}
+                  onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
+                  placeholder="Mínimo 8 caracteres"
+                  required
+                />
+              </label>
+
+              <div className="internalFormMeta">
+                <span>Los responsables creados aquí entran como operadores activos.</span>
+                <span>Esta cuenta puede operar con hasta 4 responsables en total.</span>
+              </div>
+
+              <button
+                className="internalPrimaryButton"
+                type="submit"
+                disabled={isSubmitting || availableSlots === 0}
+              >
+                {isSubmitting
+                  ? "Creando responsable..."
+                  : availableSlots === 0
+                    ? "Límite alcanzado"
+                    : "Crear responsable"}
+              </button>
+            </>
+          ) : null}
+
+          {error ? <p className="internalAuthError">{error}</p> : null}
+        </form>
+      </div>
+    </section>
   );
 }
 
@@ -1226,6 +1503,7 @@ function InternalShell({
       "Usuario beta"
     );
   }, [session.user.email, session.user.user_metadata.full_name, session.user.user_metadata.name]);
+  const canManageTeam = membership.role === "account_admin" || membership.role === "platform_admin";
 
   async function handleSignOut() {
     if (!supabase) return;
@@ -1247,6 +1525,7 @@ function InternalShell({
           <a href="#resumen" className="is-active">
             Resumen
           </a>
+          <a href="#equipo">Equipo</a>
           <a href="#procesos">Procesos</a>
           <a href="#bandeja">Bandeja</a>
           <a href="#consultas">Consultas</a>
@@ -1307,6 +1586,7 @@ function InternalShell({
           </div>
         </section>
 
+        <TeamManager accessToken={session.access_token} canManage={canManageTeam} />
         <InternalProcessManager organizationId={membership.organization_id} />
       </section>
     </main>
