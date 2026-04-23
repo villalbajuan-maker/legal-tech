@@ -518,6 +518,23 @@ button {
   gap: 8px;
 }
 
+.internalDemoStatusPanel {
+  border-color: rgba(31, 95, 191, 0.16);
+  background: linear-gradient(180deg, rgba(31, 95, 191, 0.03), rgba(31, 95, 191, 0.01));
+}
+
+.internalDemoStatusSummary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.internalDemoStatusMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  color: var(--muted);
+  font-size: var(--font-small);
+}
+
 .internalTrayFilters {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -863,6 +880,7 @@ button {
   .internalTrayLayout,
   .internalDetailSummary,
   .internalTeamSummary,
+  .internalDemoStatusSummary,
   .internalTeamGrid {
     grid-template-columns: 1fr;
   }

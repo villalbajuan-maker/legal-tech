@@ -67,6 +67,23 @@ async function getAdminMembership(userId: string) {
   return data;
 }
 
+async function getActiveMembership(userId: string) {
+  const supabase = getServerSupabase();
+  const { data, error } = await supabase
+    .from("organization_memberships")
+    .select("organization_id, role, status")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
 async function listTeamMembers(organizationId: string) {
   const supabase = getServerSupabase();
 
@@ -108,6 +125,23 @@ async function listTeamMembers(organizationId: string) {
   });
 }
 
+async function getOrganizationLimits(organizationId: string) {
+  const supabase = getServerSupabase();
+  const { data, error } = await supabase
+    .from("organizations")
+    .select("member_limit")
+    .eq("id", organizationId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return {
+    memberLimit: data?.member_limit ?? 4,
+  };
+}
+
 async function createTeamMember(organizationId: string, body: TeamMembersRequestBody) {
   const fullName = body.fullName?.trim() || "";
   const email = body.email?.trim().toLowerCase() || "";
@@ -127,10 +161,11 @@ async function createTeamMember(organizationId: string, body: TeamMembersRequest
 
   const supabase = getServerSupabase();
   const members = await listTeamMembers(organizationId);
+  const limits = await getOrganizationLimits(organizationId);
   const activeMembers = members.filter((member) => member.status === "active");
 
-  if (activeMembers.length >= 4) {
-    return json(409, { error: "Esta cuenta ya alcanzó el límite de 4 responsables." });
+  if (activeMembers.length >= limits.memberLimit) {
+    return json(409, { error: `Esta cuenta ya alcanzó el límite de ${limits.memberLimit} responsables.` });
   }
 
   if (members.some((member) => member.email?.toLowerCase() === email)) {
@@ -176,7 +211,7 @@ async function createTeamMember(organizationId: string, body: TeamMembersRequest
     member: createdMember,
     team: nextMembers,
     activeCount: nextMembers.filter((member) => member.status === "active").length,
-    limit: 4,
+    limit: limits.memberLimit,
   });
 }
 
@@ -189,22 +224,29 @@ export default {
         return json(401, { error: "Sesión inválida o expirada." });
       }
 
-      const membership = await getAdminMembership(user.id);
-
-      if (!membership?.organization_id) {
-        return json(403, { error: "No tienes permisos de administración para esta cuenta." });
-      }
-
       if (request.method === "GET") {
+        const membership = await getActiveMembership(user.id);
+
+        if (!membership?.organization_id) {
+          return json(403, { error: "No tienes una organización activa para esta cuenta." });
+        }
+
         const members = await listTeamMembers(membership.organization_id);
+        const limits = await getOrganizationLimits(membership.organization_id);
         return json(200, {
           team: members,
           activeCount: members.filter((member) => member.status === "active").length,
-          limit: 4,
+          limit: limits.memberLimit,
         });
       }
 
       if (request.method === "POST") {
+        const membership = await getAdminMembership(user.id);
+
+        if (!membership?.organization_id) {
+          return json(403, { error: "No tienes permisos de administración para esta cuenta." });
+        }
+
         const body = (await request.json()) as TeamMembersRequestBody;
         return createTeamMember(membership.organization_id, body);
       }

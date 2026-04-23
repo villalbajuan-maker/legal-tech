@@ -5,15 +5,22 @@ import { isLikelyRadicado, normalizeRadicado } from "../../../packages/core/src"
 import logoUrl from "./assets/lexcontrol-logo.png";
 import { isSupabaseConfigured, supabase } from "./supabase";
 
+type OrganizationRecord = {
+  id: string;
+  name: string;
+  account_status: "demo_active" | "demo_expired" | "suspended" | "converted" | "closed";
+  trial_started_at: string | null;
+  trial_ends_at: string | null;
+  process_limit: number;
+  member_limit: number;
+};
+
 type MembershipRecord = {
   id: string;
   organization_id: string;
   role: "platform_admin" | "account_admin" | "operator";
   status: "active" | "invited" | "disabled";
-  organization: {
-    id: string;
-    name: string;
-  } | null;
+  organization: OrganizationRecord | null;
 };
 
 type TeamMemberRecord = {
@@ -217,7 +224,9 @@ async function loadPrimaryMembership(userId: string) {
 
   const { data, error } = await supabase
     .from("organization_memberships")
-    .select("id, organization_id, role, status, organization:organizations(id, name)")
+    .select(
+      "id, organization_id, role, status, organization:organizations(id, name, account_status, trial_started_at, trial_ends_at, process_limit, member_limit)",
+    )
     .eq("user_id", userId)
     .eq("status", "active")
     .limit(1)
@@ -319,6 +328,48 @@ function formatCaseTimestamp(value: string) {
     timeStyle: "short",
     timeZone: "America/Bogota",
   }).format(new Date(value));
+}
+
+function getDemoStatusLabel(value: OrganizationRecord["account_status"] | undefined) {
+  switch (value) {
+    case "demo_active":
+      return "Demo activa";
+    case "demo_expired":
+      return "Demo vencida";
+    case "suspended":
+      return "Suspendida";
+    case "converted":
+      return "Convertida";
+    case "closed":
+      return "Cerrada";
+    default:
+      return value ?? "Sin estado";
+  }
+}
+
+function getDemoStatusTone(value: OrganizationRecord["account_status"] | undefined) {
+  switch (value) {
+    case "demo_active":
+      return "info";
+    case "demo_expired":
+      return "warning";
+    case "suspended":
+      return "error";
+    case "converted":
+      return "ok";
+    case "closed":
+      return "neutral";
+    default:
+      return "neutral";
+  }
+}
+
+function getDaysRemaining(value: string | null) {
+  if (!value) return null;
+  const today = new Date();
+  const end = new Date(value);
+  const diffMs = end.getTime() - today.getTime();
+  return Math.max(Math.ceil(diffMs / (1000 * 60 * 60 * 24)), 0);
 }
 
 function formatShortDate(value: string | null) {
@@ -712,7 +763,7 @@ function TeamManager({
 
               <div className="internalFormMeta">
                 <span>Los responsables creados aquí entran como operadores activos.</span>
-                <span>Esta cuenta puede operar con hasta 4 responsables en total.</span>
+                <span>Esta cuenta puede operar con hasta {limit} responsables en total.</span>
               </div>
 
               <button
@@ -732,6 +783,98 @@ function TeamManager({
           {error ? <p className="internalAuthError">{error}</p> : null}
         </form>
       </div>
+    </section>
+  );
+}
+
+function DemoStatusPanel({
+  accessToken,
+  membership,
+}: {
+  accessToken: string;
+  membership: MembershipRecord;
+}) {
+  const [processCount, setProcessCount] = useState<number | null>(null);
+  const [memberCount, setMemberCount] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setLoading] = useState(true);
+
+  const processLimit = membership.organization?.process_limit ?? 100;
+  const memberLimit = membership.organization?.member_limit ?? 4;
+  const demoEndsAt = membership.organization?.trial_ends_at ?? null;
+  const daysRemaining = getDaysRemaining(demoEndsAt);
+
+  useEffect(() => {
+    async function loadUsage() {
+      if (!supabase) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const [{ count: nextProcessCount, error: processError }, teamResponse] = await Promise.all([
+          supabase
+            .from("cases")
+            .select("id", { count: "exact", head: true })
+            .eq("organization_id", membership.organization_id)
+            .eq("status", "active"),
+          fetchTeamMembers(accessToken),
+        ]);
+
+        if (processError) {
+          throw processError;
+        }
+
+        setProcessCount(nextProcessCount ?? 0);
+        setMemberCount(teamResponse.activeCount);
+      } catch (nextError) {
+        setError(getErrorMessage(nextError, "No fue posible cargar el estado de demo."));
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    void loadUsage();
+  }, [accessToken, membership.organization_id]);
+
+  return (
+    <section className="internalPanel internalDemoStatusPanel">
+      <div className="internalPanelHeader">
+        <div>
+          <strong>Estado de la cuenta</strong>
+          <span>Capacidad visible y tiempo restante de la demo.</span>
+        </div>
+        <span className={`internalStatusBadge is-${getDemoStatusTone(membership.organization?.account_status ?? "closed")}`}>
+          {getDemoStatusLabel(membership.organization?.account_status ?? "closed")}
+        </span>
+      </div>
+
+      <section className="internalIntakeResult internalDemoStatusSummary">
+        <article>
+          <strong>{daysRemaining ?? "-"}</strong>
+          <span>Días restantes</span>
+        </article>
+        <article>
+          <strong>{processCount ?? "-"}</strong>
+          <span>{`${processCount ?? "-"} / ${processLimit} procesos activos`}</span>
+        </article>
+        <article>
+          <strong>{memberCount ?? "-"}</strong>
+          <span>{`${memberCount ?? "-"} / ${memberLimit} responsables`}</span>
+        </article>
+      </section>
+
+      <div className="internalDemoStatusMeta">
+        <span>
+          Inicio: {membership.organization?.trial_started_at ? formatShortDate(membership.organization.trial_started_at) : "Sin fecha"}
+        </span>
+        <span>
+          Fin: {membership.organization?.trial_ends_at ? formatShortDate(membership.organization.trial_ends_at) : "Sin fecha"}
+        </span>
+      </div>
+
+      {isLoading ? <p className="internalPanelEmpty">Actualizando capacidad de la cuenta...</p> : null}
+      {error ? <p className="internalAuthError">{error}</p> : null}
     </section>
   );
 }
@@ -1566,6 +1709,8 @@ function InternalShell({
             <p>Este shell ya permite montar carga de procesos y bandeja real.</p>
           </article>
         </section>
+
+        <DemoStatusPanel accessToken={session.access_token} membership={membership} />
 
         <section className="internalModuleList" id="procesos">
           <header>
