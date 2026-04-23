@@ -1,7 +1,7 @@
 import { StrictMode, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { createRoot } from "react-dom/client";
-import { lexDemoRows } from "../../../packages/core/src";
+import { createLexDemoRows } from "../../../packages/core/src";
 import type {
   LexDemoProcessRow as ProcessRow,
   LexDemoProcessState as ProcessState,
@@ -238,7 +238,8 @@ const faqs = [
   },
 ];
 
-const processRows: ProcessRow[] = lexDemoRows;
+const demoSessionDate = new Date().toISOString();
+const processRows: ProcessRow[] = createLexDemoRows(demoSessionDate);
 
 const solutionBlocks = [
   {
@@ -1293,6 +1294,7 @@ function App() {
           body: JSON.stringify({
             question,
             intent,
+            demoSessionDate,
             userName: lexUserName,
             history: lexMessages.slice(-8),
             rows: processRows,

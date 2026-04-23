@@ -1,4 +1,9 @@
-import { buildLexSystemPrompt, lexDemoKnowledgeBase, lexDemoRows } from "../packages/core/src";
+import {
+  buildLexDemoKnowledgeBase,
+  buildLexSystemPrompt,
+  createLexDemoRows,
+} from "../packages/core/src";
+import type { LexDemoProcessRow } from "../packages/core/src";
 
 type LexChatBody = {
   question?: string;
@@ -7,6 +12,7 @@ type LexChatBody = {
   history?: Array<{ role: string; content: string }>;
   rows?: unknown;
   currentState?: unknown;
+  demoSessionDate?: string;
 };
 
 type LexRowLike = {
@@ -99,10 +105,13 @@ function extractOpenAIText(data: unknown) {
   return fragments.join("\n").trim();
 }
 
-function buildLexUserContext(body: LexChatBody, rows: unknown, retryMode = false) {
+function buildLexUserContext(body: LexChatBody, rows: LexDemoProcessRow[], retryMode = false) {
+  const knowledgeBase = buildLexDemoKnowledgeBase(rows);
+
   return `
 Nombre del usuario: ${body.userName || "No informado"}
 Intencion detectada: ${body.intent || "sin intencion exacta"}
+Fecha ancla de la demo: ${body.demoSessionDate || "Generada en servidor"}
 
 Historial reciente:
 ${Array.isArray(body.history) && body.history.length
@@ -115,7 +124,7 @@ Estado actual de la demo:
 ${JSON.stringify(body.currentState, null, 2)}
 
 Base de conocimiento de LexControl:
-${JSON.stringify(lexDemoKnowledgeBase, null, 2)}
+${JSON.stringify(knowledgeBase, null, 2)}
 
 Procesos visibles entregados por la UI:
 ${JSON.stringify(rows, null, 2)}
@@ -133,7 +142,7 @@ ${retryMode
 `.trim();
 }
 
-async function requestLexAnswer(apiKey: string, model: string, body: LexChatBody, rows: unknown, retryMode = false) {
+async function requestLexAnswer(apiKey: string, model: string, body: LexChatBody, rows: LexDemoProcessRow[], retryMode = false) {
   const payload = {
     model,
     input: [
@@ -191,7 +200,10 @@ export default {
 
     const body = (await request.json()) as LexChatBody;
     const model = process.env.OPENAI_MODEL || "gpt-5";
-    const rows = Array.isArray(body.rows) && body.rows.length ? body.rows : lexDemoRows;
+    const rows =
+      Array.isArray(body.rows) && body.rows.length
+        ? (body.rows as LexDemoProcessRow[])
+        : createLexDemoRows(body.demoSessionDate || new Date());
     try {
       let answer = await requestLexAnswer(apiKey, model, body, rows);
 

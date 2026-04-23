@@ -83,20 +83,18 @@ function getDemoNow(date = new Date()) {
   );
 }
 
-const DEMO_NOW = getDemoNow();
-
 function makeRadicado(prefix: string, year: number, serial: number) {
   return `${prefix}${year}${serial.toString().padStart(5, "0")}00`;
 }
 
-function formatLexDate(minutesAgo: number) {
+function formatLexDate(minutesAgo: number, demoNow: Date) {
   if (minutesAgo < 60) {
     return `Hace ${minutesAgo} min`;
   }
 
-  const observed = new Date(DEMO_NOW.getTime() - minutesAgo * 60 * 1000);
-  const today = DEMO_NOW.toDateString();
-  const yesterday = new Date(DEMO_NOW.getTime() - 24 * 60 * 60 * 1000).toDateString();
+  const observed = new Date(demoNow.getTime() - minutesAgo * 60 * 1000);
+  const today = demoNow.toDateString();
+  const yesterday = new Date(demoNow.getTime() - 24 * 60 * 60 * 1000).toDateString();
   const hours = observed.getHours().toString().padStart(2, "0");
   const minutes = observed.getMinutes().toString().padStart(2, "0");
 
@@ -118,11 +116,11 @@ function addDays(date: Date, days: number) {
   return next;
 }
 
-function buildEventDate(daysUntilEvent?: number, eventTime?: string) {
+function buildEventDate(demoNow: Date, daysUntilEvent?: number, eventTime?: string) {
   if (typeof daysUntilEvent !== "number" || !eventTime) return {};
 
   const [hours = "09", minutes = "00"] = eventTime.split(":");
-  const eventDay = addDays(DEMO_NOW, daysUntilEvent);
+  const eventDay = addDays(demoNow, daysUntilEvent);
   const year = eventDay.getFullYear();
   const month = eventDay.getMonth() + 1;
   const day = eventDay.getDate();
@@ -297,17 +295,23 @@ const lexDemoSeedRows: LexDemoSeedRow[] = [
   seed("110014003048", 2024, 233, "revision", "Sentencia / fallo", "Fallo de segunda instancia", "Se detectó decisión relevante para revisión inmediata.", 118, "Ana R.", "Crítica", "SIPI"),
 ];
 
-export const lexDemoRows: LexDemoProcessRow[] = lexDemoSeedRows.map((row) => {
-  const { eventTime, ...processRow } = row;
+export function createLexDemoRows(sessionDate: Date | string = new Date()): LexDemoProcessRow[] {
+  const demoNow = getDemoNow(typeof sessionDate === "string" ? new Date(sessionDate) : sessionDate);
 
-  return {
-    ...processRow,
-    ...buildEventDate(row.daysUntilEvent, eventTime),
-    status: statusLabel(row.statusType),
-    state: visualState(row.statusType),
-    date: formatLexDate(row.minutesAgo),
-  };
-});
+  return lexDemoSeedRows.map((row) => {
+    const { eventTime, ...processRow } = row;
+
+    return {
+      ...processRow,
+      ...buildEventDate(demoNow, row.daysUntilEvent, eventTime),
+      status: statusLabel(row.statusType),
+      state: visualState(row.statusType),
+      date: formatLexDate(row.minutesAgo, demoNow),
+    };
+  });
+}
+
+export const lexDemoRows: LexDemoProcessRow[] = createLexDemoRows();
 
 function countBy<T extends string>(values: T[]) {
   return values.reduce<Record<T, number>>(
@@ -319,23 +323,24 @@ function countBy<T extends string>(values: T[]) {
   );
 }
 
-const owners = Array.from(new Set(lexDemoRows.map((row) => row.owner))).sort();
-const sources = Array.from(new Set(lexDemoRows.map((row) => row.source))).sort();
-const actionTypes = Array.from(new Set(lexDemoRows.map((row) => row.actionType))).sort();
-const upcomingEvents = lexDemoRows
-  .filter((row) => row.eventKind && typeof row.daysUntilEvent === "number")
-  .sort((a, b) => (a.daysUntilEvent ?? 999) - (b.daysUntilEvent ?? 999))
-  .map((row) => ({
-    radicado: row.radicado,
-    eventKind: row.eventKind,
-    action: row.action,
-    owner: row.owner,
-    source: row.source,
-    eventDateLabel: row.eventDateLabel,
-    daysUntilEvent: row.daysUntilEvent,
-  }));
+export function buildLexDemoKnowledgeBase(rows: LexDemoProcessRow[] = lexDemoRows) {
+  const owners = Array.from(new Set(rows.map((row) => row.owner))).sort();
+  const sources = Array.from(new Set(rows.map((row) => row.source))).sort();
+  const actionTypes = Array.from(new Set(rows.map((row) => row.actionType))).sort();
+  const upcomingEvents = rows
+    .filter((row) => row.eventKind && typeof row.daysUntilEvent === "number")
+    .sort((a, b) => (a.daysUntilEvent ?? 999) - (b.daysUntilEvent ?? 999))
+    .map((row) => ({
+      radicado: row.radicado,
+      eventKind: row.eventKind,
+      action: row.action,
+      owner: row.owner,
+      source: row.source,
+      eventDateLabel: row.eventDateLabel,
+      daysUntilEvent: row.daysUntilEvent,
+    }));
 
-export const lexDemoKnowledgeBase = {
+  return {
   productName: "LexControl",
   entityName: "Lex",
   identity: "Lex es la voz del sistema.",
@@ -370,7 +375,7 @@ export const lexDemoKnowledgeBase = {
     goodbye: "Cierra sin dramatizar y dejando claro que puede retomarse luego.",
   },
   demoFacts: {
-    caseCount: lexDemoRows.length,
+    caseCount: rows.length,
     primarySource: "CPNU / Rama Judicial",
     owners,
     sources,
@@ -382,14 +387,14 @@ export const lexDemoKnowledgeBase = {
       "Requiere revisión",
     ],
     actionTypes,
-    statusDistribution: countBy(lexDemoRows.map((row) => row.statusType)),
-    sourceDistribution: countBy(lexDemoRows.map((row) => row.source)),
-    ownerDistribution: countBy(lexDemoRows.map((row) => row.owner)),
-    actionTypeDistribution: countBy(lexDemoRows.map((row) => row.actionType)),
+    statusDistribution: countBy(rows.map((row) => row.statusType)),
+    sourceDistribution: countBy(rows.map((row) => row.source)),
+    ownerDistribution: countBy(rows.map((row) => row.owner)),
+    actionTypeDistribution: countBy(rows.map((row) => row.actionType)),
     upcomingEvents,
   },
   operationalViews: {
-    movedLast24Hours: lexDemoRows
+    movedLast24Hours: rows
       .filter((row) => (row.statusType === "novedad" || row.statusType === "revision") && row.minutesAgo <= 24 * 60)
       .map((row) => ({
         radicado: row.radicado,
@@ -398,7 +403,7 @@ export const lexDemoKnowledgeBase = {
         action: row.action,
         owner: row.owner,
       })),
-    consultationFailures: lexDemoRows
+    consultationFailures: rows
       .filter((row) => row.statusType === "no-consultado" || row.statusType === "error-fuente")
       .map((row) => ({
         radicado: row.radicado,
@@ -406,7 +411,7 @@ export const lexDemoKnowledgeBase = {
         action: row.action,
         owner: row.owner,
       })),
-    requiresReview: lexDemoRows
+    requiresReview: rows
       .filter((row) => row.statusType === "revision")
       .map((row) => ({
         radicado: row.radicado,
@@ -415,7 +420,7 @@ export const lexDemoKnowledgeBase = {
         owner: row.owner,
         priority: row.priority,
       })),
-    upcomingHearings: lexDemoRows
+    upcomingHearings: rows
       .filter((row) => row.eventKind === "audiencia" && typeof row.daysUntilEvent === "number" && row.daysUntilEvent >= 0)
       .sort((a, b) => (a.daysUntilEvent ?? 999) - (b.daysUntilEvent ?? 999))
       .map((row) => ({
@@ -426,7 +431,7 @@ export const lexDemoKnowledgeBase = {
         eventDateLabel: row.eventDateLabel,
         daysUntilEvent: row.daysUntilEvent,
       })),
-    upcomingTransfers: lexDemoRows
+    upcomingTransfers: rows
       .filter((row) => row.eventKind === "traslado" && typeof row.daysUntilEvent === "number" && row.daysUntilEvent >= 0)
       .sort((a, b) => (a.daysUntilEvent ?? 999) - (b.daysUntilEvent ?? 999))
       .map((row) => ({
@@ -461,7 +466,10 @@ export const lexDemoKnowledgeBase = {
     "Si el usuario pregunta por estados o por actuaciones, diferencia ambas capas con claridad.",
     "Si el usuario pregunta por próximas audiencias o próximos traslados, usa eventDateLabel y daysUntilEvent cuando existan.",
   ],
-} as const;
+  } as const;
+}
+
+export const lexDemoKnowledgeBase = buildLexDemoKnowledgeBase();
 
 export function buildLexSystemPrompt() {
   return `
