@@ -56,6 +56,27 @@ type InternalLegalEventRow = {
   status: "active" | "cancelled" | "completed" | "superseded";
 };
 
+type InternalSnapshotRow = {
+  id: string;
+  case_source_id: string;
+  fetched_at: string;
+  fetch_status: "success" | "error" | "blocked" | "not_found";
+  error_message: string | null;
+  duration_ms: number | null;
+};
+
+type InternalAlertRow = {
+  id: string;
+  case_id: string;
+  alert_type: "new_event" | "event_changed" | "event_upcoming" | "source_error" | "manual_review";
+  severity: "low" | "medium" | "high" | "critical";
+  title: string;
+  message: string;
+  status: "pending" | "sent" | "acknowledged" | "dismissed" | "failed";
+  due_at: string | null;
+  created_at: string;
+};
+
 type OperationalCaseRow = {
   caseId: string;
   radicado: string;
@@ -193,6 +214,40 @@ async function loadOrganizationLegalEvents(caseIds: string[]) {
   return (data as InternalLegalEventRow[]) ?? [];
 }
 
+async function loadOrganizationSnapshots(caseSourceIds: string[]) {
+  if (!supabase || caseSourceIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("source_snapshots")
+    .select("id, case_source_id, fetched_at, fetch_status, error_message, duration_ms")
+    .in("case_source_id", caseSourceIds)
+    .order("fetched_at", { ascending: false })
+    .limit(200);
+
+  if (error) {
+    throw error;
+  }
+
+  return (data as InternalSnapshotRow[]) ?? [];
+}
+
+async function loadOrganizationAlerts(caseIds: string[]) {
+  if (!supabase || caseIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("alerts")
+    .select("id, case_id, alert_type, severity, title, message, status, due_at, created_at")
+    .in("case_id", caseIds)
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  if (error) {
+    throw error;
+  }
+
+  return (data as InternalAlertRow[]) ?? [];
+}
+
 function formatCaseTimestamp(value: string) {
   return new Intl.DateTimeFormat("es-CO", {
     dateStyle: "medium",
@@ -206,6 +261,15 @@ function formatShortDate(value: string | null) {
 
   return new Intl.DateTimeFormat("es-CO", {
     dateStyle: "medium",
+    timeZone: "America/Bogota",
+  }).format(new Date(value));
+}
+
+function formatDateTimeLabel(value: string | null) {
+  if (!value) return "Sin fecha";
+  return new Intl.DateTimeFormat("es-CO", {
+    dateStyle: "medium",
+    timeStyle: "short",
     timeZone: "America/Bogota",
   }).format(new Date(value));
 }
@@ -244,6 +308,21 @@ function getSourceStatusTone(value: OperationalCaseRow["sourceStatus"]) {
   }
 }
 
+function getSnapshotStatusTone(value: InternalSnapshotRow["fetch_status"]) {
+  switch (value) {
+    case "success":
+      return "ok";
+    case "error":
+      return "error";
+    case "blocked":
+      return "review";
+    case "not_found":
+      return "warning";
+    default:
+      return "neutral";
+  }
+}
+
 function getOperationalTone(value: string) {
   switch (value) {
     case "con_novedad":
@@ -256,6 +335,38 @@ function getOperationalTone(value: string) {
       return "error";
     case "requiere_revision":
       return "review";
+    default:
+      return "neutral";
+  }
+}
+
+function formatAlertType(value: InternalAlertRow["alert_type"]) {
+  switch (value) {
+    case "new_event":
+      return "Nueva actuación";
+    case "event_changed":
+      return "Evento cambiado";
+    case "event_upcoming":
+      return "Evento próximo";
+    case "source_error":
+      return "Error de fuente";
+    case "manual_review":
+      return "Revisión manual";
+    default:
+      return value;
+  }
+}
+
+function getAlertTone(value: InternalAlertRow["severity"]) {
+  switch (value) {
+    case "critical":
+      return "error";
+    case "high":
+      return "review";
+    case "medium":
+      return "warning";
+    case "low":
+      return "ok";
     default:
       return "neutral";
   }
@@ -355,6 +466,14 @@ function InternalProcessManager({
 }) {
   const [cases, setCases] = useState<InternalCaseRow[]>([]);
   const [operationalRows, setOperationalRows] = useState<OperationalCaseRow[]>([]);
+  const [caseSources, setCaseSources] = useState<InternalCaseSourceRow[]>([]);
+  const [legalEvents, setLegalEvents] = useState<InternalLegalEventRow[]>([]);
+  const [snapshots, setSnapshots] = useState<InternalSnapshotRow[]>([]);
+  const [alerts, setAlerts] = useState<InternalAlertRow[]>([]);
+  const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState("todos");
+  const [ownerFilter, setOwnerFilter] = useState("todos");
+  const [priorityFilter, setPriorityFilter] = useState("todos");
   const [isLoadingCases, setLoadingCases] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [singleRadicado, setSingleRadicado] = useState("");
@@ -378,11 +497,22 @@ function InternalProcessManager({
       const nextCases = await loadOrganizationCases(organizationId);
       setCases(nextCases);
       const caseIds = nextCases.map((legalCase) => legalCase.id);
-      const [caseSources, legalEvents] = await Promise.all([
+      const [nextCaseSources, nextLegalEvents] = await Promise.all([
         loadOrganizationCaseSources(caseIds),
         loadOrganizationLegalEvents(caseIds),
       ]);
-      setOperationalRows(buildOperationalRows(nextCases, caseSources, legalEvents));
+      const caseSourceIds = nextCaseSources.map((caseSource) => caseSource.id);
+      const [nextSnapshots, nextAlerts] = await Promise.all([
+        loadOrganizationSnapshots(caseSourceIds),
+        loadOrganizationAlerts(caseIds),
+      ]);
+      setCaseSources(nextCaseSources);
+      setLegalEvents(nextLegalEvents);
+      setSnapshots(nextSnapshots);
+      setAlerts(nextAlerts);
+      const nextOperationalRows = buildOperationalRows(nextCases, nextCaseSources, nextLegalEvents);
+      setOperationalRows(nextOperationalRows);
+      setSelectedCaseId((current) => current ?? nextOperationalRows[0]?.caseId ?? null);
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : "No fue posible cargar los procesos.");
     } finally {
@@ -488,6 +618,24 @@ function InternalProcessManager({
     erroresFuente: operationalRows.filter((row) => row.operationalStatus === "error_fuente").length,
     eventosActivos: operationalRows.filter((row) => Boolean(row.latestEventDate)).length,
   };
+  const availableOwners = Array.from(
+    new Set(operationalRows.map((row) => row.responsible).filter((value): value is string => Boolean(value))),
+  ).sort((left, right) => left.localeCompare(right, "es-CO"));
+  const filteredOperationalRows = operationalRows.filter((row) => {
+    if (statusFilter !== "todos" && row.operationalStatus !== statusFilter) return false;
+    if (ownerFilter !== "todos" && (row.responsible || "Sin responsable") !== ownerFilter) return false;
+    if (priorityFilter !== "todos" && row.priority !== priorityFilter) return false;
+    return true;
+  });
+  const selectedCase = filteredOperationalRows.find((row) => row.caseId === selectedCaseId) || filteredOperationalRows[0] || null;
+  const selectedCaseSources = caseSources
+    .filter((caseSource) => caseSource.case_id === selectedCase?.caseId)
+    .sort((left, right) => (right.last_checked_at || "").localeCompare(left.last_checked_at || ""));
+  const selectedSnapshots = snapshots.filter((snapshot) =>
+    selectedCaseSources.some((caseSource) => caseSource.id === snapshot.case_source_id),
+  );
+  const selectedEvents = legalEvents.filter((event) => event.case_id === selectedCase?.caseId);
+  const selectedAlerts = alerts.filter((alert) => alert.case_id === selectedCase?.caseId);
 
   return (
     <section className="internalProcessManager" id="procesos">
@@ -543,50 +691,217 @@ function InternalProcessManager({
         ) : null}
 
         {!isLoadingCases && !loadError && operationalRows.length > 0 ? (
-          <div className="internalCasesTable internalTrayTable">
-            <div className="internalCasesTableHead internalTrayTableHead">
-              <span>Radicado</span>
-              <span>Estado operativo</span>
-              <span>Última actuación</span>
-              <span>Próximo evento</span>
-              <span>Responsable</span>
-              <span>Fuente</span>
+          <>
+            <div className="internalTrayFilters">
+              <label>
+                Estado operativo
+                <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+                  <option value="todos">Todos</option>
+                  <option value="con_novedad">Con novedad</option>
+                  <option value="requiere_revision">Requiere revisión</option>
+                  <option value="sin_cambios">Sin cambios</option>
+                  <option value="no_consultado">No consultado</option>
+                  <option value="error_fuente">Error de fuente</option>
+                </select>
+              </label>
+              <label>
+                Responsable
+                <select value={ownerFilter} onChange={(event) => setOwnerFilter(event.target.value)}>
+                  <option value="todos">Todos</option>
+                  <option value="Sin responsable">Sin responsable</option>
+                  {availableOwners.map((owner) => (
+                    <option key={owner} value={owner}>
+                      {owner}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Prioridad
+                <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value)}>
+                  <option value="todos">Todas</option>
+                  <option value="critical">Crítica</option>
+                  <option value="high">Alta</option>
+                  <option value="normal">Normal</option>
+                  <option value="low">Baja</option>
+                </select>
+              </label>
             </div>
-            {operationalRows.map((row) => (
-              <article key={row.caseId} className="internalCasesRow internalTrayRow">
-                <div className="internalTrayPrimary">
-                  <strong>{row.radicado}</strong>
-                  <span>{row.lastCheckedAt ? `Última consulta: ${formatCaseTimestamp(row.lastCheckedAt)}` : "Sin consulta aún"}</span>
+
+            <div className="internalTrayLayout">
+              <div className="internalCasesTable internalTrayTable">
+                <div className="internalCasesTableHead internalTrayTableHead">
+                  <span>Radicado</span>
+                  <span>Estado operativo</span>
+                  <span>Última actuación</span>
+                  <span>Próximo evento</span>
+                  <span>Responsable</span>
+                  <span>Fuente</span>
                 </div>
-                <div className="internalTrayStack">
-                  <span className={`internalStatusBadge is-${getOperationalTone(row.operationalStatus)}`}>
-                    {formatOperationalStatus(row.operationalStatus)}
-                  </span>
-                  <span className={`internalStatusBadge is-${getSourceStatusTone(row.sourceStatus)}`}>
-                    Fuente {row.sourceStatus}
-                  </span>
-                </div>
-                <div className="internalTrayStack">
-                  <strong>{row.latestActionTitle || "Sin actuación resumida"}</strong>
-                  <span>{row.latestActionDate ? formatShortDate(row.latestActionDate) : "Sin fecha"}</span>
-                  {row.latestActionDescription ? <span>{row.latestActionDescription}</span> : null}
-                </div>
-                <div className="internalTrayStack">
-                  <strong>{row.latestEventTitle || "Sin evento activo"}</strong>
-                  <span>{row.latestEventDate ? formatShortDate(row.latestEventDate) : "Sin fecha"}</span>
-                  {row.latestEventType ? <span>{row.latestEventType}</span> : null}
-                </div>
-                <div className="internalTrayStack">
-                  <span>{row.responsible || "Sin responsable"}</span>
-                  <span className={`internalPriorityBadge is-${row.priority}`}>{row.priority}</span>
-                </div>
-                <div className="internalTrayStack">
-                  <span>{row.sourceName}</span>
-                  <span>{row.legalEventsCount} evento{row.legalEventsCount === 1 ? "" : "s"}</span>
-                </div>
-              </article>
-            ))}
-          </div>
+                {filteredOperationalRows.length === 0 ? (
+                  <p className="internalPanelEmpty">
+                    No hay procesos que coincidan con los filtros actuales.
+                  </p>
+                ) : null}
+                {filteredOperationalRows.map((row) => (
+                  <article
+                    key={row.caseId}
+                    className={`internalCasesRow internalTrayRow ${selectedCase?.caseId === row.caseId ? "is-selected" : ""}`}
+                    onClick={() => setSelectedCaseId(row.caseId)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelectedCaseId(row.caseId);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div className="internalTrayPrimary">
+                      <strong>{row.radicado}</strong>
+                      <span>{row.lastCheckedAt ? `Última consulta: ${formatCaseTimestamp(row.lastCheckedAt)}` : "Sin consulta aún"}</span>
+                    </div>
+                    <div className="internalTrayStack">
+                      <span className={`internalStatusBadge is-${getOperationalTone(row.operationalStatus)}`}>
+                        {formatOperationalStatus(row.operationalStatus)}
+                      </span>
+                      <span className={`internalStatusBadge is-${getSourceStatusTone(row.sourceStatus)}`}>
+                        Fuente {row.sourceStatus}
+                      </span>
+                    </div>
+                    <div className="internalTrayStack">
+                      <strong>{row.latestActionTitle || "Sin actuación resumida"}</strong>
+                      <span>{row.latestActionDate ? formatShortDate(row.latestActionDate) : "Sin fecha"}</span>
+                      {row.latestActionDescription ? <span>{row.latestActionDescription}</span> : null}
+                    </div>
+                    <div className="internalTrayStack">
+                      <strong>{row.latestEventTitle || "Sin evento activo"}</strong>
+                      <span>{row.latestEventDate ? formatShortDate(row.latestEventDate) : "Sin fecha"}</span>
+                      {row.latestEventType ? <span>{row.latestEventType}</span> : null}
+                    </div>
+                    <div className="internalTrayStack">
+                      <span>{row.responsible || "Sin responsable"}</span>
+                      <span className={`internalPriorityBadge is-${row.priority}`}>{row.priority}</span>
+                    </div>
+                    <div className="internalTrayStack">
+                      <span>{row.sourceName}</span>
+                      <span>{row.legalEventsCount} evento{row.legalEventsCount === 1 ? "" : "s"}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              <aside className="internalPanel internalDetailPanel">
+                {selectedCase ? (
+                  <>
+                    <div className="internalPanelHeader">
+                      <div>
+                        <strong>Detalle del proceso</strong>
+                        <span>{selectedCase.radicado}</span>
+                      </div>
+                    </div>
+
+                    <div className="internalDetailSummary">
+                      <div>
+                        <span>Estado operativo</span>
+                        <strong>{formatOperationalStatus(selectedCase.operationalStatus)}</strong>
+                      </div>
+                      <div>
+                        <span>Responsable</span>
+                        <strong>{selectedCase.responsible || "Sin responsable"}</strong>
+                      </div>
+                      <div>
+                        <span>Prioridad</span>
+                        <strong>{selectedCase.priority}</strong>
+                      </div>
+                      <div>
+                        <span>Fuente</span>
+                        <strong>{selectedCase.sourceName}</strong>
+                      </div>
+                    </div>
+
+                    <div className="internalDetailSection">
+                      <div className="internalPanelHeader">
+                        <strong>Eventos jurídicos</strong>
+                        <span>{selectedEvents.length} activo{selectedEvents.length === 1 ? "" : "s"}</span>
+                      </div>
+                      {selectedEvents.length > 0 ? (
+                        <div className="internalDetailList">
+                          {selectedEvents.map((event) => (
+                            <article key={event.id}>
+                              <strong>{event.title}</strong>
+                              <span>{event.event_type} · {formatDateTimeLabel(event.event_date)}</span>
+                              <span>Estado: {event.change_status}</span>
+                            </article>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="internalPanelEmpty">No hay eventos activos para este proceso.</p>
+                      )}
+                    </div>
+
+                    <div className="internalDetailSection">
+                      <div className="internalPanelHeader">
+                        <strong>Alertas</strong>
+                        <span>{selectedAlerts.length} activa{selectedAlerts.length === 1 ? "" : "s"}</span>
+                      </div>
+                      {selectedAlerts.length > 0 ? (
+                        <div className="internalDetailList">
+                          {selectedAlerts.map((alert) => (
+                            <article key={alert.id}>
+                              <div className="internalDetailTitleLine">
+                                <strong>{alert.title}</strong>
+                                <span className={`internalStatusBadge is-${getAlertTone(alert.severity)}`}>
+                                  {formatAlertType(alert.alert_type)}
+                                </span>
+                              </div>
+                              <span>{alert.message}</span>
+                              <span>{formatDateTimeLabel(alert.created_at)}</span>
+                            </article>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="internalPanelEmpty">No hay alertas activas para este proceso.</p>
+                      )}
+                    </div>
+
+                    <div className="internalDetailSection">
+                      <div className="internalPanelHeader">
+                        <strong>Historial de snapshots</strong>
+                        <span>{selectedSnapshots.length} registro{selectedSnapshots.length === 1 ? "" : "s"}</span>
+                      </div>
+                      {selectedSnapshots.length > 0 ? (
+                        <div className="internalDetailList">
+                          {selectedSnapshots.slice(0, 12).map((snapshot) => (
+                            <article key={snapshot.id}>
+                              <div className="internalDetailTitleLine">
+                                <strong>{formatDateTimeLabel(snapshot.fetched_at)}</strong>
+                                <span className={`internalStatusBadge is-${getSnapshotStatusTone(snapshot.fetch_status)}`}>
+                                  {snapshot.fetch_status}
+                                </span>
+                              </div>
+                              <span>
+                                {snapshot.duration_ms ? `${snapshot.duration_ms} ms` : "Sin duración reportada"}
+                              </span>
+                              {snapshot.error_message ? <span>{snapshot.error_message}</span> : null}
+                            </article>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="internalPanelEmpty">No hay snapshots para este proceso.</p>
+                      )}
+                    </div>
+                  </>
+                ) : filteredOperationalRows.length === 0 ? (
+                  <p className="internalPanelEmpty">
+                    Ajusta o limpia los filtros para volver a ver el detalle de un proceso.
+                  </p>
+                ) : (
+                  <p className="internalPanelEmpty">Selecciona un proceso para ver su detalle operativo.</p>
+                )}
+              </aside>
+            </div>
+          </>
         ) : null}
       </section>
 

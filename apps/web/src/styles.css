@@ -475,6 +475,30 @@ button {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+.internalTrayFilters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.internalTrayFilters label {
+  display: grid;
+  gap: 7px;
+  color: var(--brand);
+  font-size: var(--font-small);
+  font-weight: 700;
+}
+
+.internalTrayFilters select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #ffffff;
+  color: var(--text);
+}
+
 .internalIntakeResult article {
   display: grid;
   gap: 4px;
@@ -533,6 +557,13 @@ button {
   border-top: 0;
 }
 
+.internalTrayLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
+  gap: 18px;
+  align-items: start;
+}
+
 .internalCasesTableHead,
 .internalCasesRow {
   display: grid;
@@ -552,6 +583,20 @@ button {
 
 .internalCasesRow {
   border-top: 1px solid var(--border);
+}
+
+.internalTrayRow {
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.internalTrayRow:hover,
+.internalTrayRow.is-selected {
+  background: var(--surface-subtle);
+}
+
+.internalTrayRow:hover {
+  transform: translateY(-1px);
 }
 
 .internalCasesRow strong {
@@ -591,6 +636,74 @@ button {
 .internalTrayStack span {
   color: var(--muted);
   font-size: var(--font-small);
+}
+
+.internalDetailPanel {
+  align-content: start;
+}
+
+.internalDetailSummary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.internalDetailSummary div {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--surface-subtle);
+}
+
+.internalDetailSummary span {
+  color: var(--muted);
+  font-size: var(--font-micro);
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.internalDetailSummary strong {
+  color: var(--brand);
+  font-size: var(--font-small);
+}
+
+.internalDetailSection {
+  display: grid;
+  gap: 10px;
+}
+
+.internalDetailList {
+  display: grid;
+  gap: 10px;
+}
+
+.internalDetailList article {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.internalDetailList strong {
+  color: var(--brand);
+  font-size: var(--font-small);
+}
+
+.internalDetailList span {
+  color: var(--muted);
+  font-size: var(--font-small);
+  line-height: 1.5;
+}
+
+.internalDetailTitleLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .internalStatusBadge {
@@ -700,6 +813,12 @@ button {
   .internalModuleCards,
   .internalProcessGrid,
   .internalIntakeResult {
+    grid-template-columns: 1fr;
+  }
+
+  .internalTrayFilters,
+  .internalTrayLayout,
+  .internalDetailSummary {
     grid-template-columns: 1fr;
   }
 
