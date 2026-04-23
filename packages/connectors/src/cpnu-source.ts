@@ -96,6 +96,92 @@ function normalizeIsoDate(value?: string | null) {
   return trimmed || undefined;
 }
 
+function normalizeText(value?: string | null) {
+  return (value || "")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim();
+}
+
+function classifyMovementType(actuacion: CPNUActuacion) {
+  const title = normalizeText(actuacion.actuacion);
+  const description = normalizeText(actuacion.anotacion);
+  const combined = `${title} ${description}`.trim();
+
+  if (
+    combined.includes("audiencia") ||
+    combined.includes("reprogram") ||
+    (combined.includes("fija fecha") && Boolean(actuacion.fechaInicial))
+  ) {
+    return "Audiencia";
+  }
+
+  if (combined.includes("traslado")) {
+    return "Traslado";
+  }
+
+  if (combined.includes("sentencia") || combined.includes("fallo")) {
+    return "Sentencia / fallo";
+  }
+
+  if (
+    combined.includes("medida cautelar") ||
+    combined.includes("embargo") ||
+    combined.includes("secuestro") ||
+    combined.includes("cautelar")
+  ) {
+    return "Medida cautelar";
+  }
+
+  if (
+    combined.includes("terminacion") ||
+    combined.includes("archivo") ||
+    combined.includes("archiv") ||
+    combined.includes("desist") ||
+    combined.includes("liquidacion")
+  ) {
+    return "Terminacion / archivo";
+  }
+
+  if (
+    combined.includes("memorial") ||
+    combined.includes("allega") ||
+    combined.includes("documento") ||
+    combined.includes("recurso") ||
+    combined.includes("demanda")
+  ) {
+    return "Documento / memorial";
+  }
+
+  if (
+    combined.includes("secretaria") ||
+    combined.includes("secretarial") ||
+    combined.includes("constancia") ||
+    combined.includes("oficio") ||
+    combined.includes("registro")
+  ) {
+    return "Actuacion administrativa";
+  }
+
+  if (combined.includes("auto")) {
+    return "Auto";
+  }
+
+  if (
+    combined.includes("admite") ||
+    combined.includes("inadmite") ||
+    combined.includes("requiere") ||
+    combined.includes("ordena") ||
+    combined.includes("resuelve") ||
+    combined.includes("avoca")
+  ) {
+    return "Impulso procesal";
+  }
+
+  return "Sin clasificar";
+}
+
 function buildMovementHash(processId: number, actuacion: CPNUActuacion) {
   const basis = JSON.stringify({
     processId,
@@ -117,7 +203,7 @@ function parseMovements(bundle: CPNUProcessBundle): ParsedMovement[] {
     movementDate: normalizeIsoDate(actuacion.fechaActuacion),
     title: actuacion.actuacion?.trim() || "Actuación sin título",
     description: actuacion.anotacion?.trim() || undefined,
-    movementType: "actuacion_judicial",
+    movementType: classifyMovementType(actuacion),
     normalizedHash: buildMovementHash(bundle.process.idProceso, actuacion),
     metadata: {
       processId: bundle.process.idProceso,

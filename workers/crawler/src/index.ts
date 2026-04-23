@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { cpnuSourceConnector, manualSourceConnector } from "@legal-search/connectors";
 import type { CaseSourceInput, FetchStatus, SourceFetchResult } from "@legal-search/core";
 import { createClient } from "@supabase/supabase-js";
@@ -21,6 +22,16 @@ type DatabaseCaseSourceRow = {
 
 const connectors = [cpnuSourceConnector, manualSourceConnector];
 const batchSize = Number(process.env.CRAWLER_BATCH_SIZE || "10");
+
+type PersistedMovementRow = {
+  id: string;
+  normalized_hash: string;
+  title: string;
+  description: string | null;
+  movement_type: string | null;
+  movement_date: string | null;
+  metadata: Record<string, unknown> | null;
+};
 
 function getSupabaseEnv() {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -55,6 +66,235 @@ function nextCaseSourceStatus(status: FetchStatus) {
   if (status === "not_found") return "not_found";
   if (status === "blocked") return "blocked";
   return "error";
+}
+
+function buildRawHash(rawPayload: unknown) {
+  if (rawPayload === undefined) return null;
+  return createHash("sha256").update(JSON.stringify(rawPayload)).digest("hex");
+}
+
+function normalizeText(value?: string | null) {
+  return (value || "")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim();
+}
+
+function getLatestMovementSummary(result: SourceFetchResult) {
+  const movements = [...(result.movements || [])];
+  if (movements.length === 0) return null;
+
+  movements.sort((left, right) => {
+    const leftDate = left.movementDate || "";
+    const rightDate = right.movementDate || "";
+    return rightDate.localeCompare(leftDate);
+  });
+
+  const latest = movements[0];
+  return {
+    movement_date: latest.movementDate || null,
+    title: latest.title,
+    description: latest.description || null,
+    movement_type: latest.movementType || null,
+  };
+}
+
+function shouldRequireReview(movement: PersistedMovementRow) {
+  const combined = normalizeText(`${movement.title} ${movement.description || ""}`);
+  const type = normalizeText(movement.movement_type);
+
+  return (
+    type === "audiencia" ||
+    type === "sentencia / fallo" ||
+    type === "medida cautelar" ||
+    combined.includes("reprogram") ||
+    combined.includes("fija fecha") ||
+    combined.includes("medida cautelar")
+  );
+}
+
+function inferEventPayload(input: CaseSourceInput, movement: PersistedMovementRow) {
+  const type = normalizeText(movement.movement_type);
+  const metadata = movement.metadata || {};
+  const fechaInicial =
+    typeof metadata.fechaInicial === "string" && metadata.fechaInicial.trim() ? metadata.fechaInicial.trim() : null;
+  const fechaFinal =
+    typeof metadata.fechaFinal === "string" && metadata.fechaFinal.trim() ? metadata.fechaFinal.trim() : null;
+
+  let eventType: "audiencia" | "termino" | "vencimiento" | "actuacion" | "otro" = "actuacion";
+  let eventDate = movement.movement_date;
+
+  if (type === "audiencia") {
+    eventType = "audiencia";
+    eventDate = fechaInicial || movement.movement_date;
+  } else if (type === "traslado") {
+    eventType = fechaFinal ? "vencimiento" : "termino";
+    eventDate = fechaFinal || movement.movement_date;
+  } else if (type === "sentencia / fallo" || type === "medida cautelar") {
+    eventType = "actuacion";
+  }
+
+  if (!eventDate) {
+    return null;
+  }
+
+  return {
+    case_id: input.caseId,
+    source_id: input.sourceId,
+    movement_id: movement.id,
+    event_type: eventType,
+    event_date: `${eventDate}T00:00:00.000Z`,
+    end_date: eventType === "audiencia" && fechaFinal ? `${fechaFinal}T00:00:00.000Z` : null,
+    title: movement.title,
+    description: movement.description,
+    confidence: eventType === "actuacion" ? 0.8 : 0.95,
+    status: "active",
+    change_status: "new",
+  };
+}
+
+async function loadLatestSuccessfulSnapshot(
+  supabase: ReturnType<typeof createClient<any>>,
+  caseSourceId: string,
+) {
+  const { data, error } = await supabase
+    .from("source_snapshots")
+    .select("id, fetched_at")
+    .eq("case_source_id", caseSourceId)
+    .eq("fetch_status", "success")
+    .order("fetched_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<{ id: string; fetched_at: string }>();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+async function hasMovementHistory(
+  supabase: ReturnType<typeof createClient<any>>,
+  input: CaseSourceInput,
+) {
+  const { count, error } = await supabase
+    .from("case_movements")
+    .select("id", { count: "exact", head: true })
+    .eq("case_id", input.caseId)
+    .eq("source_id", input.sourceId);
+
+  if (error) {
+    throw error;
+  }
+
+  return (count || 0) > 0;
+}
+
+async function persistMovementsAndEvents(
+  supabase: ReturnType<typeof createClient<any>>,
+  input: CaseSourceInput,
+  snapshotId: string,
+  result: SourceFetchResult,
+  hasPreviousSuccessfulSnapshot: boolean,
+) {
+  const uniqueMovements = Object.values(
+    Object.fromEntries((result.movements || []).map((movement) => [movement.normalizedHash, movement])),
+  );
+
+  if (uniqueMovements.length === 0) {
+    return {
+      newMovementsCount: 0,
+      eventCount: 0,
+      bootstrapMode: false,
+      operationalStatus: hasPreviousSuccessfulSnapshot ? "sin_cambios" : "sin_cambios",
+    };
+  }
+
+  const bootstrapMode = !(await hasMovementHistory(supabase, input));
+
+  const { data: existingRows, error: existingError } = await supabase
+    .from("case_movements")
+    .select("normalized_hash")
+    .eq("case_id", input.caseId)
+    .eq("source_id", input.sourceId)
+    .in(
+      "normalized_hash",
+      uniqueMovements.map((movement) => movement.normalizedHash),
+    );
+
+  if (existingError) {
+    throw existingError;
+  }
+
+  const existingHashes = new Set(((existingRows as Array<{ normalized_hash: string }> | null) || []).map((row) => row.normalized_hash));
+  const newMovements = uniqueMovements.filter((movement) => !existingHashes.has(movement.normalizedHash));
+
+  let insertedMovements: PersistedMovementRow[] = [];
+
+  if (newMovements.length > 0) {
+    const { data, error } = await supabase
+      .from("case_movements")
+      .insert(
+        newMovements.map((movement) => ({
+          case_id: input.caseId,
+          source_id: input.sourceId,
+          snapshot_id: snapshotId,
+          external_id: movement.externalId || null,
+          movement_date: movement.movementDate || null,
+          title: movement.title,
+          description: movement.description || null,
+          movement_type: movement.movementType || null,
+          normalized_hash: movement.normalizedHash,
+          metadata: movement.metadata || {},
+        })),
+      )
+      .select("id, normalized_hash, title, description, movement_type, movement_date, metadata");
+
+    if (error) {
+      throw error;
+    }
+
+    insertedMovements = (data as PersistedMovementRow[] | null) || [];
+  }
+
+  let eventCount = 0;
+
+  if (hasPreviousSuccessfulSnapshot && !bootstrapMode && insertedMovements.length > 0) {
+    const eventRows = insertedMovements
+      .map((movement) => inferEventPayload(input, movement))
+      .filter(Boolean);
+
+    if (eventRows.length > 0) {
+      const { data, error } = await supabase
+        .from("legal_events")
+        .insert(eventRows)
+        .select("id");
+
+      if (error) {
+        throw error;
+      }
+
+      eventCount = data?.length || 0;
+    }
+  }
+
+  const requiresReview = insertedMovements.some((movement) => shouldRequireReview(movement));
+  const operationalStatus =
+    newMovements.length === 0
+      ? "sin_cambios"
+      : bootstrapMode || !hasPreviousSuccessfulSnapshot
+        ? "sin_cambios"
+        : requiresReview
+          ? "requiere_revision"
+          : "con_novedad";
+
+  return {
+    newMovementsCount: newMovements.length,
+    eventCount,
+    bootstrapMode,
+    operationalStatus,
+  };
 }
 
 async function loadPendingCaseSources() {
@@ -106,12 +346,14 @@ async function persistSnapshot(
   input: CaseSourceInput,
   result: SourceFetchResult,
 ) {
+  const previousSuccessfulSnapshot = await loadLatestSuccessfulSnapshot(supabase, input.caseSourceId);
   const { data: snapshot, error: snapshotError } = await supabase
     .from("source_snapshots")
     .insert({
       case_source_id: input.caseSourceId,
       fetched_at: result.fetchedAt,
       fetch_status: result.status,
+      raw_hash: buildRawHash(result.rawPayload),
       raw_payload: result.rawPayload ?? null,
       error_message: result.errorMessage ?? null,
       duration_ms: result.durationMs ?? null,
@@ -123,13 +365,41 @@ async function persistSnapshot(
     throw snapshotError;
   }
 
+  let movementOutcome = {
+    newMovementsCount: 0,
+    eventCount: 0,
+    bootstrapMode: false,
+    operationalStatus:
+      result.status === "success"
+        ? "sin_cambios"
+        : result.status === "not_found"
+          ? "no_consultado"
+          : "error_fuente",
+  };
+
+  if (result.status === "success") {
+    movementOutcome = await persistMovementsAndEvents(
+      supabase,
+      input,
+      snapshot.id,
+      result,
+      Boolean(previousSuccessfulSnapshot),
+    );
+  }
+
   const nextStatus = nextCaseSourceStatus(result.status);
+  const latestSummary = getLatestMovementSummary(result);
   const updatePayload: Record<string, unknown> = {
     last_checked_at: result.fetchedAt,
     status: nextStatus,
     metadata: {
       ...(input.metadata || {}),
       latest_fetch: result.metadata || null,
+      latest_summary: latestSummary,
+      operational_status: movementOutcome.operationalStatus,
+      new_movements_count: movementOutcome.newMovementsCount,
+      legal_events_count: movementOutcome.eventCount,
+      bootstrap_mode: movementOutcome.bootstrapMode,
       latest_snapshot_id: snapshot.id,
     },
   };
@@ -149,7 +419,10 @@ async function persistSnapshot(
     throw updateError;
   }
 
-  return snapshot.id as string;
+  return {
+    snapshotId: snapshot.id as string,
+    movementOutcome,
+  };
 }
 
 async function processBatch() {
@@ -186,15 +459,19 @@ async function processBatch() {
     }
 
     const fetchResult = await connector.fetchCase(input);
-    const snapshotId = await persistSnapshot(supabase, input, fetchResult);
+    const persistResult = await persistSnapshot(supabase, input, fetchResult);
 
     results.push({
       caseSourceId: row.id,
       radicado: input.normalizedRadicado,
       source: input.sourceName,
       fetchStatus: fetchResult.status,
-      snapshotId,
+      snapshotId: persistResult.snapshotId,
       movements: fetchResult.movements?.length || 0,
+      newMovements: persistResult.movementOutcome.newMovementsCount,
+      legalEvents: persistResult.movementOutcome.eventCount,
+      operationalStatus: persistResult.movementOutcome.operationalStatus,
+      bootstrapMode: persistResult.movementOutcome.bootstrapMode,
       durationMs: fetchResult.durationMs || null,
     });
   }
