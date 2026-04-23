@@ -18,6 +18,8 @@ export type SourceFetchResult = {
   fetchedAt: string;
   errorMessage?: string;
   durationMs?: number;
+  metadata?: Record<string, unknown>;
+  movements?: ParsedMovement[];
 };
 
 export type ParsedMovement = {
