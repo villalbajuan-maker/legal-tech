@@ -103,6 +103,41 @@ Criterios de aceptacion:
 - El sistema puede crear una cuenta beta manualmente.
 - El layout base carga despues de autenticacion.
 
+### E1B. Consola Admin Interna
+
+Objetivo:
+
+Permitir que LexControl opere cuentas, activaciones y salud de la plataforma desde una interfaz interna.
+
+Contrato:
+
+```text
+docs/producto/contrato-consola-admin-lexcontrol.md
+```
+
+Historias:
+
+- Como `platform_admin`, puedo ver cuentas activas y su estado.
+- Como `platform_admin`, puedo ver dias restantes de demo y capacidad usada.
+- Como `platform_admin`, puedo abrir el detalle de una cuenta.
+- Como `platform_admin`, puedo crear o desactivar usuarios de cuenta.
+- Como `platform_admin`, puedo suspender, reactivar o extender una demo.
+
+Tareas tecnicas iniciales:
+
+- Crear superficie `admin.lexcontrol.co`.
+- Restringir acceso a `platform_admin`.
+- Crear vista general de cuentas.
+- Crear detalle de cuenta.
+- Mostrar procesos usados / limite y responsables usados / limite.
+- Mostrar activaciones capturadas.
+- Agregar acciones criticas de operacion.
+
+Criterios de aceptacion:
+
+- Un `platform_admin` puede operar cuentas sin depender de SQL manual para tareas del dia a dia.
+- La consola muestra estado demo, capacidad usada y salud operativa por cuenta.
+
 ---
 
 ### E2. Gestion De Procesos

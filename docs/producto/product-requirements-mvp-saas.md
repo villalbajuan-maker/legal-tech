@@ -218,6 +218,30 @@ Cada proceso puede tener:
 
 Esto permite que cada abogado o dependiente reciba recordatorios y novedades de sus propios casos, sin saturar a toda la cuenta.
 
+#### Consola Admin Interna
+
+LexControl debe contar con una consola interna separada de la app del cliente.
+
+Superficie congelada:
+
+```text
+admin.lexcontrol.co
+```
+
+Su funcion es permitir que el equipo de LexControl opere:
+
+- activaciones
+- cuentas
+- limites
+- responsables
+- salud operativa de las cuentas
+
+Contrato:
+
+```text
+docs/producto/contrato-consola-admin-lexcontrol.md
+```
+
 #### Priorizacion Operativa
 
 La priorizacion es doble:
