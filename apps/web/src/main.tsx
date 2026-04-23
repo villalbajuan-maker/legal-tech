@@ -123,6 +123,8 @@ const demoLimits = [
   "La activación se coordina con el equipo de LexControl",
 ];
 
+const activationCalendarUrl = import.meta.env.VITE_ACTIVATION_CALENDAR_URL || "https://calendar.google.com/calendar/u/0/r";
+
 const launchPlans = [
   {
     name: "Starter",
@@ -454,6 +456,7 @@ function ActivationModal({
 }) {
   const [step, setStep] = useState(0);
   const [isSubmitted, setSubmitted] = useState(false);
+  const [qualifiedForScheduling, setQualifiedForScheduling] = useState(false);
   const [profileType, setProfileType] = useState("");
   const [caseBand, setCaseBand] = useState("");
   const [reviewMethod, setReviewMethod] = useState("");
@@ -462,7 +465,7 @@ function ActivationModal({
   const [urgencyLevel, setUrgencyLevel] = useState("");
   const [sampleReadiness, setSampleReadiness] = useState("");
   const [decisionWindow, setDecisionWindow] = useState("");
-  const totalSteps = 8;
+  const totalSteps = 10;
 
   const profileTypeOptions = [
     "Abogado independiente",
@@ -495,8 +498,29 @@ function ActivationModal({
   ];
   const decisionWindowOptions = ["Esta semana", "Este mes", "Exploratorio"];
 
+  function qualifiesForScheduling() {
+    const hasOperationalVolume = caseBand !== "Menos de 50";
+    const hasStrategicProfile = [
+      "Firma pequeña",
+      "Firma mediana o grande",
+      "Aseguradora o sector seguros",
+      "Área jurídica de empresa",
+    ].includes(profileType);
+    const hasUrgency = urgencyLevel === "Alta" || urgencyLevel === "Crítica";
+    const canActivateSoon = sampleReadiness !== "Necesito ayuda para estructurarla" && decisionWindow !== "Exploratorio";
+    const hasVisiblePain = [
+      "No detectar actuaciones",
+      "No saber qué no se consultó",
+      "Errores de fuente",
+      "Falta de trazabilidad",
+    ].includes(primaryRisk);
+
+    return hasOperationalVolume || hasStrategicProfile || hasUrgency || canActivateSoon || hasVisiblePain;
+  }
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setQualifiedForScheduling(qualifiesForScheduling());
     setSubmitted(true);
   }
 
@@ -506,9 +530,11 @@ function ActivationModal({
     if (currentStep === 2) return Boolean(caseBand);
     if (currentStep === 3) return Boolean(reviewMethod);
     if (currentStep === 4) return Boolean(primaryRisk);
-    if (currentStep === 5) return Boolean(hasAssignedOwners && urgencyLevel);
-    if (currentStep === 6) return Boolean(sampleReadiness && decisionWindow);
-    if (currentStep === 7) return true;
+    if (currentStep === 5) return Boolean(hasAssignedOwners);
+    if (currentStep === 6) return Boolean(urgencyLevel);
+    if (currentStep === 7) return Boolean(sampleReadiness);
+    if (currentStep === 8) return Boolean(decisionWindow);
+    if (currentStep === 9) return true;
     return false;
   }
 
@@ -731,50 +757,29 @@ function ActivationModal({
 
             {step === 5 ? (
               <section className="activationStep">
-                <h2>¿Qué tan prioritaria es esta activación?</h2>
+                <h2>¿Tienen responsables asignados por proceso?</h2>
                 <p>
-                  Con esto medimos visibilidad interna, urgencia y qué tanto seguimiento necesitaría la cuenta.
+                  Esto nos ayuda a entender si la demo debe mostrar alertas, responsables y trazabilidad por equipo.
                 </p>
 
-                <div className="activationMetaGrid">
-                  <div className="activationQuestionBlock">
-                    <span>Responsables asignados</span>
-                    <div className="activationChoiceGrid compact compact-three">
-                      {assignedOwnerOptions.map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          className={`activationChoiceChip ${hasAssignedOwners === option ? "selected" : ""}`}
-                          onClick={() => setHasAssignedOwners(option)}
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="activationQuestionBlock">
-                    <span>Urgencia para activar</span>
-                    <div className="activationChoiceGrid compact compact-three">
-                      {urgencyOptions.map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          className={`activationChoiceChip ${urgencyLevel === option ? "selected" : ""}`}
-                          onClick={() => setUrgencyLevel(option)}
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                <div className="activationChoiceGrid compact compact-three">
+                  {assignedOwnerOptions.map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      className={`activationChoiceChip ${hasAssignedOwners === option ? "selected" : ""}`}
+                      onClick={() => setHasAssignedOwners(option)}
+                    >
+                      {option}
+                    </button>
+                  ))}
                 </div>
 
                 <div className="activationFooter">
                   <p>
                     {canProceed(step)
-                      ? "Bien. Ya tenemos una señal clara de prioridad."
-                      : "Completa responsables y urgencia para continuar."}
+                      ? "Bien. Ya sabemos cómo se distribuye la operación."
+                      : "Selecciona si hoy existen responsables por proceso."}
                   </p>
                   <button
                     className="activationPrimaryNav"
@@ -791,44 +796,29 @@ function ActivationModal({
 
             {step === 6 ? (
               <section className="activationStep">
-                <h2>¿Qué tan lista está esta activación?</h2>
+                <h2>¿Qué tan prioritaria es esta activación?</h2>
                 <p>
-                  Esto nos permite saber si la cuenta puede avanzar rápido o si requiere una activación más asistida.
+                  Esto separa una exploración general de una operación que necesita control pronto.
                 </p>
-                <div className="activationQuestionBlock">
-                  <span>Disponibilidad para activar</span>
-                  <div className="activationMetaGrid">
-                    <div className="activationChoiceGrid compact compact-three">
-                      {sampleReadinessOptions.map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          className={`activationChoiceChip ${sampleReadiness === option ? "selected" : ""}`}
-                          onClick={() => setSampleReadiness(option)}
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="activationChoiceGrid compact compact-three">
-                      {decisionWindowOptions.map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          className={`activationChoiceChip ${decisionWindow === option ? "selected" : ""}`}
-                          onClick={() => setDecisionWindow(option)}
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+
+                <div className="activationChoiceGrid compact compact-three">
+                  {urgencyOptions.map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      className={`activationChoiceChip ${urgencyLevel === option ? "selected" : ""}`}
+                      onClick={() => setUrgencyLevel(option)}
+                    >
+                      {option}
+                    </button>
+                  ))}
                 </div>
+
                 <div className="activationFooter">
                   <p>
                     {canProceed(step)
-                      ? "Perfecto. Ya sabemos qué tan rápido podría activarse esta cuenta."
-                      : "Define disponibilidad y ventana de decisión para continuar."}
+                      ? "Perfecto. Ya tenemos una señal clara de prioridad."
+                      : "Selecciona el nivel de prioridad para continuar."}
                   </p>
                   <button
                     className="activationPrimaryNav"
@@ -844,6 +834,80 @@ function ActivationModal({
             ) : null}
 
             {step === 7 ? (
+              <section className="activationStep">
+                <h2>¿Qué tan lista está la muestra inicial?</h2>
+                <p>
+                  Una muestra preparada permite que la demo empiece con datos reales y una activación más rápida.
+                </p>
+                <div className="activationChoiceGrid compact compact-three">
+                  {sampleReadinessOptions.map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      className={`activationChoiceChip ${sampleReadiness === option ? "selected" : ""}`}
+                      onClick={() => setSampleReadiness(option)}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+                <div className="activationFooter">
+                  <p>
+                    {canProceed(step)
+                      ? "Bien. Ya sabemos si la carga inicial puede avanzar rápido."
+                      : "Selecciona el estado de la muestra inicial."}
+                  </p>
+                  <button
+                    className="activationPrimaryNav"
+                    type="button"
+                    onClick={goNext}
+                    aria-label="Continuar"
+                    disabled={!canProceed(step)}
+                  >
+                    →
+                  </button>
+                </div>
+              </section>
+            ) : null}
+
+            {step === 8 ? (
+              <section className="activationStep">
+                <h2>¿Cuándo quisieras activar la demo?</h2>
+                <p>
+                  Esto nos ayuda a ordenar la agenda de activaciones y priorizar las cuentas con intención real.
+                </p>
+                <div className="activationChoiceGrid compact compact-three">
+                  {decisionWindowOptions.map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      className={`activationChoiceChip ${decisionWindow === option ? "selected" : ""}`}
+                      onClick={() => setDecisionWindow(option)}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+                <div className="activationFooter">
+                  <p>
+                    {canProceed(step)
+                      ? "Perfecto. Ya podemos cerrar la solicitud."
+                      : "Selecciona una ventana de activación para continuar."}
+                  </p>
+                  <button
+                    className="activationPrimaryNav"
+                    type="button"
+                    onClick={goNext}
+                    aria-label="Continuar"
+                    disabled={!canProceed(step)}
+                  >
+                    →
+                  </button>
+                </div>
+              </section>
+            ) : null}
+
+            {step === 9 ? (
               <form className="activationStep" onSubmit={submit}>
                 <h2>Solicita la activación.</h2>
                 <p>
@@ -880,20 +944,12 @@ function ActivationModal({
                     Ciudad
                     <input name="city" autoComplete="address-level2" />
                   </label>
-                  <label>
-                    Número aproximado de procesos
-                    <input name="caseCount" inputMode="numeric" />
-                  </label>
-                  <label className="fullField">
-                    Mensaje opcional
-                    <textarea name="message" rows={3} />
-                  </label>
                 </div>
                 <div className="activationFooter">
                   <p>
                     {canProceed(step)
-                      ? "Coordinaremos una sesión para revisar alcance, carga inicial y decisión de activación."
-                      : "Define disponibilidad y ventana de decisión para solicitar la activación."}
+                      ? "Con estos datos podemos validar la activación sin pedir información sensible."
+                      : "Completa los datos de contacto para solicitar la activación."}
                   </p>
                   <button
                     className="activationSubmit"
@@ -910,11 +966,34 @@ function ActivationModal({
         ) : (
           <section className="activationStep">
             <p className="eyebrow">Solicitud recibida</p>
-            <h2>Revisaremos si tu operación encaja con la demo controlada.</h2>
-            <p>Coordinaremos una sesión de activación para revisar el alcance y preparar la carga inicial.</p>
-            <button className="activationPrimaryNav" type="button" onClick={onClose} aria-label="Cerrar activación">
-              →
-            </button>
+            {qualifiedForScheduling ? (
+              <>
+                <h2>Tu operación encaja con la demo controlada.</h2>
+                <p>
+                  El siguiente paso es agendar una sesión de activación para revisar alcance, carga inicial y
+                  responsables.
+                </p>
+                <div className="activationResultActions">
+                  <a className="button primary" href={activationCalendarUrl} target="_blank" rel="noreferrer">
+                    Agendar activación
+                  </a>
+                  <button className="button secondary" type="button" onClick={onClose}>
+                    Cerrar
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2>Revisaremos si tu operación encaja con la demo controlada.</h2>
+                <p>
+                  Te contactaremos si la muestra tiene sentido para esta etapa de activación. La demo se prioriza para
+                  operaciones con volumen y riesgo operativo visible.
+                </p>
+                <button className="activationPrimaryNav" type="button" onClick={onClose} aria-label="Cerrar activación">
+                  →
+                </button>
+              </>
+            )}
           </section>
         )}
       </div>

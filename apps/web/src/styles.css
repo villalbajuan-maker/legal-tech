@@ -2861,6 +2861,13 @@ h3 {
   line-height: 1.5;
 }
 
+.activationResultActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
 .signup {
   display: grid;
   gap: 14px;
