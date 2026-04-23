@@ -459,8 +459,8 @@ function ActivationModal({
   const [qualifiedForScheduling, setQualifiedForScheduling] = useState(false);
   const [profileType, setProfileType] = useState("");
   const [caseBand, setCaseBand] = useState("");
-  const [reviewMethod, setReviewMethod] = useState("");
-  const [primaryRisk, setPrimaryRisk] = useState("");
+  const [reviewMethods, setReviewMethods] = useState<string[]>([]);
+  const [operationalRisks, setOperationalRisks] = useState<string[]>([]);
   const [hasAssignedOwners, setHasAssignedOwners] = useState("");
   const [urgencyLevel, setUrgencyLevel] = useState("");
   const [sampleReadiness, setSampleReadiness] = useState("");
@@ -476,18 +476,20 @@ function ActivationModal({
   ];
   const caseBandOptions = ["Menos de 50", "50 a 100", "101 a 300", "Más de 300"];
   const reviewMethodOptions = [
-    "Manual en Rama Judicial",
-    "Excel + revisión manual",
-    "Dependiente / asistente",
+    "Revisión manual en Rama Judicial",
+    "Excel o base manual",
+    "Dependiente o asistente",
     "Herramienta externa",
+    "Mensajes internos o WhatsApp",
     "No hay proceso claro",
   ];
-  const primaryRiskOptions = [
-    "No detectar actuaciones",
-    "No saber qué no se consultó",
-    "Errores de fuente",
-    "Falta de trazabilidad",
-    "Demasiado tiempo operativo",
+  const operationalRiskOptions = [
+    "Que una actuación nueva no se detecte a tiempo",
+    "Que un proceso no se consulte y nadie lo note",
+    "Que una fuente falle y se confunda con ausencia de novedad",
+    "Que no quede evidencia de quién revisó y cuándo",
+    "Que el equipo dependa de memoria, Excel o mensajes",
+    "Que se invierta demasiado tiempo solo verificando",
   ];
   const assignedOwnerOptions = ["Sí", "Parcialmente", "No"];
   const urgencyOptions = ["Baja", "Media", "Alta", "Crítica"];
@@ -497,6 +499,15 @@ function ActivationModal({
     "Necesito ayuda para estructurarla",
   ];
   const decisionWindowOptions = ["Esta semana", "Este mes", "Exploratorio"];
+
+  function toggleSelection(value: string, selectedValues: string[], setSelectedValues: (values: string[]) => void) {
+    if (selectedValues.includes(value)) {
+      setSelectedValues(selectedValues.filter((item) => item !== value));
+      return;
+    }
+
+    setSelectedValues([...selectedValues, value]);
+  }
 
   function qualifiesForScheduling() {
     const hasOperationalVolume = caseBand !== "Menos de 50";
@@ -509,13 +520,15 @@ function ActivationModal({
     const hasUrgency = urgencyLevel === "Alta" || urgencyLevel === "Crítica";
     const canActivateSoon = sampleReadiness !== "Necesito ayuda para estructurarla" && decisionWindow !== "Exploratorio";
     const hasVisiblePain = [
-      "No detectar actuaciones",
-      "No saber qué no se consultó",
-      "Errores de fuente",
-      "Falta de trazabilidad",
-    ].includes(primaryRisk);
+      "Que una actuación nueva no se detecte a tiempo",
+      "Que un proceso no se consulte y nadie lo note",
+      "Que una fuente falle y se confunda con ausencia de novedad",
+      "Que no quede evidencia de quién revisó y cuándo",
+      "Que el equipo dependa de memoria, Excel o mensajes",
+    ].some((risk) => operationalRisks.includes(risk));
+    const hasFragmentedReview = reviewMethods.length > 1 || reviewMethods.includes("No hay proceso claro");
 
-    return hasOperationalVolume || hasStrategicProfile || hasUrgency || canActivateSoon || hasVisiblePain;
+    return hasOperationalVolume || hasStrategicProfile || hasUrgency || canActivateSoon || hasVisiblePain || hasFragmentedReview;
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -528,8 +541,8 @@ function ActivationModal({
     if (currentStep === 0) return true;
     if (currentStep === 1) return Boolean(profileType);
     if (currentStep === 2) return Boolean(caseBand);
-    if (currentStep === 3) return Boolean(reviewMethod);
-    if (currentStep === 4) return Boolean(primaryRisk);
+    if (currentStep === 3) return reviewMethods.length > 0;
+    if (currentStep === 4) return operationalRisks.length > 0;
     if (currentStep === 5) return Boolean(hasAssignedOwners);
     if (currentStep === 6) return Boolean(urgencyLevel);
     if (currentStep === 7) return Boolean(sampleReadiness);
@@ -580,9 +593,9 @@ function ActivationModal({
 
             {step === 0 ? (
               <section className="activationStep">
-                <h2 id="activation-title">Activa una demo gratuita con procesos reales.</h2>
+                <h2 id="activation-title">Puedes revisar procesos todos los días y aun así no saber cuáles no fueron revisados.</h2>
                 <p>
-                  Estamos activando un grupo reducido de abogados y firmas con volumen real de procesos.
+                  La demo es controlada. No necesitas enviar radicados ni datos sensibles para solicitar acceso.
                 </p>
                 <div className="demoTerms">
                   <div>
@@ -592,11 +605,11 @@ function ActivationModal({
                     ))}
                   </div>
                   <div>
-                    <h3>Qué evaluamos</h3>
+                    <h3>Qué vas a evidenciar</h3>
                     {[
-                      "Tu volumen operativo actual",
-                      "El nivel de riesgo que hoy no ves con claridad",
-                      "Si vale la pena activar una muestra real contigo",
+                      "Procesos que cambian",
+                      "Procesos que no cambian",
+                      "Consultas que fallan o no dejan trazabilidad",
                     ].map((item) => (
                       <span key={item}>{item}</span>
                     ))}
@@ -604,7 +617,7 @@ function ActivationModal({
                 </div>
                 <div className="activationFooter">
                   <p>
-                    En menos de dos minutos validamos si la demo encaja con tu operación.
+                    En menos de dos minutos identificamos si tu vigilancia puede convertirse en una bandeja trazable.
                   </p>
                   <button className="activationPrimaryNav" type="button" onClick={goNext} aria-label="Continuar">
                     →
@@ -617,7 +630,7 @@ function ActivationModal({
               <section className="activationStep">
                 <h2>¿Qué tipo de operación quieres activar?</h2>
                 <p>
-                  Esto nos ayuda a entender el contexto comercial y la relevancia estratégica de la activación.
+                  Cada operación vigila distinto. El punto de partida cambia si eres abogado, firma o equipo jurídico.
                 </p>
                 <div className="activationChoiceGrid" aria-label="Tipo de operación">
                   {profileTypeOptions.map((option) => (
@@ -651,7 +664,7 @@ function ActivationModal({
               <section className="activationStep">
                 <h2>¿Cuántos procesos vigilas hoy?</h2>
                 <p>
-                  Queremos entender si esta activación se ajusta al volumen real de tu operación.
+                  Mientras más procesos hay, más fácil es perder visibilidad sobre qué se revisó y qué no.
                 </p>
                 <div className="activationChoiceGrid" aria-label="Volumen de procesos">
                   {caseBandOptions.map((option) => (
@@ -685,22 +698,27 @@ function ActivationModal({
               <section className="activationStep">
                 <h2>¿Cómo revisan hoy las novedades?</h2>
                 <p>
-                  Aquí buscamos entender el punto de partida operativo de la vigilancia.
+                  Puedes marcar más de una. Cuando la revisión vive en varios lugares, la trazabilidad se rompe.
                 </p>
                 <div className="activationChoiceGrid compact" aria-label="Método actual de revisión">
                   {reviewMethodOptions.map((option) => (
                     <button
                       key={option}
                       type="button"
-                      className={`activationChoiceChip ${reviewMethod === option ? "selected" : ""}`}
-                      onClick={() => setReviewMethod(option)}
+                      aria-pressed={reviewMethods.includes(option)}
+                      className={`activationChoiceChip ${reviewMethods.includes(option) ? "selected" : ""}`}
+                      onClick={() => toggleSelection(option, reviewMethods, setReviewMethods)}
                     >
                       {option}
                     </button>
                   ))}
                 </div>
                 <div className="activationFooter">
-                  <p>{reviewMethod ? `Seleccionado: ${reviewMethod}` : "Selecciona el método actual para continuar."}</p>
+                  <p>
+                    {reviewMethods.length
+                      ? `${reviewMethods.length} forma${reviewMethods.length === 1 ? "" : "s"} marcada${reviewMethods.length === 1 ? "" : "s"}.`
+                      : "Marca una o varias formas de revisión."}
+                  </p>
                   <button
                     className="activationPrimaryNav"
                     type="button"
@@ -716,20 +734,21 @@ function ActivationModal({
 
             {step === 4 ? (
               <section className="activationStep">
-                <h2>¿Dónde está hoy el mayor riesgo?</h2>
+                <h2>¿Qué riesgos pueden estar ocurriendo hoy?</h2>
                 <p>
-                  Esto nos ayuda a entender qué problema debe demostrar la demo para que tenga sentido activarla.
+                  Puedes marcar más de uno. El riesgo no es solo que algo cambie. Es no saber si fue consultado.
                 </p>
 
                 <div className="activationQuestionBlock">
-                  <span>Principal punto ciego</span>
+                  <span>Puntos ciegos posibles</span>
                   <div className="activationChoiceGrid compact">
-                    {primaryRiskOptions.map((option) => (
+                    {operationalRiskOptions.map((option) => (
                       <button
                         key={option}
                         type="button"
-                        className={`activationChoiceChip ${primaryRisk === option ? "selected" : ""}`}
-                        onClick={() => setPrimaryRisk(option)}
+                        aria-pressed={operationalRisks.includes(option)}
+                        className={`activationChoiceChip ${operationalRisks.includes(option) ? "selected" : ""}`}
+                        onClick={() => toggleSelection(option, operationalRisks, setOperationalRisks)}
                       >
                         {option}
                       </button>
@@ -739,8 +758,8 @@ function ActivationModal({
                 <div className="activationFooter">
                   <p>
                     {canProceed(step)
-                      ? "Perfecto. Ya sabemos qué tendría que resolver la demo en tu caso."
-                      : "Selecciona el principal riesgo para continuar."}
+                      ? `${operationalRisks.length} riesgo${operationalRisks.length === 1 ? "" : "s"} marcado${operationalRisks.length === 1 ? "" : "s"}.`
+                      : "Marca uno o varios riesgos que puedan estar presentes."}
                   </p>
                   <button
                     className="activationPrimaryNav"
@@ -759,7 +778,7 @@ function ActivationModal({
               <section className="activationStep">
                 <h2>¿Tienen responsables asignados por proceso?</h2>
                 <p>
-                  Esto nos ayuda a entender si la demo debe mostrar alertas, responsables y trazabilidad por equipo.
+                  Si hay responsables, la trazabilidad debe llegar a cada persona. Si no los hay, la operación depende de coordinación informal.
                 </p>
 
                 <div className="activationChoiceGrid compact compact-three">
@@ -796,9 +815,9 @@ function ActivationModal({
 
             {step === 6 ? (
               <section className="activationStep">
-                <h2>¿Qué tan prioritaria es esta activación?</h2>
+                <h2>¿Qué tan urgente es ordenar esta vigilancia?</h2>
                 <p>
-                  Esto separa una exploración general de una operación que necesita control pronto.
+                  La prioridad no depende del software. Depende del nivel de exposición que hoy no puedes ver.
                 </p>
 
                 <div className="activationChoiceGrid compact compact-three">
@@ -835,9 +854,9 @@ function ActivationModal({
 
             {step === 7 ? (
               <section className="activationStep">
-                <h2>¿Qué tan lista está la muestra inicial?</h2>
+                <h2>¿Tienes una muestra inicial de procesos para probar?</h2>
                 <p>
-                  Una muestra preparada permite que la demo empiece con datos reales y una activación más rápida.
+                  La tensión ya está clara. Ahora la demo necesita una muestra real para convertirla en visibilidad.
                 </p>
                 <div className="activationChoiceGrid compact compact-three">
                   {sampleReadinessOptions.map((option) => (
@@ -872,9 +891,9 @@ function ActivationModal({
 
             {step === 8 ? (
               <section className="activationStep">
-                <h2>¿Cuándo quisieras activar la demo?</h2>
+                <h2>¿Cuándo tendría sentido activar la demo?</h2>
                 <p>
-                  Esto nos ayuda a ordenar la agenda de activaciones y priorizar las cuentas con intención real.
+                  No se trata de agendar una llamada de ventas. Se trata de revisar si una muestra real puede convertirse en control operativo.
                 </p>
                 <div className="activationChoiceGrid compact compact-three">
                   {decisionWindowOptions.map((option) => (
@@ -916,8 +935,12 @@ function ActivationModal({
                 <div className="activationSnapshot">
                   <span>{profileType}</span>
                   <span>{caseBand}</span>
-                  <span>{reviewMethod}</span>
-                  <span>{primaryRisk}</span>
+                  {reviewMethods.map((method) => (
+                    <span key={method}>{method}</span>
+                  ))}
+                  {operationalRisks.map((risk) => (
+                    <span key={risk}>{risk}</span>
+                  ))}
                   <span>{hasAssignedOwners}</span>
                   <span>{urgencyLevel}</span>
                   <span>{sampleReadiness}</span>
