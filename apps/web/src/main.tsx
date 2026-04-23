@@ -2,6 +2,7 @@ import { StrictMode, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { createRoot } from "react-dom/client";
 import { createLexDemoRows } from "../../../packages/core/src";
+import { InternalApp } from "./internal-app";
 import type {
   LexDemoProcessRow as ProcessRow,
   LexDemoProcessState as ProcessState,
@@ -1025,7 +1026,7 @@ function ActivationModal({
   );
 }
 
-function App() {
+function MarketingApp() {
   const [isActivationOpen, setActivationOpen] = useState(false);
   const [isMobileTrayOpen, setMobileTrayOpen] = useState(false);
   const [operationalFilter, setOperationalFilter] = useState<OperationalFilter>("todos");
@@ -2290,6 +2291,6 @@ function App() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    {window.location.pathname.startsWith("/app") ? <InternalApp /> : <MarketingApp />}
   </StrictMode>,
 );
