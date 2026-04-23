@@ -3253,8 +3253,7 @@ h3 {
     grid-column: 1 / -1;
   }
 
-  .activationTopbar,
-  .activationFooter {
+  .activationTopbar {
     grid-template-columns: 1fr;
   }
 
@@ -3263,9 +3262,54 @@ h3 {
   }
 
   .activationModal {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
     width: min(100%, 540px);
+    height: calc(100dvh - 24px);
     max-height: calc(100dvh - 24px);
-    padding: 18px;
+    padding: 16px;
+  }
+
+  .activationStep {
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .activationStep h2 {
+    margin-bottom: 0;
+  }
+
+  .activationChoiceGrid {
+    gap: 8px;
+  }
+
+  .activationChoiceCard {
+    min-height: 78px;
+    padding: 12px;
+  }
+
+  .activationChoiceCard strong {
+    font-size: 15px;
+  }
+
+  .activationChoiceCard span {
+    font-size: 12px;
+  }
+
+  .activationFooter {
+    position: sticky;
+    z-index: 2;
+    bottom: -1px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin-top: 6px;
+    padding-top: 12px;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0), #ffffff 26%);
+  }
+
+  .activationFooter p {
+    font-size: 12px;
+    line-height: 1.35;
   }
 
   .activationChoiceGrid.compact-three,
