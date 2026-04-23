@@ -243,13 +243,18 @@ button {
   display: grid;
   grid-template-columns: 276px minmax(0, 1fr);
   min-height: 100vh;
-  background: #f7f9fc;
+  background:
+    radial-gradient(circle at top left, rgba(20, 42, 84, 0.04), transparent 32%),
+    #f7f9fc;
 }
 
 .internalSidebar {
   display: grid;
   align-content: start;
   gap: 22px;
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
   border-right: 1px solid var(--border);
   padding: 28px 20px;
   background: #ffffff;
@@ -324,6 +329,8 @@ button {
   align-items: end;
   justify-content: space-between;
   gap: 20px;
+  border-bottom: 1px solid rgba(20, 42, 84, 0.08);
+  padding-bottom: 18px;
 }
 
 .internalHeaderMeta {
@@ -346,6 +353,7 @@ button {
   border-radius: 8px;
   padding: 18px;
   background: #ffffff;
+  box-shadow: 0 14px 34px rgba(20, 42, 84, 0.04);
 }
 
 .internalSummaryGrid strong,
@@ -364,6 +372,42 @@ button {
 .internalModuleList {
   display: grid;
   gap: 18px;
+}
+
+.internalActionGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.internalActionCard {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  min-height: 170px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(20, 42, 84, 0.03), rgba(20, 42, 84, 0.01));
+  color: var(--text);
+  text-align: left;
+  box-shadow: 0 14px 34px rgba(20, 42, 84, 0.04);
+}
+
+.internalActionCard strong {
+  color: var(--brand);
+  font-size: 1.05rem;
+}
+
+.internalActionCard p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.internalActionCard:hover {
+  border-color: var(--brand-border);
+  background: linear-gradient(180deg, rgba(20, 42, 84, 0.06), rgba(20, 42, 84, 0.02));
+  transform: translateY(-1px);
 }
 
 .internalModuleCards {
@@ -406,6 +450,7 @@ button {
   border-radius: 8px;
   padding: 18px;
   background: #ffffff;
+  box-shadow: 0 18px 40px rgba(20, 42, 84, 0.04);
 }
 
 .internalPanelHeader {
@@ -568,6 +613,12 @@ button {
   background: #ffffff;
 }
 
+.internalStackGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
 .internalIntakeResult strong {
   color: var(--brand);
   font-size: 1.9rem;
@@ -700,6 +751,8 @@ button {
 
 .internalDetailPanel {
   align-content: start;
+  position: sticky;
+  top: 28px;
 }
 
 .internalDetailSummary {
@@ -856,6 +909,8 @@ button {
   }
 
   .internalSidebar {
+    position: static;
+    min-height: auto;
     border-right: 0;
     border-bottom: 1px solid var(--border);
   }
@@ -871,6 +926,7 @@ button {
 
   .internalSummaryGrid,
   .internalModuleCards,
+  .internalActionGrid,
   .internalProcessGrid,
   .internalIntakeResult {
     grid-template-columns: 1fr;
@@ -878,6 +934,7 @@ button {
 
   .internalTrayFilters,
   .internalTrayLayout,
+  .internalStackGrid,
   .internalDetailSummary,
   .internalTeamSummary,
   .internalDemoStatusSummary,
@@ -891,6 +948,10 @@ button {
 
   .internalContent {
     padding: 28px 20px 36px;
+  }
+
+  .internalDetailPanel {
+    position: static;
   }
 
   .internalCasesTableHead {

@@ -200,24 +200,24 @@ async function createTeamMember(
 
 const internalModules = [
   {
-    name: "Procesos",
-    status: "Activo",
-    description: "Carga individual y masiva de radicados por cuenta.",
+    name: "Bandeja",
+    status: "Operando",
+    description: "Estados operativos, errores visibles y detalle por proceso.",
   },
   {
-    name: "Bandeja",
-    status: "Activo parcial",
-    description: "Vista operativa autenticada sobre datos reales consultados.",
+    name: "Procesos",
+    status: "Operando",
+    description: "Inventario vigilado, carga individual y lotes controlados.",
+  },
+  {
+    name: "Equipo",
+    status: "Operando",
+    description: "Responsables reales, cupos disponibles y control de acceso.",
   },
   {
     name: "Consultas",
-    status: "En construcción",
-    description: "Ejecución manual y por lote con trazabilidad.",
-  },
-  {
-    name: "Eventos",
-    status: "Pendiente",
-    description: "Novedades, cambios y revisión de actuaciones.",
+    status: "Visible",
+    description: "Salud de fuente, snapshots y alertas que sostienen la cuenta.",
   },
 ];
 
@@ -1134,6 +1134,16 @@ function InternalProcessManager({
     snapshots: snapshots.length,
     alertas: alerts.length,
   };
+  const processSummary = {
+    total: cases.length,
+    criticalPriority: cases.filter((legalCase) => legalCase.priority === "critical").length,
+    withoutOwner: cases.filter((legalCase) => !legalCase.internal_owner).length,
+    readyForConsultation: caseSources.filter((caseSource) => caseSource.status === "pending").length,
+  };
+  const recentAlerts = [...alerts].slice(0, 8);
+  const recentSnapshots = [...snapshots]
+    .sort((left, right) => right.fetched_at.localeCompare(left.fetched_at))
+    .slice(0, 8);
 
   if (view === "inicio") {
     return (
@@ -1189,6 +1199,24 @@ function InternalProcessManager({
               <p>La cuenta ya hace visible cuando una fuente falla o un proceso requiere intervención.</p>
             </article>
           </div>
+        </section>
+
+        <section className="internalActionGrid">
+          <button className="internalActionCard" type="button" onClick={() => window.location.hash = buildViewHash("bandeja")}>
+            <span className="internalSidebarLabel">Prioridad inmediata</span>
+            <strong>Abrir bandeja</strong>
+            <p>Empieza por procesos con revisión, fallas de fuente o novedad visible.</p>
+          </button>
+          <button className="internalActionCard" type="button" onClick={() => window.location.hash = buildViewHash("procesos")}>
+            <span className="internalSidebarLabel">Capacidad</span>
+            <strong>Cargar procesos</strong>
+            <p>Amplía el inventario vigilado y deja listos nuevos radicados para consulta.</p>
+          </button>
+          <button className="internalActionCard" type="button" onClick={() => window.location.hash = buildViewHash("equipo")}>
+            <span className="internalSidebarLabel">Equipo</span>
+            <strong>Gestionar responsables</strong>
+            <p>Configura responsables reales y mantén visible la capacidad disponible.</p>
+          </button>
         </section>
       </section>
     );
@@ -1527,6 +1555,58 @@ function InternalProcessManager({
             </article>
           </div>
         </section>
+
+        <div className="internalStackGrid">
+          <section className="internalPanel">
+            <div className="internalPanelHeader">
+              <strong>Snapshots recientes</strong>
+              <span>{recentSnapshots.length} visibles</span>
+            </div>
+            {recentSnapshots.length > 0 ? (
+              <div className="internalDetailList">
+                {recentSnapshots.map((snapshot) => (
+                  <article key={snapshot.id}>
+                    <div className="internalDetailTitleLine">
+                      <strong>{formatDateTimeLabel(snapshot.fetched_at)}</strong>
+                      <span className={`internalStatusBadge is-${getSnapshotStatusTone(snapshot.fetch_status)}`}>
+                        {snapshot.fetch_status}
+                      </span>
+                    </div>
+                    <span>{snapshot.duration_ms ? `${snapshot.duration_ms} ms` : "Sin duración reportada"}</span>
+                    {snapshot.error_message ? <span>{snapshot.error_message}</span> : null}
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="internalPanelEmpty">Aún no hay snapshots recientes visibles en esta cuenta.</p>
+            )}
+          </section>
+
+          <section className="internalPanel">
+            <div className="internalPanelHeader">
+              <strong>Alertas recientes</strong>
+              <span>{recentAlerts.length} visibles</span>
+            </div>
+            {recentAlerts.length > 0 ? (
+              <div className="internalDetailList">
+                {recentAlerts.map((alert) => (
+                  <article key={alert.id}>
+                    <div className="internalDetailTitleLine">
+                      <strong>{alert.title}</strong>
+                      <span className={`internalStatusBadge is-${getAlertTone(alert.severity)}`}>
+                        {formatAlertType(alert.alert_type)}
+                      </span>
+                    </div>
+                    <span>{alert.message}</span>
+                    <span>{formatDateTimeLabel(alert.created_at)}</span>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="internalPanelEmpty">No hay alertas recientes para mostrar.</p>
+            )}
+          </section>
+        </div>
       </section>
     );
   }
@@ -1538,280 +1618,31 @@ function InternalProcessManager({
   return (
     <section className="internalProcessManager" id="procesos">
       <header>
-        <span className="internalEyebrow">Bloque 2 · Gestión de procesos</span>
+        <span className="internalEyebrow">Inventario vigilado</span>
         <h2>Carga radicados reales y déjalos listos para consulta.</h2>
         <p>
-          Cada proceso entra validado, asociado a tu organización y con `case_source`
-          inicial para CPNU.
+          Cada proceso entra validado, asociado a tu organización y con una fuente inicial
+          lista para consulta.
         </p>
       </header>
 
-      <section className="internalPanel" id="bandeja">
-        <div className="internalPanelHeader">
-          <div>
-            <strong>Bandeja operativa real</strong>
-            <span>Procesos consultados, última actuación y eventos jurídicos activos.</span>
-          </div>
-          <button className="internalGhostButton" type="button" onClick={() => void refreshCases()}>
-            Recargar
-          </button>
-        </div>
-
-        <div className="internalIntakeResult internalTraySummary">
-          <article>
-            <strong>{operationalSummary.total}</strong>
-            <span>Procesos visibles</span>
-          </article>
-          <article>
-            <strong>{operationalSummary.conNovedad}</strong>
-            <span>Con novedad</span>
-          </article>
-          <article>
-            <strong>{operationalSummary.requiereRevision}</strong>
-            <span>Requieren revisión</span>
-          </article>
-          <article>
-            <strong>{operationalSummary.erroresFuente}</strong>
-            <span>Errores de fuente</span>
-          </article>
-          <article>
-            <strong>{operationalSummary.eventosActivos}</strong>
-            <span>Eventos activos</span>
-          </article>
-        </div>
-
-        {isLoadingCases ? <p className="internalPanelEmpty">Cargando bandeja operativa...</p> : null}
-        {loadError ? <p className="internalAuthError">{loadError}</p> : null}
-        {!isLoadingCases && !loadError && operationalRows.length === 0 ? (
-          <p className="internalPanelEmpty">
-            Aún no hay datos suficientes para la bandeja. Carga procesos y ejecuta consultas para poblarla.
-          </p>
-        ) : null}
-
-        {!isLoadingCases && !loadError && operationalRows.length > 0 ? (
-          <>
-            <div className="internalTrayFilters">
-              <label>
-                Estado operativo
-                <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-                  <option value="todos">Todos</option>
-                  <option value="con_novedad">Con novedad</option>
-                  <option value="requiere_revision">Requiere revisión</option>
-                  <option value="sin_cambios">Sin cambios</option>
-                  <option value="no_consultado">No consultado</option>
-                  <option value="error_fuente">Error de fuente</option>
-                </select>
-              </label>
-              <label>
-                Responsable
-                <select value={ownerFilter} onChange={(event) => setOwnerFilter(event.target.value)}>
-                  <option value="todos">Todos</option>
-                  <option value="Sin responsable">Sin responsable</option>
-                  {availableOwners.map((owner) => (
-                    <option key={owner} value={owner}>
-                      {owner}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Prioridad
-                <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value)}>
-                  <option value="todos">Todas</option>
-                  <option value="critical">Crítica</option>
-                  <option value="high">Alta</option>
-                  <option value="normal">Normal</option>
-                  <option value="low">Baja</option>
-                </select>
-              </label>
-            </div>
-
-            <div className="internalTrayLayout">
-              <div className="internalCasesTable internalTrayTable">
-                <div className="internalCasesTableHead internalTrayTableHead">
-                  <span>Radicado</span>
-                  <span>Estado operativo</span>
-                  <span>Última actuación</span>
-                  <span>Próximo evento</span>
-                  <span>Responsable</span>
-                  <span>Fuente</span>
-                </div>
-                {filteredOperationalRows.length === 0 ? (
-                  <p className="internalPanelEmpty">
-                    No hay procesos que coincidan con los filtros actuales.
-                  </p>
-                ) : null}
-                {filteredOperationalRows.map((row) => (
-                  <article
-                    key={row.caseId}
-                    className={`internalCasesRow internalTrayRow ${selectedCase?.caseId === row.caseId ? "is-selected" : ""}`}
-                    onClick={() =>
-                      setSelectedCaseId((current) => (current === row.caseId ? null : row.caseId))
-                    }
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        setSelectedCaseId((current) => (current === row.caseId ? null : row.caseId));
-                      }
-                    }}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className="internalTrayPrimary">
-                      <strong>{row.radicado}</strong>
-                      <span>{row.lastCheckedAt ? `Última consulta: ${formatCaseTimestamp(row.lastCheckedAt)}` : "Sin consulta aún"}</span>
-                    </div>
-                    <div className="internalTrayStack">
-                      <span className={`internalStatusBadge is-${getOperationalTone(row.operationalStatus)}`}>
-                        {formatOperationalStatus(row.operationalStatus)}
-                      </span>
-                      <span className={`internalStatusBadge is-${getSourceStatusTone(row.sourceStatus)}`}>
-                        Fuente {row.sourceStatus}
-                      </span>
-                    </div>
-                    <div className="internalTrayStack">
-                      <strong>{row.latestActionTitle || "Sin actuación resumida"}</strong>
-                      <span>{row.latestActionDate ? formatShortDate(row.latestActionDate) : "Sin fecha"}</span>
-                      {row.latestActionDescription ? <span>{row.latestActionDescription}</span> : null}
-                    </div>
-                    <div className="internalTrayStack">
-                      <strong>{row.latestEventTitle || "Sin evento activo"}</strong>
-                      <span>{row.latestEventDate ? formatShortDate(row.latestEventDate) : "Sin fecha"}</span>
-                      {row.latestEventType ? <span>{row.latestEventType}</span> : null}
-                    </div>
-                    <div className="internalTrayStack">
-                      <span>{row.responsible || "Sin responsable"}</span>
-                      <span className={`internalPriorityBadge is-${row.priority}`}>{row.priority}</span>
-                    </div>
-                    <div className="internalTrayStack">
-                      <span>{row.sourceName}</span>
-                      <span>{row.legalEventsCount} evento{row.legalEventsCount === 1 ? "" : "s"}</span>
-                    </div>
-                  </article>
-                ))}
-              </div>
-
-              <aside className="internalPanel internalDetailPanel">
-                {selectedCase ? (
-                  <>
-                    <div className="internalPanelHeader">
-                      <div>
-                        <strong>Detalle del proceso</strong>
-                        <span>{selectedCase.radicado}</span>
-                      </div>
-                      <button
-                        className="internalGhostButton"
-                        type="button"
-                        onClick={() => setSelectedCaseId(null)}
-                      >
-                        Cerrar detalle
-                      </button>
-                    </div>
-
-                    <div className="internalDetailSummary">
-                      <div>
-                        <span>Estado operativo</span>
-                        <strong>{formatOperationalStatus(selectedCase.operationalStatus)}</strong>
-                      </div>
-                      <div>
-                        <span>Responsable</span>
-                        <strong>{selectedCase.responsible || "Sin responsable"}</strong>
-                      </div>
-                      <div>
-                        <span>Prioridad</span>
-                        <strong>{selectedCase.priority}</strong>
-                      </div>
-                      <div>
-                        <span>Fuente</span>
-                        <strong>{selectedCase.sourceName}</strong>
-                      </div>
-                    </div>
-
-                    <div className="internalDetailSection">
-                      <div className="internalPanelHeader">
-                        <strong>Eventos jurídicos</strong>
-                        <span>{selectedEvents.length} activo{selectedEvents.length === 1 ? "" : "s"}</span>
-                      </div>
-                      {selectedEvents.length > 0 ? (
-                        <div className="internalDetailList">
-                          {selectedEvents.map((event) => (
-                            <article key={event.id}>
-                              <strong>{event.title}</strong>
-                              <span>{event.event_type} · {formatDateTimeLabel(event.event_date)}</span>
-                              <span>Estado: {event.change_status}</span>
-                            </article>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="internalPanelEmpty">No hay eventos activos para este proceso.</p>
-                      )}
-                    </div>
-
-                    <div className="internalDetailSection">
-                      <div className="internalPanelHeader">
-                        <strong>Alertas</strong>
-                        <span>{selectedAlerts.length} activa{selectedAlerts.length === 1 ? "" : "s"}</span>
-                      </div>
-                      {selectedAlerts.length > 0 ? (
-                        <div className="internalDetailList">
-                          {selectedAlerts.map((alert) => (
-                            <article key={alert.id}>
-                              <div className="internalDetailTitleLine">
-                                <strong>{alert.title}</strong>
-                                <span className={`internalStatusBadge is-${getAlertTone(alert.severity)}`}>
-                                  {formatAlertType(alert.alert_type)}
-                                </span>
-                              </div>
-                              <span>{alert.message}</span>
-                              <span>{formatDateTimeLabel(alert.created_at)}</span>
-                            </article>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="internalPanelEmpty">No hay alertas activas para este proceso.</p>
-                      )}
-                    </div>
-
-                    <div className="internalDetailSection">
-                      <div className="internalPanelHeader">
-                        <strong>Historial de snapshots</strong>
-                        <span>{selectedSnapshots.length} registro{selectedSnapshots.length === 1 ? "" : "s"}</span>
-                      </div>
-                      {selectedSnapshots.length > 0 ? (
-                        <div className="internalDetailList">
-                          {selectedSnapshots.slice(0, 12).map((snapshot) => (
-                            <article key={snapshot.id}>
-                              <div className="internalDetailTitleLine">
-                                <strong>{formatDateTimeLabel(snapshot.fetched_at)}</strong>
-                                <span className={`internalStatusBadge is-${getSnapshotStatusTone(snapshot.fetch_status)}`}>
-                                  {snapshot.fetch_status}
-                                </span>
-                              </div>
-                              <span>
-                                {snapshot.duration_ms ? `${snapshot.duration_ms} ms` : "Sin duración reportada"}
-                              </span>
-                              {snapshot.error_message ? <span>{snapshot.error_message}</span> : null}
-                            </article>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="internalPanelEmpty">No hay snapshots para este proceso.</p>
-                      )}
-                    </div>
-                  </>
-                ) : filteredOperationalRows.length === 0 ? (
-                  <p className="internalPanelEmpty">
-                    Ajusta o limpia los filtros para volver a ver el detalle de un proceso.
-                  </p>
-                ) : (
-                  <p className="internalPanelEmpty">
-                    Selecciona un proceso para abrir su detalle operativo.
-                  </p>
-                )}
-              </aside>
-            </div>
-          </>
-        ) : null}
+      <section className="internalSummaryGrid">
+        <article>
+          <strong>{processSummary.total}</strong>
+          <p>Procesos activos cargados en la cuenta.</p>
+        </article>
+        <article>
+          <strong>{processSummary.criticalPriority}</strong>
+          <p>Procesos marcados hoy con prioridad crítica.</p>
+        </article>
+        <article>
+          <strong>{processSummary.withoutOwner}</strong>
+          <p>Procesos sin responsable explícito.</p>
+        </article>
+        <article>
+          <strong>{processSummary.readyForConsultation}</strong>
+          <p>Procesos aún pendientes de su primera consulta visible.</p>
+        </article>
       </section>
 
       <div className="internalProcessGrid">
@@ -1956,7 +1787,10 @@ function InternalProcessManager({
 
       <section className="internalPanel" id="bandeja">
         <div className="internalPanelHeader">
-          <strong>Procesos cargados recientemente</strong>
+          <div>
+            <strong>Procesos cargados recientemente</strong>
+            <span>{cases.length} visibles en este inventario</span>
+          </div>
           <button className="internalGhostButton" type="button" onClick={() => void refreshCases()}>
             Recargar
           </button>
@@ -2023,11 +1857,11 @@ function InternalAuthScreen() {
     <main className="internalAuthPage">
       <section className="internalAuthCard">
         <img className="internalAuthLogo" src={logoUrl} alt="LexControl" />
-        <span className="internalEyebrow">Acceso beta asistida</span>
-        <h1>Ingresa a la consola interna de LexControl.</h1>
+        <span className="internalEyebrow">Acceso operativo</span>
+        <h1>Ingresa a tu cuenta de LexControl.</h1>
         <p>
-          Este acceso está reservado para cuentas activadas por el equipo. Aquí
-          empezamos a convertir la demo en operación real.
+          Este acceso está reservado para cuentas activadas. Aquí operas procesos,
+          responsables y trazabilidad real.
         </p>
 
         <form className="internalAuthForm" onSubmit={handleSubmit}>
@@ -2062,9 +1896,9 @@ function InternalAuthScreen() {
         </form>
 
         <div className="internalAuthHint">
-          <strong>Bloque 1 · Fundación operativa</strong>
+          <strong>Acceso seguro por cuenta</strong>
           <span>
-            Auth, membresías y aislamiento por organización ya viven aquí.
+            Tu sesión queda aislada por organización y solo ve la operación de tu cuenta.
           </span>
         </div>
       </section>
@@ -2080,8 +1914,8 @@ function InternalConfigurationState() {
         <h1>Faltan variables de Supabase en el frontend.</h1>
         <p>
           Para abrir la consola interna necesitamos `VITE_SUPABASE_URL` y
-          `VITE_SUPABASE_ANON_KEY`. La landing puede vivir sin eso. La beta
-          operativa no.
+          `VITE_SUPABASE_ANON_KEY`. La landing puede vivir sin eso. La operación
+          autenticada no.
         </p>
       </section>
     </main>
@@ -2096,11 +1930,10 @@ function InternalNoMembershipState({ email }: { email: string | undefined }) {
         <h1>Tu usuario aún no tiene una organización activa.</h1>
         <p>
           El inicio de sesión ya funcionó para <strong>{email ?? "tu cuenta"}</strong>,
-          pero todavía no existe una membresía activa en una cuenta beta.
+          pero todavía no existe una membresía activa en una cuenta.
         </p>
         <p>
-          Esto es correcto en una beta asistida: el siguiente paso es asignar tu
-          usuario a una organización y a un rol operativo.
+          El siguiente paso es asignar tu usuario a una organización y a un rol operativo.
         </p>
       </section>
     </main>
@@ -2119,7 +1952,7 @@ function InternalShell({
       session.user.user_metadata.full_name ||
       session.user.user_metadata.name ||
       session.user.email ||
-      "Usuario beta"
+      "Usuario"
     );
   }, [session.user.email, session.user.user_metadata.full_name, session.user.user_metadata.name]);
   const canManageTeam = membership.role === "account_admin" || membership.role === "platform_admin";
