@@ -7,12 +7,16 @@ type DatabaseCaseSourceRow = {
   id: string;
   case_id: string;
   source_id: string;
+  status: string;
   external_reference: string | null;
   metadata: Record<string, unknown> | null;
   legal_case: {
     id: string;
+    organization_id: string;
     radicado: string;
     normalized_radicado: string;
+    internal_owner: string | null;
+    priority: "low" | "normal" | "high" | "critical";
   } | null;
   source: {
     id: string;
@@ -47,6 +51,14 @@ type PendingLegalEvent = {
   change_status: "new" | "unchanged";
 };
 
+type MovementOutcome = {
+  newMovementsCount: number;
+  eventCount: number;
+  bootstrapMode: boolean;
+  operationalStatus: string;
+  newEventIds: string[];
+};
+
 const EVENT_ELIGIBLE_MOVEMENT_TYPES = ["Audiencia", "Traslado", "Sentencia / fallo", "Medida cautelar"];
 
 function getSupabaseEnv() {
@@ -73,7 +85,13 @@ function mapToInput(row: DatabaseCaseSourceRow): CaseSourceInput | null {
     radicado: legalCase.radicado,
     normalizedRadicado: legalCase.normalized_radicado,
     externalReference: row.external_reference,
-    metadata: row.metadata || {},
+    metadata: {
+      ...(row.metadata || {}),
+      organization_id: legalCase.organization_id,
+      internal_owner: legalCase.internal_owner,
+      case_priority: legalCase.priority,
+      previous_case_source_status: row.status,
+    },
   };
 }
 
@@ -226,7 +244,7 @@ async function persistMovementsAndEvents(
   snapshotId: string,
   result: SourceFetchResult,
   hasPreviousSuccessfulSnapshot: boolean,
-) {
+) : Promise<MovementOutcome> {
   const uniqueMovements = Object.values(
     Object.fromEntries((result.movements || []).map((movement) => [movement.normalizedHash, movement])),
   );
@@ -237,6 +255,7 @@ async function persistMovementsAndEvents(
       eventCount: 0,
       bootstrapMode: false,
       operationalStatus: hasPreviousSuccessfulSnapshot ? "sin_cambios" : "sin_cambios",
+      newEventIds: [],
     };
   }
 
@@ -288,6 +307,7 @@ async function persistMovementsAndEvents(
   }
 
   let eventCount = 0;
+  let newEventIds: string[] = [];
 
   if (insertedMovements.length > 0) {
     const eventRows: PendingLegalEvent[] = insertedMovements
@@ -336,6 +356,7 @@ async function persistMovementsAndEvents(
         }
 
         eventCount = data?.length || 0;
+        newEventIds = data?.map((row) => row.id) || [];
       }
     }
   }
@@ -355,6 +376,7 @@ async function persistMovementsAndEvents(
     eventCount,
     bootstrapMode,
     operationalStatus,
+    newEventIds,
   };
 }
 
@@ -421,6 +443,150 @@ async function backfillBaselineEvents(
   return data?.length || 0;
 }
 
+async function createAlertIfMissing(
+  supabase: ReturnType<typeof createClient<any>>,
+  payload: {
+    organizationId: string;
+    caseId: string;
+    legalEventId?: string | null;
+    alertType: "new_event" | "event_changed" | "event_upcoming" | "source_error" | "manual_review";
+    severity: "low" | "medium" | "high" | "critical";
+    title: string;
+    message: string;
+    dueAt?: string | null;
+  },
+) {
+  const { data: existingAlert, error: existingError } = await supabase
+    .from("alerts")
+    .select("id")
+    .eq("organization_id", payload.organizationId)
+    .eq("case_id", payload.caseId)
+    .eq("alert_type", payload.alertType)
+    .eq("title", payload.title)
+    .eq("message", payload.message)
+    .in("status", ["pending", "sent"])
+    .limit(1)
+    .maybeSingle();
+
+  if (existingError) {
+    throw existingError;
+  }
+
+  if (existingAlert) {
+    return false;
+  }
+
+  const { error } = await supabase.from("alerts").insert({
+    organization_id: payload.organizationId,
+    case_id: payload.caseId,
+    legal_event_id: payload.legalEventId || null,
+    alert_type: payload.alertType,
+    severity: payload.severity,
+    title: payload.title,
+    message: payload.message,
+    status: "pending",
+    due_at: payload.dueAt || null,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return true;
+}
+
+async function createOperationalAlerts(
+  supabase: ReturnType<typeof createClient<any>>,
+  input: CaseSourceInput,
+  result: SourceFetchResult,
+  movementOutcome: MovementOutcome,
+  latestSummary: ReturnType<typeof getLatestMovementSummary>,
+  nextStatus: string,
+) {
+  const metadata = input.metadata || {};
+  const organizationId =
+    typeof metadata.organization_id === "string" && metadata.organization_id.trim()
+      ? metadata.organization_id
+      : null;
+
+  if (!organizationId) {
+    return;
+  }
+
+  const previousStatus =
+    typeof metadata.previous_case_source_status === "string" ? metadata.previous_case_source_status : null;
+
+  if (result.status !== "success") {
+    if (previousStatus === nextStatus) {
+      return;
+    }
+
+    const title =
+      result.status === "blocked"
+        ? "Fuente bloqueada durante la consulta"
+        : result.status === "not_found"
+          ? "Proceso no encontrado en la fuente"
+          : "Error de fuente en la consulta";
+
+    const severity =
+      result.status === "blocked"
+        ? "critical"
+        : result.status === "error"
+          ? "high"
+          : "medium";
+
+    const message =
+      result.status === "blocked"
+        ? `${input.radicado} no pudo consultarse en ${input.sourceName} porque la fuente respondió con bloqueo.`
+        : result.status === "not_found"
+          ? `${input.radicado} no arrojó resultados en ${input.sourceName}.`
+          : `${input.radicado} presentó un error de fuente en ${input.sourceName}.`;
+
+    await createAlertIfMissing(supabase, {
+      organizationId,
+      caseId: input.caseId,
+      alertType: "source_error",
+      severity,
+      title,
+      message,
+    });
+    return;
+  }
+
+  if (movementOutcome.bootstrapMode || movementOutcome.newMovementsCount === 0) {
+    return;
+  }
+
+  const latestTitle = latestSummary?.title || "Nueva actuación detectada";
+  const latestDate = latestSummary?.movement_date || result.fetchedAt;
+  const firstNewEventId = movementOutcome.newEventIds[0] || null;
+
+  if (movementOutcome.operationalStatus === "requiere_revision") {
+    await createAlertIfMissing(supabase, {
+      organizationId,
+      caseId: input.caseId,
+      legalEventId: firstNewEventId,
+      alertType: "manual_review",
+      severity: "high",
+      title: "Proceso requiere revisión",
+      message: `${input.radicado} requiere revisión por una actuación relevante: ${latestTitle}.`,
+      dueAt: toEventTimestamp(latestDate),
+    });
+    return;
+  }
+
+  await createAlertIfMissing(supabase, {
+    organizationId,
+    caseId: input.caseId,
+    legalEventId: firstNewEventId,
+    alertType: "new_event",
+    severity: "medium",
+    title: "Nueva actuación detectada",
+    message: `${input.radicado} registró una nueva actuación: ${latestTitle}.`,
+    dueAt: toEventTimestamp(latestDate),
+  });
+}
+
 async function loadPendingCaseSources() {
   const env = getSupabaseEnv();
   if (!env) {
@@ -438,12 +604,16 @@ async function loadPendingCaseSources() {
         id,
         case_id,
         source_id,
+        status,
         external_reference,
         metadata,
         legal_case:cases!inner(
           id,
+          organization_id,
           radicado,
-          normalized_radicado
+          normalized_radicado,
+          internal_owner,
+          priority
         ),
         source:sources!inner(
           id,
@@ -451,7 +621,7 @@ async function loadPendingCaseSources() {
         )
       `,
     )
-    .in("status", ["pending", "active", "error"])
+    .in("status", ["pending", "active", "error", "blocked", "not_found"])
     .order("last_checked_at", { ascending: true, nullsFirst: true })
     .limit(batchSize);
 
@@ -489,7 +659,7 @@ async function persistSnapshot(
     throw snapshotError;
   }
 
-  let movementOutcome = {
+  let movementOutcome: MovementOutcome = {
     newMovementsCount: 0,
     eventCount: 0,
     bootstrapMode: false,
@@ -499,6 +669,7 @@ async function persistSnapshot(
         : result.status === "not_found"
           ? "no_consultado"
           : "error_fuente",
+    newEventIds: [],
   };
 
   if (result.status === "success") {
@@ -528,6 +699,7 @@ async function persistSnapshot(
     status: nextStatus,
     metadata: {
       ...(input.metadata || {}),
+      case_source_status: nextStatus,
       latest_fetch: result.metadata || null,
       latest_summary: latestSummary,
       operational_status: movementOutcome.operationalStatus,
@@ -552,6 +724,8 @@ async function persistSnapshot(
   if (updateError) {
     throw updateError;
   }
+
+  await createOperationalAlerts(supabase, input, result, movementOutcome, latestSummary, nextStatus);
 
   return {
     snapshotId: snapshot.id as string,
