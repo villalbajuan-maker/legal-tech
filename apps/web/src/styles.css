@@ -333,11 +333,27 @@ button {
   padding-bottom: 18px;
 }
 
-.internalHeaderMeta {
+.internalHeaderIntro {
   display: grid;
   gap: 8px;
+}
+
+.internalHeaderMeta {
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+}
+
+.internalHeaderAccount {
+  display: grid;
+  gap: 4px;
   justify-items: end;
   color: var(--muted);
+  font-size: var(--font-small);
+}
+
+.internalHeaderAccount strong {
+  color: var(--brand);
   font-size: var(--font-small);
 }
 
@@ -670,9 +686,21 @@ button {
 
 .internalTrayLayout {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   align-items: start;
+}
+
+.internalTrayLayout.has-detail {
+  grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.75fr);
+}
+
+.internalTrayLayout.is-idle .internalTrayTable {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0 16px;
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgba(20, 42, 84, 0.04);
 }
 
 .internalCasesTableHead,
@@ -708,6 +736,11 @@ button {
 
 .internalTrayRow:hover {
   transform: translateY(-1px);
+}
+
+.internalTrayTable {
+  min-width: 0;
+  overflow-x: auto;
 }
 
 .internalCasesRow strong {
@@ -753,6 +786,21 @@ button {
   align-content: start;
   position: sticky;
   top: 28px;
+}
+
+.internalDetailPrompt {
+  border-style: dashed;
+  background:
+    linear-gradient(180deg, rgba(31, 95, 191, 0.025), rgba(31, 95, 191, 0.01)),
+    #ffffff;
+}
+
+.internalDetailPromptBody {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: var(--font-small);
+  line-height: 1.6;
 }
 
 .internalDetailSummary {
@@ -921,6 +969,10 @@ button {
   }
 
   .internalHeaderMeta {
+    justify-items: start;
+  }
+
+  .internalHeaderAccount {
     justify-items: start;
   }
 

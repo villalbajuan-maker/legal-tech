@@ -455,6 +455,18 @@ function formatDateTimeLabel(value: string | null) {
   }).format(new Date(value));
 }
 
+function titleCaseFromEmail(value: string | null | undefined) {
+  if (!value) return "Usuario";
+
+  const localPart = value.split("@")[0] || value;
+
+  return localPart
+    .split(/[._-]+/)
+    .filter(Boolean)
+    .map((fragment) => fragment.charAt(0).toUpperCase() + fragment.slice(1))
+    .join(" ");
+}
+
 function formatOperationalStatus(value: string) {
   switch (value) {
     case "con_novedad":
@@ -653,6 +665,23 @@ function formatMemberRole(role: TeamMemberRecord["role"]) {
   }
 }
 
+function formatMemberStatus(status: TeamMemberRecord["status"]) {
+  switch (status) {
+    case "active":
+      return "Activo";
+    case "invited":
+      return "Invitado";
+    case "disabled":
+      return "Deshabilitado";
+    default:
+      return status;
+  }
+}
+
+function getTeamMemberName(member: TeamMemberRecord) {
+  return member.full_name || titleCaseFromEmail(member.email);
+}
+
 function TeamManager({
   accessToken,
   canManage,
@@ -761,7 +790,7 @@ function TeamManager({
               {teamMembers.map((member) => (
                 <article key={member.id}>
                   <div>
-                    <strong>{member.full_name || "Sin nombre"}</strong>
+                    <strong>{getTeamMemberName(member)}</strong>
                     <span>{member.email || "Sin correo"}</span>
                   </div>
                   <div className="internalTeamMeta">
@@ -769,7 +798,7 @@ function TeamManager({
                       {formatMemberRole(member.role)}
                     </span>
                     <span className={`internalStatusBadge is-${member.status === "active" ? "ok" : "neutral"}`}>
-                      {member.status}
+                      {formatMemberStatus(member.status)}
                     </span>
                   </div>
                 </article>
@@ -1144,6 +1173,10 @@ function InternalProcessManager({
   const recentSnapshots = [...snapshots]
     .sort((left, right) => right.fetched_at.localeCompare(left.fetched_at))
     .slice(0, 8);
+  const selectedCaseEventCount = selectedEvents.filter((event) => event.status === "active").length;
+  const selectedCaseAlertCount = selectedAlerts.filter((alert) =>
+    ["pending", "sent", "failed"].includes(alert.status),
+  ).length;
 
   if (view === "inicio") {
     return (
@@ -1305,7 +1338,7 @@ function InternalProcessManager({
                 </label>
               </div>
 
-              <div className="internalTrayLayout">
+              <div className={`internalTrayLayout ${selectedCase ? "has-detail" : "is-idle"}`}>
                 <div className="internalCasesTable internalTrayTable">
                   <div className="internalCasesTableHead internalTrayTableHead">
                     <span>Radicado</span>
@@ -1370,8 +1403,8 @@ function InternalProcessManager({
                   ))}
                 </div>
 
-                <aside className="internalPanel internalDetailPanel">
-                  {selectedCase ? (
+                {selectedCase ? (
+                  <aside className="internalPanel internalDetailPanel">
                     <>
                       <div className="internalPanelHeader">
                         <div>
@@ -1398,11 +1431,27 @@ function InternalProcessManager({
                         </div>
                         <div>
                           <span>Prioridad</span>
-                          <strong>{selectedCase.priority}</strong>
+                          <strong>
+                            {selectedCase.priority === "critical"
+                              ? "Crítica"
+                              : selectedCase.priority === "high"
+                                ? "Alta"
+                                : selectedCase.priority === "normal"
+                                  ? "Normal"
+                                  : "Baja"}
+                          </strong>
                         </div>
                         <div>
                           <span>Fuente</span>
                           <strong>{selectedCase.sourceName}</strong>
+                        </div>
+                        <div>
+                          <span>Eventos activos</span>
+                          <strong>{selectedCaseEventCount}</strong>
+                        </div>
+                        <div>
+                          <span>Alertas activas</span>
+                          <strong>{selectedCaseAlertCount}</strong>
                         </div>
                       </div>
 
@@ -1478,16 +1527,28 @@ function InternalProcessManager({
                         )}
                       </div>
                     </>
-                  ) : filteredOperationalRows.length === 0 ? (
-                    <p className="internalPanelEmpty">
-                      Ajusta o limpia los filtros para volver a ver el detalle de un proceso.
-                    </p>
-                  ) : (
-                    <p className="internalPanelEmpty">
-                      Selecciona un proceso para abrir su detalle operativo.
-                    </p>
-                  )}
-                </aside>
+                  </aside>
+                ) : (
+                  <section className="internalPanel internalDetailPrompt">
+                    <div className="internalPanelHeader">
+                      <div>
+                        <strong>Detalle operativo</strong>
+                        <span>
+                          {filteredOperationalRows.length === 0
+                            ? "Ajusta los filtros para recuperar visibilidad."
+                            : "Selecciona un proceso para abrir eventos, alertas y snapshots."}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="internalDetailPromptBody">
+                      <p>
+                        {filteredOperationalRows.length === 0
+                          ? "No hay procesos visibles con la combinación actual. Limpia o cambia los filtros para volver a la lectura operativa."
+                          : "La bandeja se mantiene limpia hasta que elijas un proceso. Cuando lo abras, aquí verás la historia técnica y jurídica que sostiene la decisión."}
+                      </p>
+                    </div>
+                  </section>
+                )}
               </div>
             </>
           ) : null}
@@ -1951,7 +2012,7 @@ function InternalShell({
     return (
       session.user.user_metadata.full_name ||
       session.user.user_metadata.name ||
-      session.user.email ||
+      titleCaseFromEmail(session.user.email) ||
       "Usuario"
     );
   }, [session.user.email, session.user.user_metadata.full_name, session.user.user_metadata.name]);
@@ -2024,15 +2085,20 @@ function InternalShell({
 
       <section className="internalContent">
         <header className="internalHeader">
-          <div>
+          <div className="internalHeaderIntro">
             <span className="internalEyebrow">{currentViewMeta.eyebrow}</span>
             <h1>{currentViewMeta.title}</h1>
             <p>{currentViewMeta.description}</p>
           </div>
           <div className="internalHeaderMeta">
-            <span>{membership.organization?.name ?? "Sin organización"}</span>
-            <span>Hola, {userName}</span>
-            <span>Rol: {membership.role.replace("_", " ")}</span>
+            <span className={`internalStatusBadge is-${getDemoStatusTone(membership.organization?.account_status)}`}>
+              {getDemoStatusLabel(membership.organization?.account_status)}
+            </span>
+            <div className="internalHeaderAccount">
+              <strong>{membership.organization?.name ?? "Sin organización"}</strong>
+              <span>{userName}</span>
+              <span>Rol: {formatMemberRole(membership.role as TeamMemberRecord["role"])}</span>
+            </div>
           </div>
         </header>
 
