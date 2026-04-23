@@ -242,6 +242,24 @@ Contrato:
 docs/producto/contrato-consola-admin-lexcontrol.md
 ```
 
+#### UI Operativa De La App
+
+La app del cliente no debe construirse como una sola pagina de modulos apilados.
+
+Debe responder a una arquitectura explicita de interfaz y navegacion.
+
+Superficie:
+
+```text
+app.lexcontrol.co
+```
+
+Contrato:
+
+```text
+docs/producto/contrato-ui-app-operativa-lexcontrol.md
+```
+
 #### Priorizacion Operativa
 
 La priorizacion es doble:

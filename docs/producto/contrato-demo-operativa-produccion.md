@@ -198,6 +198,12 @@ La bandeja no es otra tabla para revisar.
 Es una interfaz para decidir.
 ```
 
+Contrato obligatorio de arquitectura de interfaz:
+
+```text
+docs/producto/contrato-ui-app-operativa-lexcontrol.md
+```
+
 ---
 
 ## 4.5 Lex
@@ -452,4 +458,3 @@ Por tanto, el siguiente tramo de desarrollo debe priorizar:
 3. bandeja real alineada a la promesa visual
 4. Lex sobre cuenta real
 5. responsive serio mobile y desktop
-
