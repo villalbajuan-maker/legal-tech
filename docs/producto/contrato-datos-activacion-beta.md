@@ -278,3 +278,34 @@ Este contrato queda listo cuando:
 - la landing puede seguir funcionando si Supabase no esta configurado, pero
   mostrando error controlado de envio
 
+---
+
+## 10. Pendiente Congelado
+
+Queda pendiente para la siguiente fase instrumentar trazabilidad completa de agenda.
+
+Hoy el sistema ya registra:
+
+- que el lead califico
+- que fue enviado al paso de agenda
+
+Todavia no registra con confirmacion dura:
+
+- si hizo clic real hacia agenda
+- si completo la reserva
+- si asistio o no asistio
+
+Secuencia objetivo futura:
+
+```text
+qualified
+-> sent_to_calendar
+-> calendar_clicked
+-> scheduled
+-> attended / no_show
+```
+
+Decision:
+
+Este punto no bloquea el MVP actual.
+Se implementara despues del cierre de los bloques core de producto.
