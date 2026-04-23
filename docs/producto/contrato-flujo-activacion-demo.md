@@ -2,7 +2,7 @@
 
 Producto: LexControl  
 Instrumento: Activar demo gratis  
-Version: v1.0  
+Version: v1.1  
 Estado: Congelado para implementacion
 
 ---
@@ -11,7 +11,7 @@ Estado: Congelado para implementacion
 
 El flujo de activacion no es un formulario de contacto.
 
-Es un instrumento de conversion y calificacion.
+Es un instrumento de conversion, conciencia y calificacion silenciosa.
 
 Debe lograr tres cosas:
 
@@ -19,11 +19,57 @@ Debe lograr tres cosas:
 - Capturar informacion suficiente para decidir si vale la pena activar una demo.
 - Enviar a agendamiento solo a prospectos que califican para una activacion real.
 
+El usuario no debe sentir que esta siendo evaluado por LexControl.
+
+Debe sentir que el flujo le esta mostrando una realidad:
+
+```text
+Mi operacion puede tener puntos ciegos que hoy no estoy viendo.
+```
+
+---
+
+## 1.1 Logica Narrativa Del Flujo
+
+El flujo debe funcionar como pitch, no como formulario.
+
+La estructura narrativa es:
+
+```text
+Problema
+↓
+Problema mas profundo
+↓
+Problema todavia mas profundo
+↓
+Solucion posible
+↓
+Activacion
+```
+
+Regla comercial:
+
+```text
+Start negative.
+Stay negative.
+Then go positive.
+```
+
+Aplicacion:
+
+- Primero se evidencia el esfuerzo manual.
+- Luego se evidencia la falta de trazabilidad.
+- Luego se evidencia el costo de no saber que fallo.
+- Solo despues se presenta la demo como salida concreta.
+
+No abrir el flujo hablando de LexControl como producto.
+Abrir desde la tension de la operacion del usuario.
+
 ---
 
 ## 2. Principio Rector
 
-Una pantalla debe pedir una sola decision.
+Una pantalla debe pedir una sola decision conceptual.
 
 No combinar:
 
@@ -37,6 +83,20 @@ Cada paso debe tener:
 - Un motivo implicito de negocio.
 - Una salida clara.
 
+Algunas decisiones pueden permitir varias respuestas.
+
+Regla:
+
+- Seleccion unica cuando la respuesta define una categoria principal.
+- Seleccion multiple cuando la realidad operativa puede coexistir en varias opciones.
+
+Ejemplos:
+
+- Tipo de operacion: seleccion unica.
+- Volumen de procesos: seleccion unica.
+- Forma actual de revision: seleccion multiple.
+- Riesgos actuales: seleccion multiple.
+
 ---
 
 ## 3. Lo Que Debemos Obtener
@@ -45,8 +105,8 @@ Cada paso debe tener:
 
 - Tipo de operacion.
 - Volumen aproximado de procesos.
-- Forma actual de revision.
-- Riesgo operativo principal.
+- Formas actuales de revision.
+- Riesgos operativos actuales.
 - Existencia de responsables por proceso.
 - Nivel de urgencia.
 - Disponibilidad de muestra inicial.
@@ -69,13 +129,24 @@ Ese dato ya pertenece a la calificacion operativa.
 
 Total recomendado: 10 pasos breves.
 
+Cada paso debe indicar su tipo de seleccion:
+
+- `single`: solo una opcion.
+- `multiple`: una o varias opciones.
+
 ### Paso 1: Contexto De La Demo
 
 Pregunta: ninguna.
 
 Objetivo:
 
-Explicar que la demo es controlada, que no exige datos sensibles para solicitar acceso y que se revisa si la operacion encaja.
+Abrir desde la tension:
+
+```text
+Puedes revisar procesos todos los dias y aun asi no saber cuales no fueron revisados.
+```
+
+Despues explicar que la demo es controlada, no exige datos sensibles para solicitar acceso y permite ver si la operacion puede convertirse en una bandeja trazable.
 
 CTA:
 
@@ -84,6 +155,8 @@ Continuar
 ```
 
 ### Paso 2: Tipo De Operacion
+
+Tipo: `single`
 
 Pregunta:
 
@@ -99,11 +172,14 @@ Opciones:
 - Aseguradora o sector seguros.
 - Area juridica de empresa.
 
-Valor:
+Funcion narrativa:
 
-Permite entender contexto comercial y complejidad de cuenta.
+Ubica al usuario en su contexto sin hablar todavia del producto.
+La pregunta debe sentirse como personalizacion, no como calificacion.
 
 ### Paso 3: Volumen De Procesos
+
+Tipo: `single`
 
 Pregunta:
 
@@ -118,51 +194,69 @@ Opciones:
 - 101 a 300.
 - Mas de 300.
 
-Valor:
+Funcion narrativa:
 
-Valida si existe volumen suficiente para que el dolor operativo sea real.
+Hace evidente que el riesgo aumenta con volumen.
+No decir que se esta validando si el cliente califica.
 
 ### Paso 4: Forma Actual De Revision
 
+Tipo: `multiple`
+
 Pregunta:
 
 ```text
-Como revisan hoy las novedades?
+Como revisan hoy las novedades? Puedes marcar mas de una.
 ```
 
 Opciones:
 
-- Manual en Rama Judicial.
-- Excel + revision manual.
-- Dependiente / asistente.
+- Revision manual en Rama Judicial.
+- Excel o base manual.
+- Dependiente o asistente.
 - Herramienta externa.
+- Mensajes internos o WhatsApp.
 - No hay proceso claro.
 
-Valor:
+Funcion narrativa:
 
-Evidencia el punto de partida y refuerza el problema de trazabilidad.
+Muestra que la operacion normalmente esta fragmentada.
+La tension no es usar muchas herramientas.
+La tension es no tener una sola verdad operativa.
 
-### Paso 5: Riesgo Principal
+### Paso 5: Riesgos Actuales
+
+Tipo: `multiple`
 
 Pregunta:
 
 ```text
-Donde esta hoy el mayor riesgo?
+Que riesgos pueden estar ocurriendo hoy? Puedes marcar mas de uno.
 ```
 
 Opciones:
 
-- No detectar actuaciones.
-- No saber que no se consulto.
-- Errores de fuente.
-- Falta de trazabilidad.
-- Demasiado tiempo operativo.
+- Que una actuacion nueva no se detecte a tiempo.
+- Que un proceso no se consulte y nadie lo note.
+- Que una fuente falle y se confunda con ausencia de novedad.
+- Que no quede evidencia de quien reviso y cuando.
+- Que el equipo dependa de memoria, Excel o mensajes.
+- Que se invierta demasiado tiempo solo verificando.
 
-Valor:
+Funcion narrativa:
 
-Define que debe demostrar la demo para ser convincente.
+Este es el paso de problema profundo.
+Debe hacer que el usuario piense:
+
+```text
+Esto si me puede estar pasando.
+```
+
+No usar lenguaje como `principal riesgo` si puede reducir artificialmente el problema a una sola opcion.
 
 ### Paso 6: Responsables Por Proceso
+
+Tipo: `single`
 
 Pregunta:
 
@@ -176,16 +270,18 @@ Opciones:
 - Parcialmente.
 - No.
 
-Valor:
+Funcion narrativa:
 
-Permite estimar complejidad de permisos, alertas y acompanamiento.
+Profundiza el problema: si hay responsables, se necesita trazabilidad por responsable; si no los hay, la operacion depende de coordinacion informal.
 
 ### Paso 7: Urgencia De Activacion
+
+Tipo: `single`
 
 Pregunta:
 
 ```text
-Que tan prioritaria es esta activacion?
+Que tan urgente es ordenar esta vigilancia?
 ```
 
 Opciones:
@@ -195,16 +291,20 @@ Opciones:
 - Alta.
 - Critica.
 
-Valor:
+Funcion narrativa:
 
-Ayuda a diferenciar curiosidad de intencion operativa real.
+Convierte el problema en prioridad.
+La pregunta no debe sonar a cierre comercial.
+Debe sonar a nivel de exposicion operativa.
 
 ### Paso 8: Muestra Inicial
+
+Tipo: `single`
 
 Pregunta:
 
 ```text
-Que tan lista esta la muestra inicial de procesos?
+Tienes una muestra inicial de procesos para probar?
 ```
 
 Opciones:
@@ -213,16 +313,19 @@ Opciones:
 - La puedo preparar esta semana.
 - Necesito ayuda para estructurarla.
 
-Valor:
+Funcion narrativa:
 
-Determina si la activacion puede ocurrir rapido o requiere asistencia previa.
+Empieza el paso hacia la solucion.
+La tension ya fue planteada; ahora se abre una salida concreta con datos reales.
 
 ### Paso 9: Ventana De Activacion
+
+Tipo: `single`
 
 Pregunta:
 
 ```text
-Cuando quisieras activar la demo?
+Cuando tendria sentido activar la demo?
 ```
 
 Opciones:
@@ -231,9 +334,10 @@ Opciones:
 - Este mes.
 - Exploratorio.
 
-Valor:
+Funcion narrativa:
 
-Permite ordenar prioridad comercial y agenda.
+Transforma interes en decision temporal.
+No debe sentirse como agendar una llamada de ventas.
 
 ### Paso 10: Datos De Contacto
 
@@ -261,7 +365,14 @@ Solicitar activacion
 
 La demo no debe abrir agenda automaticamente a todos.
 
-Debe existir una clasificacion interna:
+Debe existir una clasificacion interna silenciosa.
+
+No mostrar al usuario:
+
+- Puntajes.
+- Mensajes de rechazo.
+- Lenguaje de filtro.
+- Lenguaje de evaluacion.
 
 ### Califica Para Agendar
 
@@ -271,13 +382,13 @@ Cumple una o mas condiciones:
 - Es firma, aseguradora, area juridica o equipo con volumen.
 - Tiene urgencia alta o critica.
 - Tiene muestra lista o puede prepararla esta semana.
-- Declara riesgo de trazabilidad, actuaciones no detectadas o fuente no consultada.
+- Marca riesgos de trazabilidad, actuaciones no detectadas, fuente no consultada o fragmentacion operativa.
 
 Salida recomendada:
 
 ```text
 Tu operacion encaja con la demo controlada.
-Agenda una sesion de activacion para revisar alcance y preparar la carga inicial.
+El siguiente paso es agendar una sesion de activacion para revisar alcance y preparar la carga inicial.
 ```
 
 Accion:
@@ -334,8 +445,8 @@ Al enviar la solicitud, el sistema debe conservar este resumen:
 
 - Tipo de operacion.
 - Volumen de procesos.
-- Metodo actual de revision.
-- Riesgo principal.
+- Metodos actuales de revision.
+- Riesgos actuales marcados.
 - Responsables asignados.
 - Urgencia.
 - Estado de muestra inicial.
@@ -350,6 +461,26 @@ Al enviar la solicitud, el sistema debe conservar este resumen:
 ---
 
 ## 8. Microcopy
+
+Regla:
+
+El copy debe hablar desde la operacion del usuario.
+
+Evitar:
+
+```text
+Esto nos ayuda a entender...
+Queremos evaluar...
+Validaremos si calificas...
+```
+
+Preferir:
+
+```text
+Cuando la revision vive en varios lugares, la trazabilidad se rompe.
+El riesgo no es solo que algo cambie. Es no saber si fue consultado.
+Si una fuente falla, no deberia verse como ausencia de novedad.
+```
 
 ### Si califica
 
@@ -378,11 +509,12 @@ Revisaremos si tu operacion encaja con la demo controlada y te contactaremos.
 
 El flujo esta bien implementado si:
 
-- Cada pantalla pide una sola decision.
+- Cada pantalla pide una sola decision conceptual.
+- Las preguntas de realidad operativa permiten seleccion multiple cuando corresponde.
 - No se repite el volumen de procesos en el formulario final.
 - La calificacion ocurre antes de mostrar calendario.
 - El usuario entiende que la demo es controlada.
 - El flujo captura informacion util para priorizar prospectos.
-- El problema operativo queda reforzado sin sonar a interrogatorio.
+- El problema operativo queda reforzado sin sonar a interrogatorio ni evaluacion.
 - El resultado tiene dos salidas: agendar o revision.
-
+- El copy sigue la logica: problema, problema mas profundo, problema todavia mas profundo, salida positiva.
