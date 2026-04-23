@@ -512,7 +512,9 @@ function InternalProcessManager({
       setAlerts(nextAlerts);
       const nextOperationalRows = buildOperationalRows(nextCases, nextCaseSources, nextLegalEvents);
       setOperationalRows(nextOperationalRows);
-      setSelectedCaseId((current) => current ?? nextOperationalRows[0]?.caseId ?? null);
+      setSelectedCaseId((current) =>
+        current && nextOperationalRows.some((row) => row.caseId === current) ? current : null,
+      );
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : "No fue posible cargar los procesos.");
     } finally {
@@ -627,7 +629,7 @@ function InternalProcessManager({
     if (priorityFilter !== "todos" && row.priority !== priorityFilter) return false;
     return true;
   });
-  const selectedCase = filteredOperationalRows.find((row) => row.caseId === selectedCaseId) || filteredOperationalRows[0] || null;
+  const selectedCase = filteredOperationalRows.find((row) => row.caseId === selectedCaseId) || null;
   const selectedCaseSources = caseSources
     .filter((caseSource) => caseSource.case_id === selectedCase?.caseId)
     .sort((left, right) => (right.last_checked_at || "").localeCompare(left.last_checked_at || ""));
@@ -747,11 +749,13 @@ function InternalProcessManager({
                   <article
                     key={row.caseId}
                     className={`internalCasesRow internalTrayRow ${selectedCase?.caseId === row.caseId ? "is-selected" : ""}`}
-                    onClick={() => setSelectedCaseId(row.caseId)}
+                    onClick={() =>
+                      setSelectedCaseId((current) => (current === row.caseId ? null : row.caseId))
+                    }
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
-                        setSelectedCaseId(row.caseId);
+                        setSelectedCaseId((current) => (current === row.caseId ? null : row.caseId));
                       }
                     }}
                     role="button"
@@ -799,6 +803,13 @@ function InternalProcessManager({
                         <strong>Detalle del proceso</strong>
                         <span>{selectedCase.radicado}</span>
                       </div>
+                      <button
+                        className="internalGhostButton"
+                        type="button"
+                        onClick={() => setSelectedCaseId(null)}
+                      >
+                        Cerrar detalle
+                      </button>
                     </div>
 
                     <div className="internalDetailSummary">
@@ -897,7 +908,9 @@ function InternalProcessManager({
                     Ajusta o limpia los filtros para volver a ver el detalle de un proceso.
                   </p>
                 ) : (
-                  <p className="internalPanelEmpty">Selecciona un proceso para ver su detalle operativo.</p>
+                  <p className="internalPanelEmpty">
+                    Selecciona un proceso para abrir su detalle operativo.
+                  </p>
                 )}
               </aside>
             </div>
