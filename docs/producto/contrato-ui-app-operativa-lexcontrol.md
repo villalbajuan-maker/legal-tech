@@ -732,6 +732,7 @@ Contratos relacionados:
 - `docs/producto/contrato-reglas-escalamiento.md`
 - `docs/producto/contrato-reglas-asignacion.md`
 - `docs/producto/contrato-integrador-reglas-operativas.md`
+- `docs/producto/contrato-ui-reglas-operativas.md`
 
 Contrato complementario futuro:
 
