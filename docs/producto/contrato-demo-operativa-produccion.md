@@ -204,6 +204,12 @@ Contrato obligatorio de arquitectura de interfaz:
 docs/producto/contrato-ui-app-operativa-lexcontrol.md
 ```
 
+Contrato obligatorio de reglas de consulta:
+
+```text
+docs/producto/contrato-reglas-operativas-consulta.md
+```
+
 ---
 
 ## 4.5 Lex

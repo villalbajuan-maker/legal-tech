@@ -640,6 +640,12 @@ La carga de procesos deja de ser modulo propio y pasa a ser parte de la parametr
 - comportamiento de consulta
 - criterios visibles de la operacion
 
+Contrato rector:
+
+```text
+docs/producto/contrato-reglas-operativas-consulta.md
+```
+
 No es necesario abrir toda esta profundidad en dia uno, pero la arquitectura debe preverla desde ya.
 
 Accion primaria de la vista:
