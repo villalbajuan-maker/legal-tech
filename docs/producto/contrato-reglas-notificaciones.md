@@ -302,7 +302,26 @@ Eso significa:
 
 ---
 
-## 14. Registro Y Trazabilidad
+## 14. Relacion Con Escalamiento
+
+La notificacion no es el unico resultado posible de una senal.
+
+Una situacion puede:
+
+- seguir visible sin salir por canal;
+- entrar a resumen;
+- notificar;
+- o escalar a un nivel superior de respuesta.
+
+Contrato relacionado:
+
+```text
+docs/producto/contrato-reglas-escalamiento.md
+```
+
+---
+
+## 15. Registro Y Trazabilidad
 
 Toda notificacion debe dejar registro.
 
@@ -328,7 +347,7 @@ una notificacion que no deja rastro no existe operativamente
 
 ---
 
-## 15. Parametrizacion Esperada
+## 16. Parametrizacion Esperada
 
 La subseccion `Configuracion > Notificaciones` debe prever, al menos en arquitectura:
 
@@ -345,7 +364,7 @@ Pero debe existir la estructura para crecer sin rehacer el sistema.
 
 ---
 
-## 16. Estado Actual Del Sistema
+## 17. Estado Actual Del Sistema
 
 Hoy LexControl ya tiene:
 
@@ -365,7 +384,7 @@ Este contrato fija esa direccion.
 
 ---
 
-## 17. Criterio De Listo
+## 18. Criterio De Listo
 
 La capa de notificaciones se considera bien encaminada cuando:
 
@@ -378,7 +397,7 @@ La capa de notificaciones se considera bien encaminada cuando:
 
 ---
 
-## 18. Regla Final
+## 19. Regla Final
 
 ```text
 LexControl no debe notificar mas.

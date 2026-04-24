@@ -704,6 +704,12 @@ docs/producto/contrato-reglas-notificaciones.md
 - cuando una alerta no atendida debe escalar
 - cuando una situacion debe salir del silencio operativo
 
+Contrato rector:
+
+```text
+docs/producto/contrato-reglas-escalamiento.md
+```
+
 Principio:
 
 ```text
@@ -711,11 +717,13 @@ reglas operativas = como este bufete quiere que el sistema interprete,
 priorice, señale y distribuya la operacion
 ```
 
-Contrato rector:
+Contratos relacionados:
 
-```text
-docs/producto/contrato-reglas-operativas-consulta.md
-```
+- `docs/producto/contrato-reglas-operativas-consulta.md`
+- `docs/producto/contrato-reglas-prioridad.md`
+- `docs/producto/contrato-reglas-atencion.md`
+- `docs/producto/contrato-reglas-notificaciones.md`
+- `docs/producto/contrato-reglas-escalamiento.md`
 
 Contrato complementario futuro:
 
