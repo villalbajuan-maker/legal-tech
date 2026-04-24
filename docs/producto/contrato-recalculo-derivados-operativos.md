@@ -416,3 +416,7 @@ Regla final:
 sofisticacion no significa complejidad maxima
 significa profundidad proporcional al valor que queremos crear
 ```
+
+Backlog de implementación:
+
+`docs/producto/backlog-implementacion-derivados-operativos.md`
