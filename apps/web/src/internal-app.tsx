@@ -153,6 +153,12 @@ type TeamMembersResponse = {
   limit: number;
 };
 
+type OperationalRulesRecalculationResponse = {
+  updated_count: number;
+  default_assigned_count: number;
+  elevated_attention_count: number;
+};
+
 type AccountUsage = {
   processCount: number;
   memberCount: number;
@@ -479,6 +485,24 @@ async function updateOrganizationOperationalRules(
   }
 
   return data as OrganizationOperationalRulesRecord;
+}
+
+async function recalculateOrganizationCaseDerivedFields(organizationId: string) {
+  if (!supabase) {
+    throw new Error("Supabase no está configurado.");
+  }
+
+  const { data, error } = await supabase
+    .rpc("recalculate_organization_case_derived_fields", {
+      target_organization_id: organizationId,
+    })
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data as OperationalRulesRecalculationResponse;
 }
 
 async function loadOrganizationCaseSources(caseIds: string[]) {
@@ -1486,9 +1510,11 @@ function TeamManager({
 function OperationalRulesPanel({
   organizationId,
   teamMembers,
+  onRulesApplied,
 }: {
   organizationId: string;
   teamMembers: TeamMemberRecord[];
+  onRulesApplied?: () => Promise<void> | void;
 }) {
   const [expandedFamilies, setExpandedFamilies] = useState<Record<RuleFamilyKey, boolean>>({
     consulta: true,
@@ -1552,7 +1578,11 @@ function OperationalRulesPanel({
       const nextRules = await updateOrganizationOperationalRules(rulesRecord.id, payload);
       setRulesRecord(nextRules);
       setRulesDraft(buildOperationalRulesDraft(nextRules, teamMembers));
-      setSaveFeedback("Las reglas operativas de esta cuenta quedaron guardadas.");
+      const recalculation = await recalculateOrganizationCaseDerivedFields(organizationId);
+      await onRulesApplied?.();
+      setSaveFeedback(
+        `Las reglas operativas quedaron guardadas. Recalculamos ${recalculation.updated_count} procesos y dejamos ${recalculation.elevated_attention_count} en atención elevada o interrupción.`,
+      );
     } catch (nextError) {
       setRulesError(getErrorMessage(nextError, "No fue posible guardar las reglas operativas."));
     } finally {
@@ -1927,6 +1957,7 @@ function ConfigurationWorkspace({
   onDataChanged?: () => Promise<void> | void;
 }) {
   const [teamMembers, setTeamMembers] = useState<TeamMemberRecord[]>([]);
+  const [configurationRefreshToken, setConfigurationRefreshToken] = useState(0);
 
   async function refreshTeamMembers() {
     try {
@@ -1946,10 +1977,19 @@ function ConfigurationWorkspace({
     await onDataChanged?.();
   }
 
+  async function handleRulesApplied() {
+    setConfigurationRefreshToken((current) => current + 1);
+    await handleConfigurationDataChanged();
+  }
+
   return (
     <section className="internalConfigurationWorkspace">
       <DemoStatusPanel membership={membership} usage={usage} />
-      <OperationalRulesPanel organizationId={organizationId} teamMembers={teamMembers} />
+      <OperationalRulesPanel
+        organizationId={organizationId}
+        teamMembers={teamMembers}
+        onRulesApplied={handleRulesApplied}
+      />
       <div className="internalConfigurationSections">
         <TeamManager
           accessToken={accessToken}
@@ -1958,6 +1998,7 @@ function ConfigurationWorkspace({
         />
         <InternalProcessManager
           organizationId={organizationId}
+          refreshToken={configurationRefreshToken}
           view="procesos"
           onDataChanged={handleConfigurationDataChanged}
         />
@@ -2027,10 +2068,12 @@ function DemoStatusPanel({
 
 function InternalProcessManager({
   organizationId,
+  refreshToken = 0,
   view,
   onDataChanged,
 }: {
   organizationId: string;
+  refreshToken?: number;
   view: ProcessManagerView;
   onDataChanged?: () => Promise<void> | void;
 }) {
@@ -2095,7 +2138,7 @@ function InternalProcessManager({
 
   useEffect(() => {
     void refreshCases();
-  }, [organizationId]);
+  }, [organizationId, refreshToken]);
 
   async function submitEntries(entries: { radicado: string; owner?: string; priority?: string; notes?: string }[]) {
     if (!supabase) {
