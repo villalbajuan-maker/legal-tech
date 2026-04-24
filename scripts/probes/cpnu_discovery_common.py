@@ -222,21 +222,30 @@ async def activate_all_processes_filter(page: Any) -> bool:
 
 
 async def choose_person_type(page: Any, person_type_label: str) -> bool:
-    return await _select_option_first(
-        page,
-        [
-            "label:has-text('Tipo Persona') select",
-            "select:near(:text('Tipo Persona'))",
-            "select",
-        ],
-        person_type_label,
-    )
+    trigger_selectors = [
+        "label:has-text('Tipo de Persona')",
+        "label:has-text('Tipo Persona')",
+        "#input-117",
+        "input[readonly][id^='input-']",
+    ]
+
+    if not await _click_first(page, trigger_selectors):
+        return False
+
+    option_selectors = [
+        f"div[role='option']:has-text('{person_type_label}')",
+        f".v-list-item:has-text('{person_type_label}')",
+        f"text={person_type_label}",
+    ]
+
+    return await _click_first(page, option_selectors)
 
 
 async def fill_name_query(page: Any, query: str) -> bool:
     return await _fill_first(
         page,
         [
+            "#input-123",
             "label:has-text('Nombre o Razón Social') input",
             "label:has-text('Nombre o Razon Social') input",
             "input[placeholder*='Nombre']",
