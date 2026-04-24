@@ -110,12 +110,12 @@ function SocialIcon({ name }: { name: SocialIconName }) {
 }
 
 const demoFeatures = [
-  "Carga inicial de hasta 100 procesos",
-  "Hasta 4 responsables",
-  "Bandeja operativa con estados",
-  "Lex sobre datos de la demo",
-  "Sesión inicial de activación",
-  "Revisión de resultados",
+  "Hasta 100 procesos activos",
+  "Hasta 4 responsables operativos",
+  "Bandeja operativa con estados visibles",
+  "Lex sobre una muestra real de la cuenta",
+  "Activación guiada de la operación",
+  "Lectura inicial de resultados y prioridades",
 ];
 
 const demoLimits = [
@@ -132,35 +132,35 @@ const launchPlans = [
   {
     name: "Starter",
     price: "$179.900 COP",
-    scope: "Hasta 100 procesos",
+    scope: "Hasta 100 procesos activos",
     features: [
-      "1 usuario",
+      "1 responsable operativo",
       "Bandeja operativa",
+      "Lectura visible de cambios, estabilidad y fallas",
       "Consulta CPNU / Rama Judicial",
-      "Estados: novedad, sin cambios y fallas",
     ],
   },
   {
     name: "Profesional",
     price: "$359.900 COP",
-    scope: "Hasta 250 procesos",
+    scope: "Hasta 250 procesos activos",
     featured: true,
     features: [
-      "Hasta 2 usuarios",
+      "Hasta 2 responsables operativos",
       "Bandeja operativa",
       "Lex sobre la operación",
+      "Prioridades y lectura por responsable",
       "Resumen diario",
-      "Prioridades",
     ],
   },
   {
     name: "Firma",
     price: "$719.900 COP",
-    scope: "Hasta 500 procesos",
+    scope: "Hasta 500 procesos activos",
     features: [
-      "Hasta 5 usuarios",
+      "Hasta 5 responsables operativos",
       "Alertas por responsable",
-      "Mayor volumen de consulta",
+      "Mayor capacidad operativa vigilada",
       "Soporte de activación",
     ],
   },
@@ -197,47 +197,47 @@ const faqs = [
   {
     question: "¿Esto reemplaza la revisión del abogado?",
     answer:
-      "No. LexControl no reemplaza criterio jurídico. Hace visible qué cambió, qué no cambió y qué no se pudo consultar para que el responsable intervenga donde corresponde.",
+      "No. LexControl no reemplaza criterio jurídico. Hace visible qué cambió, qué no cambió, qué falló y qué requiere intervención para que el responsable actúe donde corresponde.",
   },
   {
     question: "¿Por qué no basta con revisar manualmente?",
     answer:
-      "Porque la revisión manual puede funcionar, pero no siempre deja trazabilidad. El riesgo está en no saber qué procesos no fueron consultados o qué fuente falló.",
+      "Porque revisar no equivale a tener control. La revisión manual puede funcionar, pero no siempre deja trazabilidad sobre qué se consultó, qué quedó pendiente o qué fuente falló.",
   },
   {
     question: "¿Para quién tiene sentido?",
     answer:
-      "Para abogados, firmas y operadores que manejan volumen real de procesos. El punto de partida recomendado es una operación de 50 a 500 procesos activos.",
+      "Para abogados, firmas y operadores que manejan volumen real de procesos y necesitan control operativo sobre una cartera viva. El punto de partida recomendado es una operación de 50 a 500 procesos activos.",
   },
   {
     question: "¿Qué fuentes consulta?",
     answer:
-      "La demo se enfoca inicialmente en CPNU / Rama Judicial. Otras fuentes pueden evaluarse por fase, según disponibilidad técnica y restricciones de acceso.",
+      "La activación se enfoca inicialmente en CPNU / Rama Judicial. Otras fuentes pueden evaluarse por fase, según disponibilidad técnica y restricciones de acceso.",
   },
   {
     question: "¿Qué pasa si una fuente falla?",
     answer:
-      "La falla queda visible. LexControl no la oculta ni la interpreta como ausencia de novedad. El proceso pasa a estado no consultado o error de fuente.",
+      "La falla queda visible. LexControl no la oculta ni la interpreta como ausencia de novedad. La operación mantiene trazabilidad y el proceso pasa a estado no consultado o error de fuente.",
   },
   {
     question: "¿Puedo cargar mis procesos reales?",
     answer:
-      "Sí, la demo controlada está pensada para operar con una muestra real. La activación se coordina antes de cargar radicados o información sensible.",
+      "Sí. La activación está pensada para operar con una muestra real de tu cartera. La coordinación ocurre antes de cargar radicados o información sensible.",
   },
   {
     question: "¿Qué recibo en la demo gratuita?",
     answer:
-      "Una activación controlada con hasta 100 procesos, hasta 4 responsables, bandeja operativa, Lex sobre la demo y revisión de resultados.",
+      "Una activación controlada con hasta 100 procesos activos, hasta 4 responsables, bandeja operativa, Lex sobre la muestra real y una lectura inicial de resultados y prioridades.",
   },
   {
     question: "¿Cuánto dura la demo?",
     answer:
-      "La duración recomendada es de 14 días. Es suficiente para observar consultas, fallas, novedades y comportamiento operativo real.",
+      "La duración recomendada es de 14 días. Es suficiente para observar cambios, estabilidad, fallas y comportamiento operativo real sobre una cartera activa.",
   },
   {
     question: "¿Tengo que pagar antes de probar?",
     answer:
-      "No. Puedes solicitar una demo gratuita antes de elegir plan. Los precios de lanzamiento están visibles para que conozcas el rango desde el inicio.",
+      "No. Puedes activar una demo gratuita antes de elegir plan. Los precios están visibles para que entiendas desde el inicio cuánto cuesta sostener esta capacidad operativa.",
   },
 ];
 
@@ -672,7 +672,7 @@ function ActivationModal({
 
             {step === 0 ? (
               <section className="activationStep">
-                <h2 id="activation-title">Puedes revisar procesos todos los días y aun así no saber cuáles no fueron revisados.</h2>
+                <h2 id="activation-title">Puedes revisar procesos todos los días y aun así no saber qué parte de tu cartera quedó sin cubrir.</h2>
                 <p>
                   La demo es controlada. No necesitas enviar radicados ni datos sensibles para solicitar acceso.
                 </p>
@@ -686,9 +686,9 @@ function ActivationModal({
                   <div>
                     <h3>Qué vas a evidenciar</h3>
                     {[
-                      "Procesos que cambian",
-                      "Procesos que no cambian",
-                      "Consultas que fallan o no dejan trazabilidad",
+                      "Qué cambió en tu cartera",
+                      "Qué sigue igual",
+                      "Qué falló o quedó sin consultar",
                     ].map((item) => (
                       <span key={item}>{item}</span>
                     ))}
@@ -696,7 +696,7 @@ function ActivationModal({
                 </div>
                 <div className="activationFooter">
                   <p>
-                    En menos de dos minutos identificamos si tu vigilancia puede convertirse en una bandeja trazable.
+                    En menos de dos minutos identificamos si tu vigilancia puede convertirse en control operativo visible.
                   </p>
                   <button className="activationPrimaryNav" type="button" onClick={goNext} aria-label="Continuar">
                     →
@@ -709,7 +709,7 @@ function ActivationModal({
               <section className="activationStep">
                 <h2>¿Qué tipo de operación quieres activar?</h2>
                 <p>
-                  Cada operación vigila distinto. El punto de partida cambia si eres abogado, firma o equipo jurídico.
+                  El punto de partida cambia según el volumen, la coordinación y la responsabilidad operativa del equipo.
                 </p>
                 <div className="activationChoiceGrid" aria-label="Tipo de operación">
                   {profileTypeOptions.map((option) => (
@@ -743,7 +743,7 @@ function ActivationModal({
               <section className="activationStep">
                 <h2>¿Cuántos procesos vigilas hoy?</h2>
                 <p>
-                  Mientras más procesos hay, más fácil es perder visibilidad sobre qué se revisó y qué no.
+                  Mientras más procesos hay, más difícil es saber con claridad qué cambió, qué no cambió y qué quedó pendiente.
                 </p>
                 <div className="activationChoiceGrid" aria-label="Volumen de procesos">
                   {caseBandOptions.map((option) => (
@@ -777,7 +777,7 @@ function ActivationModal({
               <section className="activationStep">
                 <h2>¿Cómo revisan hoy las novedades?</h2>
                 <p>
-                  Puedes marcar más de una. Cuando la revisión vive en varios lugares, la trazabilidad se rompe.
+                  Puedes marcar más de una. Cuando la revisión vive en varios lugares, el control operativo se fragmenta.
                 </p>
                 <div className="activationChoiceGrid compact" aria-label="Método actual de revisión">
                   {reviewMethodOptions.map((option) => (
@@ -815,7 +815,7 @@ function ActivationModal({
               <section className="activationStep">
                 <h2>¿Qué riesgos pueden estar ocurriendo hoy?</h2>
                 <p>
-                  Puedes marcar más de uno. El riesgo no es solo que algo cambie. Es no saber si fue consultado.
+                  Puedes marcar más de uno. El riesgo no es solo que algo cambie. Es no saber qué parte de la operación quedó sin cubrir.
                 </p>
 
                 <div className="activationQuestionBlock">
@@ -896,7 +896,7 @@ function ActivationModal({
               <section className="activationStep">
                 <h2>¿Qué tan urgente es ordenar esta vigilancia?</h2>
                 <p>
-                  La prioridad no depende del software. Depende del nivel de exposición que hoy no puedes ver.
+                  La prioridad no depende del software. Depende del nivel de exposición que hoy no puedes leer con claridad.
                 </p>
 
                 <div className="activationChoiceGrid compact compact-three">
@@ -935,7 +935,7 @@ function ActivationModal({
               <section className="activationStep">
                 <h2>¿Tienes una muestra inicial de procesos para probar?</h2>
                 <p>
-                  La tensión ya está clara. Ahora la demo necesita una muestra real para convertirla en visibilidad.
+                  La tensión ya está clara. Ahora la activación necesita una muestra real para convertirla en control visible.
                 </p>
                 <div className="activationChoiceGrid compact compact-three">
                   {sampleReadinessOptions.map((option) => (
@@ -972,7 +972,7 @@ function ActivationModal({
               <section className="activationStep">
                 <h2>¿Cuándo tendría sentido activar la demo?</h2>
                 <p>
-                  No se trata de agendar una llamada de ventas. Se trata de revisar si una muestra real puede convertirse en control operativo.
+                  No se trata de agendar una llamada de ventas. Se trata de revisar si una muestra real puede convertirse en control operativo sobre tu cartera.
                 </p>
                 <div className="activationChoiceGrid compact compact-three">
                   {decisionWindowOptions.map((option) => (
@@ -1009,7 +1009,7 @@ function ActivationModal({
               <form className="activationStep" onSubmit={submit}>
                 <h2>Solicita la activación.</h2>
                 <p>
-                  No necesitas enviar radicados ni datos sensibles. Solo el contexto necesario para coordinar la demo.
+                  No necesitas enviar radicados ni datos sensibles. Solo el contexto necesario para coordinar una activación con sentido operativo.
                 </p>
                 <div className="activationSnapshot">
                   <span>{profileType}</span>
@@ -1081,7 +1081,7 @@ function ActivationModal({
                     {submitError
                       ? submitError
                       : canProceed(step)
-                        ? "Con estos datos podemos validar la activación sin pedir información sensible."
+                        ? "Con estos datos podemos validar si la muestra tiene sentido para activar control operativo sin pedir información sensible."
                         : "Completa los datos de contacto para solicitar la activación."}
                   </p>
                   <button
@@ -1101,10 +1101,9 @@ function ActivationModal({
             <p className="eyebrow">Solicitud recibida</p>
             {qualifiedForScheduling ? (
               <>
-                <h2>Tu operación encaja con la demo controlada.</h2>
+                <h2>Tu operación encaja con esta activación.</h2>
                 <p>
-                  El siguiente paso es agendar una sesión de activación para revisar alcance, carga inicial y
-                  responsables.
+                  El siguiente paso es agendar una sesión para revisar alcance, carga inicial y responsables sobre una muestra real de tu cartera.
                 </p>
                 <div className="activationResultActions">
                   <button className="button primary" type="button" onClick={() => void openCalendarFromActivation()}>
@@ -1117,10 +1116,9 @@ function ActivationModal({
               </>
             ) : (
               <>
-                <h2>Revisaremos si tu operación encaja con la demo controlada.</h2>
+                <h2>Revisaremos si tu operación encaja con esta activación.</h2>
                 <p>
-                  Te contactaremos si la muestra tiene sentido para esta etapa de activación. La demo se prioriza para
-                  operaciones con volumen y riesgo operativo visible.
+                  Te contactaremos si la muestra tiene sentido para esta etapa. La activación se prioriza para operaciones con volumen y necesidad clara de control operativo visible.
                 </p>
                 <button className="activationPrimaryNav" type="button" onClick={onClose} aria-label="Cerrar activación">
                   →
