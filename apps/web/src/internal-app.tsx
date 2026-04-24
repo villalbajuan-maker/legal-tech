@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { Activity, House, Inbox, LogOut, Settings2 } from "lucide-react";
 import { isLikelyRadicado, normalizeRadicado } from "../../../packages/core/src";
+import { AppSidebar } from "@/components/shell/app-sidebar";
+import { PageHeader } from "@/components/shell/page-header";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import lexSymbolUrl from "./assets/lex-control-logo-symbol.png";
 import logoUrl from "./assets/lexcontrol-logo.png";
 import { isSupabaseConfigured, supabase } from "./supabase";
@@ -995,6 +1002,21 @@ function formatCaseRecordStatus(value: InternalCaseRow["status"]) {
   }
 }
 
+function getPriorityTone(value: InternalCaseRow["priority"]) {
+  switch (value) {
+    case "critical":
+      return "error";
+    case "high":
+      return "warning";
+    case "normal":
+      return "info";
+    case "low":
+      return "neutral";
+    default:
+      return "neutral";
+  }
+}
+
 function formatAttentionLevel(value: InternalCaseRow["attention_level"] | OperationalCaseRow["attentionLevel"]) {
   switch (value) {
     case "silencio_operativo":
@@ -1068,6 +1090,24 @@ function formatDerivedReason(value: string | null) {
       return "Interrupción por criticidad";
     default:
       return value ? value.replace(/_/g, " ") : "Sin razón visible";
+  }
+}
+
+function getBadgeVariantFromTone(
+  value: "info" | "warning" | "error" | "ok" | "review" | "neutral",
+): "info" | "warning" | "error" | "success" | "neutral" {
+  switch (value) {
+    case "ok":
+      return "success";
+    case "review":
+      return "warning";
+    case "info":
+    case "warning":
+    case "error":
+    case "neutral":
+      return value;
+    default:
+      return "neutral";
   }
 }
 
@@ -2554,76 +2594,146 @@ function InternalProcessManager({
 
   if (view === "inicio") {
     return (
-      <section className="internalProcessManager">
-        <section className="internalSummaryGrid">
-          <article>
-            <strong>{operationalSummary.total}</strong>
-            <p>Procesos visibles hoy en la cuenta.</p>
+      <section className="space-y-6 px-6 py-6 lg:px-8">
+        <section className="grid gap-4 md:grid-cols-3">
+          <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
+              Visibilidad
+            </span>
+            <strong className="mt-3 block text-3xl font-semibold text-[var(--ds-color-text)]">
+              {operationalSummary.total}
+            </strong>
+            <p className="mt-2 text-sm leading-6 text-[var(--ds-color-text-muted)]">
+              Procesos visibles hoy en la cuenta.
+            </p>
           </article>
-          <article>
-            <strong>{operationalSummary.conNovedad}</strong>
-            <p>Procesos con novedad operativa visible.</p>
+          <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
+              Atención
+            </span>
+            <strong className="mt-3 block text-3xl font-semibold text-[var(--ds-color-text)]">
+              {operationalSummary.conNovedad}
+            </strong>
+            <p className="mt-2 text-sm leading-6 text-[var(--ds-color-text-muted)]">
+              Procesos con novedad operativa visible.
+            </p>
           </article>
-          <article>
-            <strong>{alerts.length}</strong>
-            <p>Alertas activas registradas para esta cuenta.</p>
+          <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
+              Señal
+            </span>
+            <strong className="mt-3 block text-3xl font-semibold text-[var(--ds-color-text)]">
+              {alerts.length}
+            </strong>
+            <p className="mt-2 text-sm leading-6 text-[var(--ds-color-text-muted)]">
+              Alertas activas registradas para esta cuenta.
+            </p>
           </article>
         </section>
 
-        <section className="internalModuleList">
-          <header>
-            <span className="internalEyebrow">Panorama</span>
-            <h2>Lo que hoy merece atención.</h2>
-          </header>
+        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)]">
+          <section className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]">
+            <header className="mb-5 space-y-2">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
+                Panorama
+              </span>
+              <h2 className="text-xl font-semibold tracking-tight text-[var(--ds-color-text)]">
+                Lo que hoy merece atención.
+              </h2>
+            </header>
 
-          <div className="internalModuleCards">
-            <article>
-              <div>
-                <strong>Bandeja</strong>
-                <span>{operationalSummary.requiereRevision} revisión</span>
-              </div>
-              <p>Los estados operativos ya distinguen novedad, error de fuente y revisión humana.</p>
-            </article>
-            <article>
-              <div>
-                <strong>Equipo</strong>
-                <span>{availableOwners.length} responsables</span>
-              </div>
-              <p>La cuenta ya puede operar con responsables reales y asignación sobre procesos.</p>
-            </article>
-            <article>
-              <div>
-                <strong>Monitoreo</strong>
-                <span>{consultationSummary.snapshots} snapshots</span>
-              </div>
-              <p>Cada corrida deja trazabilidad persistida para comparar cambios y eventos.</p>
-            </article>
-            <article>
-              <div>
-                <strong>Alertas</strong>
-                <span>{consultationSummary.alertas} activas</span>
-              </div>
-              <p>La cuenta ya hace visible cuando una fuente falla o un proceso requiere intervención.</p>
-            </article>
-          </div>
-        </section>
+            <div className="grid gap-4 md:grid-cols-2">
+              <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <strong className="text-base text-[var(--ds-color-text)]">Bandeja</strong>
+                  <Badge variant="warning">{operationalSummary.requiereRevision} revisión</Badge>
+                </div>
+                <p className="text-sm leading-6 text-[var(--ds-color-text-muted)]">
+                  Los estados operativos ya distinguen novedad, error de fuente y revisión humana.
+                </p>
+              </article>
+              <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <strong className="text-base text-[var(--ds-color-text)]">Cobertura</strong>
+                  <Badge variant="info">{availableOwners.length} responsables</Badge>
+                </div>
+                <p className="text-sm leading-6 text-[var(--ds-color-text-muted)]">
+                  La cuenta ya puede operar con responsables reales y asignación sobre procesos.
+                </p>
+              </article>
+              <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <strong className="text-base text-[var(--ds-color-text)]">Monitoreo</strong>
+                  <Badge variant="neutral">{consultationSummary.snapshots} snapshots</Badge>
+                </div>
+                <p className="text-sm leading-6 text-[var(--ds-color-text-muted)]">
+                  Cada corrida deja trazabilidad persistida para comparar cambios y eventos.
+                </p>
+              </article>
+              <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <strong className="text-base text-[var(--ds-color-text)]">Alertas</strong>
+                  <Badge variant="error">{consultationSummary.alertas} activas</Badge>
+                </div>
+                <p className="text-sm leading-6 text-[var(--ds-color-text-muted)]">
+                  La cuenta ya hace visible cuando una fuente falla o un proceso requiere intervención.
+                </p>
+              </article>
+            </div>
+          </section>
 
-        <section className="internalActionGrid">
-          <button className="internalActionCard" type="button" onClick={() => window.location.hash = buildViewHash("bandeja")}>
-            <span className="internalSidebarLabel">Prioridad inmediata</span>
-            <strong>Abrir bandeja</strong>
-            <p>Empieza por procesos con revisión, fallas de fuente o novedad visible.</p>
-          </button>
-          <button className="internalActionCard" type="button" onClick={() => window.location.hash = buildViewHash("configuracion")}>
-            <span className="internalSidebarLabel">Capacidad</span>
-            <strong>Ajustar configuración</strong>
-            <p>Amplía el inventario vigilado y mantén la cobertura alineada al bufete.</p>
-          </button>
-          <button className="internalActionCard" type="button" onClick={() => window.location.hash = buildViewHash("monitoreo")}>
-            <span className="internalSidebarLabel">Salud operativa</span>
-            <strong>Abrir monitoreo</strong>
-            <p>Revisa fuentes, snapshots y alertas que sostienen la vigilancia.</p>
-          </button>
+          <section className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]">
+            <header className="mb-5 space-y-2">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
+                Siguiente acción
+              </span>
+              <h2 className="text-xl font-semibold tracking-tight text-[var(--ds-color-text)]">
+                Mantén la cuenta enfocada.
+              </h2>
+            </header>
+
+            <div className="space-y-3">
+              <button
+                className="w-full rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4 text-left transition-colors hover:border-[var(--ds-color-brand-border)] hover:bg-[var(--ds-color-brand-soft)]"
+                type="button"
+                onClick={() => (window.location.hash = buildViewHash("bandeja"))}
+              >
+                <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
+                  Prioridad inmediata
+                </span>
+                <strong className="block text-base text-[var(--ds-color-text)]">Abrir bandeja</strong>
+                <p className="mt-2 text-sm leading-6 text-[var(--ds-color-text-muted)]">
+                  Empieza por procesos con revisión, fallas de fuente o novedad visible.
+                </p>
+              </button>
+              <button
+                className="w-full rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4 text-left transition-colors hover:border-[var(--ds-color-brand-border)] hover:bg-[var(--ds-color-brand-soft)]"
+                type="button"
+                onClick={() => (window.location.hash = buildViewHash("configuracion"))}
+              >
+                <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
+                  Capacidad
+                </span>
+                <strong className="block text-base text-[var(--ds-color-text)]">Ajustar configuración</strong>
+                <p className="mt-2 text-sm leading-6 text-[var(--ds-color-text-muted)]">
+                  Amplía el inventario vigilado y mantén la cobertura alineada al bufete.
+                </p>
+              </button>
+              <button
+                className="w-full rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4 text-left transition-colors hover:border-[var(--ds-color-brand-border)] hover:bg-[var(--ds-color-brand-soft)]"
+                type="button"
+                onClick={() => (window.location.hash = buildViewHash("monitoreo"))}
+              >
+                <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
+                  Salud operativa
+                </span>
+                <strong className="block text-base text-[var(--ds-color-text)]">Abrir monitoreo</strong>
+                <p className="mt-2 text-sm leading-6 text-[var(--ds-color-text-muted)]">
+                  Revisa fuentes, snapshots y alertas que sostienen la vigilancia.
+                </p>
+              </button>
+            </div>
+          </section>
         </section>
       </section>
     );
@@ -2631,38 +2741,50 @@ function InternalProcessManager({
 
   if (view === "bandeja") {
     return (
-      <section className="internalProcessManager">
-        <section className="internalPanel" id="bandeja">
-          <div className="internalPanelHeader">
-            <div>
-              <strong>Bandeja operativa real</strong>
-              <span>Procesos consultados, última actuación, eventos y señales de acción.</span>
+      <section className="space-y-6 px-6 py-6 lg:px-8">
+        <section
+          className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]"
+          id="bandeja"
+        >
+          <div className="mb-6 flex flex-col gap-4 border-b border-[var(--ds-color-border)] pb-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-2">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
+                Cola de atención
+              </span>
+              <div>
+                <strong className="block text-2xl font-semibold tracking-tight text-[var(--ds-color-text)]">
+                  Bandeja operativa real
+                </strong>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--ds-color-text-muted)]">
+                  Procesos consultados, última actuación, eventos y señales de acción.
+                </p>
+              </div>
             </div>
-            <button className="internalGhostButton" type="button" onClick={() => void refreshCases()}>
+            <Button variant="secondary" type="button" onClick={() => void refreshCases()}>
               Recargar
-            </button>
+            </Button>
           </div>
 
-          <div className="internalIntakeResult internalTraySummary">
-            <article>
-              <strong>{operationalSummary.total}</strong>
-              <span>Procesos visibles</span>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
+              <strong className="block text-2xl font-semibold text-[var(--ds-color-text)]">{operationalSummary.total}</strong>
+              <span className="mt-1 block text-sm text-[var(--ds-color-text-muted)]">Procesos visibles</span>
             </article>
-            <article>
-              <strong>{operationalSummary.conNovedad}</strong>
-              <span>Con novedad</span>
+            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
+              <strong className="block text-2xl font-semibold text-[var(--ds-color-text)]">{operationalSummary.conNovedad}</strong>
+              <span className="mt-1 block text-sm text-[var(--ds-color-text-muted)]">Con novedad</span>
             </article>
-            <article>
-              <strong>{operationalSummary.requiereRevision}</strong>
-              <span>Requieren revisión</span>
+            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
+              <strong className="block text-2xl font-semibold text-[var(--ds-color-text)]">{operationalSummary.requiereRevision}</strong>
+              <span className="mt-1 block text-sm text-[var(--ds-color-text-muted)]">Requieren revisión</span>
             </article>
-            <article>
-              <strong>{operationalSummary.erroresFuente}</strong>
-              <span>Errores de fuente</span>
+            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
+              <strong className="block text-2xl font-semibold text-[var(--ds-color-text)]">{operationalSummary.erroresFuente}</strong>
+              <span className="mt-1 block text-sm text-[var(--ds-color-text-muted)]">Errores de fuente</span>
             </article>
-            <article>
-              <strong>{operationalSummary.eventosActivos}</strong>
-              <span>Eventos activos</span>
+            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
+              <strong className="block text-2xl font-semibold text-[var(--ds-color-text)]">{operationalSummary.eventosActivos}</strong>
+              <span className="mt-1 block text-sm text-[var(--ds-color-text-muted)]">Eventos activos</span>
             </article>
           </div>
 
@@ -2676,21 +2798,21 @@ function InternalProcessManager({
 
           {!isLoadingCases && !loadError && operationalRows.length > 0 ? (
             <>
-              <div className="internalTrayFilters">
-                <label>
+              <div className="mt-6 grid gap-4 rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4 lg:grid-cols-3">
+                <label className="space-y-2 text-sm font-medium text-[var(--ds-color-text-muted)]">
                   Estado operativo
-                  <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+                  <Select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
                     <option value="todos">Todos</option>
                     <option value="con_novedad">Con novedad</option>
                     <option value="requiere_revision">Requiere revisión</option>
                     <option value="sin_cambios">Sin cambios</option>
                     <option value="no_consultado">No consultado</option>
                     <option value="error_fuente">Error de fuente</option>
-                  </select>
+                  </Select>
                 </label>
-                <label>
+                <label className="space-y-2 text-sm font-medium text-[var(--ds-color-text-muted)]">
                   Responsable
-                  <select value={ownerFilter} onChange={(event) => setOwnerFilter(event.target.value)}>
+                  <Select value={ownerFilter} onChange={(event) => setOwnerFilter(event.target.value)}>
                     <option value="todos">Todos</option>
                     <option value="Sin responsable">Sin responsable</option>
                     {availableOwners.map((owner) => (
@@ -2698,21 +2820,21 @@ function InternalProcessManager({
                         {owner}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
-                <label>
+                <label className="space-y-2 text-sm font-medium text-[var(--ds-color-text-muted)]">
                   Prioridad
-                  <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value)}>
+                  <Select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value)}>
                     <option value="todos">Todas</option>
                     <option value="critical">Crítica</option>
                     <option value="high">Alta</option>
                     <option value="normal">Normal</option>
                     <option value="low">Baja</option>
-                  </select>
+                  </Select>
                 </label>
               </div>
 
-              <div className={`internalTrayLayout ${selectedCase ? "has-detail" : "is-idle"}`}>
+              <div className={`internalTrayLayout mt-6 ${selectedCase ? "has-detail" : "is-idle"}`}>
                 <div className="internalCasesTable internalTrayTable">
                   <div className="internalCasesTableHead internalTrayTableHead">
                     <span>Radicado</span>
@@ -2748,12 +2870,12 @@ function InternalProcessManager({
                         <span>{row.lastCheckedAt ? `Última consulta: ${formatCaseTimestamp(row.lastCheckedAt)}` : "Sin consulta aún"}</span>
                       </div>
                       <div className="internalTrayStack">
-                        <span className={`internalStatusBadge is-${getOperationalTone(row.operationalStatus)}`}>
+                        <Badge variant={getBadgeVariantFromTone(getOperationalTone(row.operationalStatus))}>
                           {formatOperationalStatus(row.operationalStatus)}
-                        </span>
-                        <span className={`internalStatusBadge is-${getSourceStatusTone(row.sourceStatus)}`}>
+                        </Badge>
+                        <Badge variant={getBadgeVariantFromTone(getSourceStatusTone(row.sourceStatus))}>
                           {formatSourceStatus(row.sourceStatus)}
-                        </span>
+                        </Badge>
                       </div>
                       <div className="internalTrayStack">
                         <strong>{row.latestActionTitle || "Sin actuación resumida"}</strong>
@@ -2767,8 +2889,10 @@ function InternalProcessManager({
                       </div>
                       <div className="internalTrayStack">
                         <span>{row.responsible || "Sin responsable"}</span>
-                        <span className={`internalPriorityBadge is-${row.priority}`}>{formatPriorityLabel(row.priority)}</span>
-                        <span>{formatAttentionLevel(row.attentionLevel)}</span>
+                        <Badge variant={getBadgeVariantFromTone(getPriorityTone(row.priority))}>{formatPriorityLabel(row.priority)}</Badge>
+                        <Badge variant={getBadgeVariantFromTone(getAttentionTone(row.attentionLevel))}>
+                          {formatAttentionLevel(row.attentionLevel)}
+                        </Badge>
                         {row.attentionReason ? <span>{formatDerivedReason(row.attentionReason)}</span> : null}
                       </div>
                       <div className="internalTrayStack">
@@ -3593,15 +3717,15 @@ function InternalLexLayer({
           ) : null}
 
           <form className="lexInputBar" onSubmit={handleSubmit}>
-            <input
+            <Input
               value={input}
               onChange={(event) => setInput(event.target.value)}
               placeholder="Pregunta por prioridad, atención, cobertura o errores de fuente"
               aria-label="Pregunta para Lex"
             />
-            <button className="internalPrimaryButton" type="submit" disabled={isTyping || !input.trim()}>
+            <Button type="submit" disabled={isTyping || !input.trim()}>
               Enviar
-            </button>
+            </Button>
           </form>
         </section>
       ) : null}
@@ -3638,6 +3762,8 @@ function InternalShell({
     error: null,
   });
   const [lexContext, setLexContext] = useState<InternalLexContext | null>(null);
+  const [isSidebarPinned, setIsSidebarPinned] = useState(true);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const currentViewMeta = internalViewMeta[activeView];
   const primaryAction =
     activeView === "inicio"
@@ -3723,100 +3849,165 @@ function InternalShell({
     await supabase.auth.signOut();
   }
 
+  function handleToggleSidebarPinned() {
+    setIsSidebarPinned((current) => {
+      const next = !current;
+      setIsSidebarExpanded(next);
+      return next;
+    });
+  }
+
+  const sidebarCollapsed = !isSidebarExpanded;
+  const sidebarSections = [
+    {
+      label: "Operación",
+      items: [
+        { key: "inicio", view: "inicio" as AppView, label: "Inicio", icon: <House className="h-4 w-4" /> },
+        { key: "bandeja", view: "bandeja" as AppView, label: "Bandeja", icon: <Inbox className="h-4 w-4" /> },
+        { key: "monitoreo", view: "monitoreo" as AppView, label: "Monitoreo", icon: <Activity className="h-4 w-4" /> },
+      ],
+    },
+    {
+      label: "Sistema",
+      items: [
+        { key: "configuracion", view: "configuracion" as AppView, label: "Configuración", icon: <Settings2 className="h-4 w-4" /> },
+      ],
+    },
+  ].map((section) => ({
+    label: section.label,
+    items: section.items.map((item) => ({
+      key: item.key,
+      label: item.label,
+      icon: item.icon,
+      active: activeView === item.view,
+      onSelect: () => navigateTo(item.view),
+    })),
+  }));
+
   return (
-    <main className="internalShell">
-      <aside className="internalSidebar">
-        <img className="internalSidebarLogo" src={logoUrl} alt="LexControl" />
-
-        <div className="internalSidebarBlock">
-          <span className="internalSidebarLabel">Cuenta</span>
-          <strong>{membership.organization?.name ?? "Sin organización"}</strong>
-          <span>{getDemoStatusLabel(membership.organization?.account_status)}</span>
-        </div>
-
-        <div className="internalSidebarBlock internalSidebarStatus">
-          <span className="internalSidebarLabel">Demo</span>
-          <strong>
-            {getDaysRemaining(membership.organization?.trial_ends_at ?? null) ?? "-"} días
-          </strong>
-          <span>
-            {`${usage.processCount ?? "-"} / ${membership.organization?.process_limit ?? 100} procesos · ${usage.memberCount ?? "-"} / ${membership.organization?.member_limit ?? 4} responsables`}
-          </span>
-        </div>
-
-        <div className="internalSidebarNav" aria-label="Módulos internos">
-          {internalNavSections.map((section) => (
-            <div key={section.label} className="internalSidebarNavGroup">
-              <span className="internalSidebarLabel">{section.label}</span>
-              <div className="internalSidebarNavLinks">
-                {section.items.map((item) => (
-                  <a
-                    key={item.view}
-                    href={buildViewHash(item.view)}
-                    className={activeView === item.view ? "is-active" : undefined}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      navigateTo(item.view);
-                    }}
-                  >
-                    {item.label}
-                  </a>
-                ))}
+    <main className="flex min-h-screen bg-[var(--ds-color-background)]">
+      <AppSidebar
+        collapsed={sidebarCollapsed}
+        pinned={isSidebarPinned}
+        onTogglePinned={handleToggleSidebarPinned}
+        onExpand={() => setIsSidebarExpanded(true)}
+        onCollapse={() => setIsSidebarExpanded(false)}
+        brand={
+          <div className="flex min-w-0 items-center gap-3">
+            <img className="h-10 w-10 shrink-0" src={logoUrl} alt="LexControl" />
+            {!sidebarCollapsed ? (
+              <div className="min-w-0">
+                <strong className="block truncate text-sm font-semibold text-[var(--ds-color-text)]">LexControl</strong>
+                <span className="block truncate text-xs text-[var(--ds-color-text-subtle)]">
+                  Sistema operativo del bufete
+                </span>
               </div>
-            </div>
-          ))}
-        </div>
-
-        <button className="internalGhostButton" type="button" onClick={handleSignOut}>
-          Cerrar sesión
-        </button>
-      </aside>
-
-      <section className="internalContent">
-        <header className="internalHeader">
-          <div className="internalHeaderIntro">
-            <span className="internalEyebrow">{currentViewMeta.eyebrow}</span>
-            <h1>{currentViewMeta.title}</h1>
-            <p>{currentViewMeta.description}</p>
+            ) : null}
           </div>
-          <div className="internalHeaderMeta">
-            <span className={`internalStatusBadge is-${getDemoStatusTone(membership.organization?.account_status)}`}>
+        }
+        account={
+          <div className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
+              Cuenta
+            </span>
+            <strong className="mt-2 block text-sm text-[var(--ds-color-text)]">
+              {membership.organization?.name ?? "Sin organización"}
+            </strong>
+            <span className="mt-1 block text-sm text-[var(--ds-color-text-muted)]">
               {getDemoStatusLabel(membership.organization?.account_status)}
             </span>
-            <div className="internalHeaderAccount">
-              <strong>{membership.organization?.name ?? "Sin organización"}</strong>
-              <span>{userName}</span>
-              <span>Rol: {formatMemberRole(membership.role as TeamMemberRecord["role"])}</span>
-            </div>
-            <button
-              className="internalGhostButton internalHeaderAction"
-              type="button"
-              onClick={() => navigateTo(primaryAction.target)}
-            >
-              {primaryAction.label}
-            </button>
           </div>
-        </header>
+        }
+        usage={
+          <div className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-white p-4 shadow-[var(--ds-shadow-xs)]">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
+              Capacidad
+            </span>
+            <strong className="mt-2 block text-2xl font-semibold text-[var(--ds-color-text)]">
+              {getDaysRemaining(membership.organization?.trial_ends_at ?? null) ?? "-"} días
+            </strong>
+            <span className="mt-2 block text-sm leading-6 text-[var(--ds-color-text-muted)]">
+              {`${usage.processCount ?? "-"} / ${membership.organization?.process_limit ?? 100} procesos · ${usage.memberCount ?? "-"} / ${membership.organization?.member_limit ?? 4} responsables`}
+            </span>
+            {usage.error ? (
+              <span className="mt-2 block text-sm text-[var(--ds-color-error)]">{usage.error}</span>
+            ) : null}
+          </div>
+        }
+        sections={sidebarSections}
+        footerAction={
+          <Button
+            variant={sidebarCollapsed ? "quiet" : "secondary"}
+            size={sidebarCollapsed ? "icon" : "md"}
+            type="button"
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-4 w-4" />
+            {!sidebarCollapsed ? <span className="ml-2">Cerrar sesión</span> : null}
+          </Button>
+        }
+      />
+
+      <section className="flex min-h-screen min-w-0 flex-1 flex-col">
+        <PageHeader
+          eyebrow={currentViewMeta.eyebrow}
+          title={currentViewMeta.title}
+          description={currentViewMeta.description}
+          badge={
+            <Badge variant={getBadgeVariantFromTone(getDemoStatusTone(membership.organization?.account_status))}>
+              {getDemoStatusLabel(membership.organization?.account_status)}
+            </Badge>
+          }
+          meta={
+            <div className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-white px-4 py-3 text-right shadow-[var(--ds-shadow-xs)]">
+              <strong className="block text-sm text-[var(--ds-color-text)]">
+                {membership.organization?.name ?? "Sin organización"}
+              </strong>
+              <span className="block text-sm text-[var(--ds-color-text-muted)]">{userName}</span>
+              <span className="block text-xs text-[var(--ds-color-text-subtle)]">
+                Rol: {formatMemberRole(membership.role as TeamMemberRecord["role"])}
+              </span>
+            </div>
+          }
+          action={
+            <Button variant="secondary" type="button" onClick={() => navigateTo(primaryAction.target)}>
+              {primaryAction.label}
+            </Button>
+          }
+        />
 
         {activeView === "inicio" ? (
           <>
             <DemoStatusPanel membership={membership} usage={usage} />
-            <section className="internalModuleList">
-              <header>
-                <span className="internalEyebrow">Ruta actual</span>
-                <h2>La cuenta ya opera sobre una arquitectura clara.</h2>
-              </header>
+            <section className="px-6 pt-6 lg:px-8">
+              <div className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]">
+                <header className="mb-5 space-y-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
+                    Ruta actual
+                  </span>
+                  <h2 className="text-xl font-semibold tracking-tight text-[var(--ds-color-text)]">
+                    La cuenta ya opera sobre una arquitectura clara.
+                  </h2>
+                </header>
 
-              <div className="internalModuleCards">
-                {internalModules.map((module) => (
-                  <article key={module.name}>
-                    <div>
-                      <strong>{module.name}</strong>
-                      <span>{module.status}</span>
-                    </div>
-                    <p>{module.description}</p>
-                  </article>
-                ))}
+                <div className="grid gap-4 lg:grid-cols-4">
+                  {internalModules.map((module) => (
+                    <article
+                      key={module.name}
+                      className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4"
+                    >
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <strong className="text-base text-[var(--ds-color-text)]">{module.name}</strong>
+                        <Badge variant={module.status === "Operando" ? "success" : "info"}>
+                          {module.status}
+                        </Badge>
+                      </div>
+                      <p className="text-sm leading-6 text-[var(--ds-color-text-muted)]">
+                        {module.description}
+                      </p>
+                    </article>
+                  ))}
+                </div>
               </div>
             </section>
             <InternalProcessManager
