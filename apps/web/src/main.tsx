@@ -1,8 +1,6 @@
-import { StrictMode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { createRoot } from "react-dom/client";
 import { createLexDemoRows } from "../../../packages/core/src";
-import { InternalApp } from "./internal-app";
 import { supabase } from "./supabase";
 import type {
   LexDemoProcessRow as ProcessRow,
@@ -1132,7 +1130,7 @@ function ActivationModal({
   );
 }
 
-function MarketingApp() {
+export function MarketingApp() {
   const [isActivationOpen, setActivationOpen] = useState(false);
   const [isMobileTrayOpen, setMobileTrayOpen] = useState(false);
   const [operationalFilter, setOperationalFilter] = useState<OperationalFilter>("todos");
@@ -2393,13 +2391,3 @@ function MarketingApp() {
     </main>
   );
 }
-
-const isInternalHost =
-  typeof window !== "undefined" &&
-  ["app.lexcontrol.co", "www.app.lexcontrol.co"].includes(window.location.hostname);
-
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    {window.location.pathname.startsWith("/app") || isInternalHost ? <InternalApp /> : <MarketingApp />}
-  </StrictMode>,
-);
