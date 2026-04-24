@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { isLikelyRadicado, normalizeRadicado } from "../../../packages/core/src";
+import lexSymbolUrl from "./assets/lex-control-logo-symbol.png";
 import logoUrl from "./assets/lexcontrol-logo.png";
 import { isSupabaseConfigured, supabase } from "./supabase";
 
@@ -165,6 +166,37 @@ type OperationalRulesRecalculationResponse = {
   elevated_attention_count: number;
 };
 
+type InternalLexMessage = {
+  id: number;
+  role: "user" | "lex";
+  content: string;
+};
+
+type InternalLexIntent =
+  | "attention"
+  | "priority"
+  | "coverage"
+  | "errors"
+  | "events"
+  | "selected-case";
+
+type InternalLexContext = {
+  sourceView: ProcessManagerView;
+  rows: OperationalCaseRow[];
+  visibleRows: OperationalCaseRow[];
+  statusFilter: string;
+  ownerFilter: string;
+  priorityFilter: string;
+  selectedCase: OperationalCaseRow | null;
+  summary: {
+    total: number;
+    conNovedad: number;
+    requiereRevision: number;
+    erroresFuente: number;
+    eventosActivos: number;
+  };
+};
+
 type AccountUsage = {
   processCount: number;
   memberCount: number;
@@ -239,6 +271,169 @@ function getErrorMessage(error: unknown, fallback: string) {
   }
 
   return fallback;
+}
+
+function getInternalLexPrompts(
+  activeView: AppView,
+  context: InternalLexContext | null,
+): Array<{ label: string; value: string; intent: InternalLexIntent }> {
+  const prompts: Array<{ label: string; value: string; intent: InternalLexIntent }> = [
+    {
+      label: "¿Qué requiere atención ahora?",
+      value: "¿Qué requiere atención ahora?",
+      intent: "attention",
+    },
+    {
+      label: "¿Qué errores de fuente pesan más?",
+      value: "¿Qué errores de fuente requieren revisión prioritaria?",
+      intent: "errors",
+    },
+    {
+      label: "¿Quién está sin cobertura?",
+      value: "¿Qué procesos están sin responsable o con cobertura débil?",
+      intent: "coverage",
+    },
+  ];
+
+  if (activeView === "monitoreo") {
+    prompts.splice(
+      1,
+      0,
+      {
+        label: "¿Cómo está la salud operativa?",
+        value: "¿Cómo está la salud operativa de la cartera?",
+        intent: "errors",
+      },
+      {
+        label: "¿Qué eventos vienen encima?",
+        value: "¿Qué eventos próximos merecen atención?",
+        intent: "events",
+      },
+    );
+  } else {
+    prompts.splice(
+      1,
+      0,
+      {
+        label: "¿Por qué subieron de prioridad?",
+        value: "¿Por qué estos procesos subieron de prioridad?",
+        intent: "priority",
+      },
+      {
+        label: "¿Qué eventos están cerca?",
+        value: "¿Qué eventos próximos merecen atención?",
+        intent: "events",
+      },
+    );
+  }
+
+  if (context?.selectedCase) {
+    prompts.unshift({
+      label: `¿Por qué ${context.selectedCase.radicado} requiere atención?`,
+      value: `¿Por qué el proceso ${context.selectedCase.radicado} requiere atención?`,
+      intent: "selected-case",
+    });
+  }
+
+  return prompts.slice(0, 5);
+}
+
+function buildInternalLexRows(rows: OperationalCaseRow[]) {
+  return rows.map((row) => ({
+    radicado: row.radicado,
+    owner: row.responsible,
+    priority: row.priority,
+    attentionLevel: row.attentionLevel,
+    priorityReason: row.priorityReason,
+    attentionReason: row.attentionReason,
+    assignmentOrigin: row.assignmentOrigin,
+    operationalStatus: row.operationalStatus,
+    latestActionTitle: row.latestActionTitle,
+    latestActionDescription: row.latestActionDescription,
+    latestEventTitle: row.latestEventTitle,
+    latestEventDate: row.latestEventDate,
+    eventKind: row.latestEventType,
+    statusType: row.operationalStatus,
+    action: row.latestActionTitle || undefined,
+    actionType: row.latestEventType || undefined,
+    eventDateLabel: row.latestEventDate || undefined,
+  }));
+}
+
+function buildInternalLexFallback(question: string, context: InternalLexContext | null) {
+  if (!context) {
+    return "Todavía estoy preparando el contexto operativo de la cuenta. En unos segundos ya podré resumirte atención, prioridad y cobertura.";
+  }
+
+  const value = question
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .trim();
+  const focusRows = context.visibleRows.length ? context.visibleRows : context.rows;
+  const urgentRows = focusRows.filter(
+    (row) =>
+      row.attentionLevel !== "silencio_operativo" ||
+      row.operationalStatus === "error_fuente" ||
+      row.operationalStatus === "requiere_revision",
+  );
+  const sourceErrors = focusRows.filter((row) => row.operationalStatus === "error_fuente");
+  const uncovered = focusRows.filter(
+    (row) => !row.responsible || row.assignmentOrigin === "unassigned",
+  );
+  const upcomingEvents = focusRows.filter((row) => Boolean(row.latestEventDate));
+
+  if (value.includes("por que") || value.includes("por qué")) {
+    const selectedCase = context.selectedCase;
+    if (selectedCase) {
+      return `${selectedCase.radicado} está en ${formatAttentionLevel(selectedCase.attentionLevel)} por ${formatDerivedReason(selectedCase.attentionReason)} y su prioridad quedó ${formatPriorityLabel(selectedCase.priority)} por ${formatDerivedReason(selectedCase.priorityReason)}.`;
+    }
+  }
+
+  if (value.includes("cobertura") || value.includes("responsable")) {
+    if (!uncovered.length) {
+      return "No veo procesos sin cobertura crítica en la vista actual. La asignación visible está contenida.";
+    }
+
+    return uncovered
+      .slice(0, 5)
+      .map((row) => `${row.radicado}: ${row.operationalStatus.replaceAll("_", " ")} · ${row.attentionReason ? formatDerivedReason(row.attentionReason) : "sin razón visible"}`)
+      .join(". ");
+  }
+
+  if (value.includes("error") || value.includes("fuente") || value.includes("salud")) {
+    if (!sourceErrors.length) {
+      return "No veo errores de fuente dominando esta vista. La salud operativa se sostiene sobre procesos estables y algunos puntos de revisión.";
+    }
+
+    return sourceErrors
+      .slice(0, 5)
+      .map((row) => `${row.radicado}: ${formatSourceStatus(row.sourceStatus)} · ${row.attentionReason ? formatDerivedReason(row.attentionReason) : "requiere revisión"}`)
+      .join(". ");
+  }
+
+  if (value.includes("evento") || value.includes("audiencia") || value.includes("termino") || value.includes("término")) {
+    if (!upcomingEvents.length) {
+      return "No veo eventos próximos destacados en esta vista. La cartera se ve más estable que urgente.";
+    }
+
+    return upcomingEvents
+      .slice(0, 5)
+      .map((row) => `${row.radicado}: ${row.latestEventTitle || "evento activo"} · ${row.latestEventDate ? formatShortDate(row.latestEventDate) : "sin fecha visible"}`)
+      .join(". ");
+  }
+
+  if (urgentRows.length === 0) {
+    return `Ahora mismo la vista se ve más silenciosa que urgente. ${context.summary.total} procesos visibles, ${context.summary.eventosActivos} con evento activo y ${context.summary.erroresFuente} con error de fuente.`;
+  }
+
+  return urgentRows
+    .slice(0, 4)
+    .map(
+      (row) =>
+        `${row.radicado}: ${formatAttentionLevel(row.attentionLevel)} por ${formatDerivedReason(row.attentionReason)}.`,
+    )
+    .join(" ");
 }
 
 async function fetchTeamMembers(accessToken: string) {
@@ -2111,11 +2306,13 @@ function InternalProcessManager({
   refreshToken = 0,
   view,
   onDataChanged,
+  onLexStateChange,
 }: {
   organizationId: string;
   refreshToken?: number;
   view: ProcessManagerView;
   onDataChanged?: () => Promise<void> | void;
+  onLexStateChange?: (context: InternalLexContext) => void;
 }) {
   const [cases, setCases] = useState<InternalCaseRow[]>([]);
   const [operationalRows, setOperationalRows] = useState<OperationalCaseRow[]>([]);
@@ -2267,23 +2464,39 @@ function InternalProcessManager({
 
   const normalizedPreview = normalizeRadicado(singleRadicado);
   const bulkPreviewCount = splitRadicadosFromTextarea(bulkRadicados).length;
-  const operationalSummary = {
-    total: operationalRows.length,
-    conNovedad: operationalRows.filter((row) => row.operationalStatus === "con_novedad").length,
-    requiereRevision: operationalRows.filter((row) => row.operationalStatus === "requiere_revision").length,
-    erroresFuente: operationalRows.filter((row) => row.operationalStatus === "error_fuente").length,
-    eventosActivos: operationalRows.filter((row) => Boolean(row.latestEventDate)).length,
-  };
-  const availableOwners = Array.from(
-    new Set(operationalRows.map((row) => row.responsible).filter((value): value is string => Boolean(value))),
-  ).sort((left, right) => left.localeCompare(right, "es-CO"));
-  const filteredOperationalRows = operationalRows.filter((row) => {
-    if (statusFilter !== "todos" && row.operationalStatus !== statusFilter) return false;
-    if (ownerFilter !== "todos" && (row.responsible || "Sin responsable") !== ownerFilter) return false;
-    if (priorityFilter !== "todos" && row.priority !== priorityFilter) return false;
-    return true;
-  });
-  const selectedCase = filteredOperationalRows.find((row) => row.caseId === selectedCaseId) || null;
+  const operationalSummary = useMemo(
+    () => ({
+      total: operationalRows.length,
+      conNovedad: operationalRows.filter((row) => row.operationalStatus === "con_novedad").length,
+      requiereRevision: operationalRows.filter((row) => row.operationalStatus === "requiere_revision").length,
+      erroresFuente: operationalRows.filter((row) => row.operationalStatus === "error_fuente").length,
+      eventosActivos: operationalRows.filter((row) => Boolean(row.latestEventDate)).length,
+    }),
+    [operationalRows],
+  );
+  const availableOwners = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          operationalRows.map((row) => row.responsible).filter((value): value is string => Boolean(value)),
+        ),
+      ).sort((left, right) => left.localeCompare(right, "es-CO")),
+    [operationalRows],
+  );
+  const filteredOperationalRows = useMemo(
+    () =>
+      operationalRows.filter((row) => {
+        if (statusFilter !== "todos" && row.operationalStatus !== statusFilter) return false;
+        if (ownerFilter !== "todos" && (row.responsible || "Sin responsable") !== ownerFilter) return false;
+        if (priorityFilter !== "todos" && row.priority !== priorityFilter) return false;
+        return true;
+      }),
+    [operationalRows, ownerFilter, priorityFilter, statusFilter],
+  );
+  const selectedCase = useMemo(
+    () => filteredOperationalRows.find((row) => row.caseId === selectedCaseId) || null,
+    [filteredOperationalRows, selectedCaseId],
+  );
   const selectedCaseSources = caseSources
     .filter((caseSource) => caseSource.case_id === selectedCase?.caseId)
     .sort((left, right) => (right.last_checked_at || "").localeCompare(left.last_checked_at || ""));
@@ -2315,6 +2528,29 @@ function InternalProcessManager({
   const selectedCaseAlertCount = selectedAlerts.filter((alert) =>
     ["pending", "sent", "failed"].includes(alert.status),
   ).length;
+
+  useEffect(() => {
+    onLexStateChange?.({
+      sourceView: view,
+      rows: operationalRows,
+      visibleRows: filteredOperationalRows,
+      statusFilter,
+      ownerFilter,
+      priorityFilter,
+      selectedCase,
+      summary: operationalSummary,
+    });
+  }, [
+    view,
+    operationalRows,
+    filteredOperationalRows,
+    statusFilter,
+    ownerFilter,
+    priorityFilter,
+    selectedCase,
+    operationalSummary,
+    onLexStateChange,
+  ]);
 
   if (view === "inicio") {
     return (
@@ -3156,6 +3392,223 @@ function InternalNoMembershipState({ email }: { email: string | undefined }) {
   );
 }
 
+function InternalLexLayer({
+  userName,
+  organizationName,
+  activeView,
+  context,
+}: {
+  userName: string;
+  organizationName: string | undefined;
+  activeView: AppView;
+  context: InternalLexContext | null;
+}) {
+  const [isOpen, setOpen] = useState(false);
+  const [isTyping, setTyping] = useState(false);
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<InternalLexMessage[]>([
+    {
+      id: 1,
+      role: "lex",
+      content:
+        "Soy Lex. Observo la cartera por ti y te ayudo a concentrarte solo en lo que merece atención.",
+    },
+    {
+      id: 2,
+      role: "lex",
+      content:
+        "Puedo resumir prioridades, explicar por qué un proceso subió y señalar errores de fuente o falta de cobertura en la vista actual.",
+    },
+  ]);
+  const messagesRef = useRef<HTMLDivElement | null>(null);
+  const promptOptions = useMemo(() => getInternalLexPrompts(activeView, context), [activeView, context]);
+
+  useEffect(() => {
+    const container = messagesRef.current;
+    if (!container) return;
+    container.scrollTop = container.scrollHeight;
+  }, [messages, isTyping, isOpen]);
+
+  async function askLex(intent: InternalLexIntent | null, question: string) {
+    const trimmedQuestion = question.trim();
+    if (!trimmedQuestion || isTyping) return;
+
+    setOpen(true);
+    const nextUserMessage: InternalLexMessage = {
+      id: messages.length + 1,
+      role: "user",
+      content: trimmedQuestion,
+    };
+    const nextHistory = [...messages.slice(-8), nextUserMessage];
+    setMessages((current) => [...current, nextUserMessage]);
+    setTyping(true);
+
+    try {
+      const response = await fetch("/api/lex-chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question: trimmedQuestion,
+          intent,
+          userName,
+          history: nextHistory.map((message) => ({
+            role: message.role,
+            content: message.content,
+          })),
+          rows: buildInternalLexRows(context?.visibleRows.length ? context.visibleRows : context?.rows ?? []),
+          currentState: {
+            activeView,
+            organizationName,
+            sourceView: context?.sourceView ?? null,
+            statusFilter: context?.statusFilter ?? "todos",
+            ownerFilter: context?.ownerFilter ?? "todos",
+            priorityFilter: context?.priorityFilter ?? "todos",
+            visibleRows: context?.visibleRows.length ?? 0,
+            summary: context?.summary ?? null,
+            selectedCase: context?.selectedCase
+              ? {
+                  radicado: context.selectedCase.radicado,
+                  operationalStatus: context.selectedCase.operationalStatus,
+                  priority: context.selectedCase.priority,
+                  priorityReason: context.selectedCase.priorityReason,
+                  attentionLevel: context.selectedCase.attentionLevel,
+                  attentionReason: context.selectedCase.attentionReason,
+                }
+              : null,
+          },
+        }),
+      });
+
+      const payload = (await response.json()) as { answer?: string; error?: string };
+      const answer =
+        payload.answer?.trim() ||
+        buildInternalLexFallback(trimmedQuestion, context) ||
+        "Todavía no tengo suficiente contexto para responder eso con claridad.";
+      setMessages((current) => [
+        ...current,
+        { id: current.length + 1, role: "lex", content: answer },
+      ]);
+    } catch {
+      const fallback = buildInternalLexFallback(trimmedQuestion, context);
+      setMessages((current) => [
+        ...current,
+        {
+          id: current.length + 1,
+          role: "lex",
+          content:
+            fallback ||
+            "No pude consultar el modelo ahora mismo, pero sigo teniendo a mano la lectura operativa persistida de la cuenta.",
+        },
+      ]);
+    } finally {
+      setTyping(false);
+      setInput("");
+    }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!input.trim()) return;
+    await askLex(null, input);
+  }
+
+  return (
+    <div className={`lexFloatingLayer ${isOpen ? "is-open" : ""}`} aria-live="polite">
+      {isOpen ? (
+        <button className="lexBackdrop" type="button" aria-label="Cerrar Lex" onClick={() => setOpen(false)} />
+      ) : null}
+      <button
+        className="lexOrb"
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={isOpen}
+        aria-controls="lex-operational-panel"
+      >
+        <img src={lexSymbolUrl} alt="" aria-hidden="true" />
+        <span>Lex</span>
+        <i />
+      </button>
+
+      {isOpen ? (
+        <section className="lexMiniModal" id="lex-operational-panel" aria-label="Lex sobre operación real">
+          <header className="lexModalHeader">
+            <div>
+              <span className="lexModalBrand">
+                <img src={lexSymbolUrl} alt="" aria-hidden="true" />
+                Lex · atención operativa
+              </span>
+              <strong>
+                {organizationName ? `Lectura viva de ${organizationName}` : "Lectura viva de la cuenta"}
+              </strong>
+            </div>
+            <button type="button" onClick={() => setOpen(false)} aria-label="Cerrar Lex">
+              ×
+            </button>
+          </header>
+
+          <div className="lexMessages" ref={messagesRef}>
+            {messages.map((message) => (
+              <article className={`lexMessage ${message.role}`} key={message.id}>
+                {message.role === "lex" ? (
+                  <span className="lexSpeaker">
+                    <img src={lexSymbolUrl} alt="" aria-hidden="true" />
+                    Lex
+                  </span>
+                ) : (
+                  <span>{userName}</span>
+                )}
+                <p>{message.content}</p>
+              </article>
+            ))}
+            {isTyping ? (
+              <article className="lexMessage lex typing" aria-label="Lex está escribiendo">
+                <span className="lexSpeaker">
+                  <img src={lexSymbolUrl} alt="" aria-hidden="true" />
+                  Lex
+                </span>
+                <p>
+                  <i />
+                  <i />
+                  <i />
+                </p>
+              </article>
+            ) : null}
+          </div>
+
+          {promptOptions.length ? (
+            <div className="lexPromptRail" aria-label="Consultas sugeridas">
+              {promptOptions.map((prompt) => (
+                <button
+                  key={`${prompt.intent}-${prompt.label}`}
+                  type="button"
+                  onClick={() => void askLex(prompt.intent, prompt.value)}
+                  disabled={isTyping}
+                >
+                  {prompt.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
+
+          <form className="lexInputBar" onSubmit={handleSubmit}>
+            <input
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              placeholder="Pregunta por prioridad, atención, cobertura o errores de fuente"
+              aria-label="Pregunta para Lex"
+            />
+            <button className="internalPrimaryButton" type="submit" disabled={isTyping || !input.trim()}>
+              Enviar
+            </button>
+          </form>
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
 function InternalShell({
   session,
   membership,
@@ -3184,6 +3637,7 @@ function InternalShell({
     isLoading: true,
     error: null,
   });
+  const [lexContext, setLexContext] = useState<InternalLexContext | null>(null);
   const currentViewMeta = internalViewMeta[activeView];
   const primaryAction =
     activeView === "inicio"
@@ -3369,6 +3823,7 @@ function InternalShell({
               organizationId={membership.organization_id}
               view="inicio"
               onDataChanged={refreshUsage}
+              onLexStateChange={setLexContext}
             />
           </>
         ) : null}
@@ -3378,6 +3833,7 @@ function InternalShell({
             organizationId={membership.organization_id}
             view="bandeja"
             onDataChanged={refreshUsage}
+            onLexStateChange={setLexContext}
           />
         ) : null}
 
@@ -3386,6 +3842,7 @@ function InternalShell({
             organizationId={membership.organization_id}
             view="monitoreo"
             onDataChanged={refreshUsage}
+            onLexStateChange={setLexContext}
           />
         ) : null}
 
@@ -3399,6 +3856,13 @@ function InternalShell({
             onDataChanged={refreshUsage}
           />
         ) : null}
+
+        <InternalLexLayer
+          userName={userName}
+          organizationName={membership.organization?.name}
+          activeView={activeView}
+          context={lexContext}
+        />
       </section>
     </main>
   );

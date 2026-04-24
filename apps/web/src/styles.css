@@ -328,10 +328,11 @@ button {
 }
 
 .internalContent {
+  position: relative;
   display: grid;
   align-content: start;
   gap: 28px;
-  padding: 36px 40px;
+  padding: 36px 40px 124px;
 }
 
 .internalHeader {
