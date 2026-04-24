@@ -4,6 +4,12 @@
 
 Este documento aterriza el estado real del proyecto y lo convierte en un plan de ejecucion de 72 horas.
 
+Documento rector posterior para consolidacion y salida a V1:
+
+```text
+docs/producto/corte-v1-qa-operativo.md
+```
+
 No busca repetir el PRD ni el backlog completo.
 
 Busca responder una sola pregunta:
