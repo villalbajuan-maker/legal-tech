@@ -665,6 +665,12 @@ Debe dividirse explicitamente en:
 - que puede permanecer en silencio
 - que entra a resumen ejecutivo o lectura de Lex
 
+Contrato rector:
+
+```text
+docs/producto/contrato-reglas-atencion.md
+```
+
 #### d. Notificaciones
 
 - canales

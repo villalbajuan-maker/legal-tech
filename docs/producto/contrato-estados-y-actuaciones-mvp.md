@@ -180,6 +180,12 @@ Lex debe poder responder sobre:
 - que procesos no se consultaron;
 - que procesos fallaron por fuente.
 
+Contrato rector complementario:
+
+```text
+docs/producto/contrato-reglas-atencion.md
+```
+
 ## 12. Decision Congelada
 
 Queda congelado para MVP que:
