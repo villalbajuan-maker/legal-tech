@@ -59,9 +59,18 @@ Busca evitar:
 
 ## 3. Principio Visual
 
-La app del cliente debe ser recognoscible como el mismo producto que el usuario vio en la landing.
+La app del cliente debe sentirse como una herramienta de trabajo de alto nivel, no como una demostracion disfrazada.
 
-Debe heredar:
+Debe conservar la inteligencia visual de LexControl, pero el protagonismo visible dentro de la cuenta puede pertenecer al bufete o firma que la opera.
+
+Principio de branding:
+
+- branding principal de la firma o bufete
+- firma visual secundaria:
+  - `Powered by LexControl`
+- presencia de LexControl como sistema y companion, no como marca invasiva en cada esquina
+
+La app debe heredar:
 
 - la paleta operativa
 - la jerarquia clara
@@ -77,8 +86,9 @@ La app opera.
 Principio:
 
 ```text
-misma marca
+misma inteligencia de producto
 misma inteligencia visual
+branding adaptable al bufete
 diferente profundidad funcional
 ```
 
@@ -91,7 +101,7 @@ La app operativa debe pasar de una sola pagina a una arquitectura con navegacion
 Estructura congelada:
 
 ```text
-Sidebar persistente
+Sidebar estructural
 + Header superior
 + Main content por modulo
 + Lex como companion flotante o panel invocable
@@ -101,7 +111,17 @@ No se debe usar:
 
 - una sola pagina con todo visible
 - scroll infinito de modulos
-- mezcla de resumen, equipo, carga y bandeja en una sola vista sin separacion real
+- mezcla de resumen, carga, configuracion y bandeja en una sola vista sin separacion real
+
+Regla de navegacion:
+
+```text
+la app debe separar
+orientacion
+operacion
+monitoreo
+configuracion
+```
 
 ---
 
@@ -111,8 +131,8 @@ No se debe usar:
 
 Desktop usa:
 
-- sidebar izquierdo fijo
-- header superior
+- sidebar izquierdo sticky y colapsable
+- header superior sticky
 - area principal de contenido
 
 Esquema:
@@ -121,11 +141,24 @@ Esquema:
 | Sidebar | Header + Main |
 ```
 
-El sidebar debe ser estable y corto.
+El sidebar no debe consumir viewport innecesariamente.
 
-No debe crecer con ruido.
+Debe poder vivir en dos estados:
 
-Debe contener navegacion estructural, no acciones secundarias.
+- `compacto`
+- `expandido`
+
+Comportamiento esperado:
+
+- por defecto puede vivir compacto
+- al hover o al clic se expande
+- debe existir una accion para fijarlo abierto si el usuario quiere dejarlo expandido
+
+Objetivo:
+
+```text
+maximizar espacio util sin perder orientacion
+```
 
 ---
 
@@ -160,31 +193,42 @@ Debe contener:
 
 ### 6.1 Brand
 
-- logo LexControl
+- logo del bufete o firma
 - nombre de la cuenta
-- estado de cuenta
+- firma secundaria `Powered by LexControl`
 
 Ejemplo:
 
 ```text
-LexControl
-Juanca Legal
-Demo activa
+Villalba Legal
+Powered by LexControl
 ```
 
 ### 6.2 Navegacion Principal
 
-Items iniciales congelados:
+La navegacion no debe ser una lista plana sin criterio.
+
+Debe organizarse en secciones visibles.
+
+Estructura congelada:
+
+#### Informacion
 
 1. `Inicio`
+
+#### Operacion
+
 2. `Bandeja`
-3. `Procesos`
-4. `Equipo`
-5. `Consultas`
+3. `Monitoreo`
+
+#### Configuracion
+
+4. `Configuracion`
 
 Fase posterior:
 
-6. `Configuracion`
+5. `Facturacion`
+6. `Seguridad`
 
 No meter de entrada:
 
@@ -193,23 +237,19 @@ No meter de entrada:
 - textos largos
 - bloques comerciales
 
-### 6.3 Estado De Demo
-
-Dentro del sidebar o inmediatamente debajo del brand debe aparecer un bloque compacto con:
-
-- dias restantes
-- procesos usados / limite
-- responsables usados / limite
-
-No como una card gigantesca.
-
-Debe sentirse como informacion estructural del espacio de trabajo.
-
-### 6.4 Accion Final
+### 6.3 Footer Del Sidebar
 
 - cerrar sesion
+- accion de fijar / soltar sidebar si aplica
 
-Nada mas en dia uno.
+No debe contener:
+
+- contadores grandes
+- modulo comercial
+- demasiados textos de estado
+
+Los datos de capacidad no viven como bloque dominante del sidebar.
+Viven en `Inicio` y donde tengan sentido contextual.
 
 ---
 
@@ -222,6 +262,8 @@ Debe servir para:
 - contexto de la vista actual
 - acciones de la vista
 - acceso a Lex
+- usuario activo
+- acciones globales del espacio de trabajo
 
 Contenido congelado:
 
@@ -239,21 +281,27 @@ Procesos consultados, errores visibles y decisiones pendientes
 
 ### 7.2 Lado Derecho
 
-- accion primaria de la vista
-- accion secundaria si aplica
+- acciones globales
 - acceso a Lex
+- usuario activo
+- menu de cuenta
+
+No es obligatorio que cada modulo tenga boton primario en el header.
+
+Si una accion vive mejor dentro de la propia vista, se queda en la vista.
 
 Ejemplos:
 
-- en `Procesos`: `Cargar procesos`
-- en `Equipo`: `Crear responsable`
-- en `Consultas`: `Ejecutar lote`
+- en `Bandeja`: abrir Lex / refrescar
+- en `Monitoreo`: ejecutar lote / refrescar
+- en `Configuracion`: guardar cambios cuando aplique
 
 No poner:
 
 - mas de dos acciones primarias
 - textos comerciales
 - datos redundantes del usuario
+- contadores de demo como protagonista
 
 ---
 
@@ -270,6 +318,13 @@ Cada modulo debe tener:
 
 La app no debe volver a mezclarse como una sola pantalla con bloques.
 
+Los modulos congelados para dia uno son:
+
+1. `Inicio`
+2. `Bandeja`
+3. `Monitoreo`
+4. `Configuracion`
+
 ## 8.1 Inicio
 
 Proposito:
@@ -279,8 +334,7 @@ Dar un resumen ejecutivo de la cuenta.
 Debe mostrar:
 
 - estado de demo
-- procesos activos usados / limite
-- responsables usados / limite
+- capacidad operativa usada
 - resumen de estado operativo
 - atajos a acciones clave
 - salud de la operacion
@@ -304,8 +358,8 @@ Preguntas que debe responder:
 Contenido congelado:
 
 - franja superior de cuenta:
-  - demo activa / estado de cuenta
-  - dias restantes
+  - estado de cuenta
+  - dias restantes de demo cuando aplique
   - procesos activos usados / limite
   - responsables usados / limite
 - resumen operativo del dia:
@@ -317,8 +371,8 @@ Contenido congelado:
 - alertas operativas recientes
 - acciones rapidas:
   - ir a bandeja
+  - abrir configuracion
   - cargar procesos
-  - crear responsable
   - abrir Lex
 
 No debe mostrar:
@@ -461,138 +515,7 @@ No dejar el detalle siempre abierto si rompe la lectura principal.
 
 ---
 
-## 8.3 Procesos
-
-Proposito:
-
-Gestionar inventario y carga.
-
-Debe contener:
-
-- carga individual
-- carga masiva
-- listado de procesos
-- capacidad usada
-- asignacion de responsable
-- prioridad
-
-No debe intentar ser la bandeja.
-
-La logica es:
-
-```text
-Procesos = administrar inventario
-Bandeja = operar ese inventario
-```
-
-Funcion dominante:
-
-```text
-incorporar, ordenar y mantener la cartera activa
-```
-
-Contenido congelado:
-
-- capacidad usada:
-  - procesos activos / limite
-- acciones de carga:
-  - carga individual
-  - carga masiva
-- inventario maestro:
-  - radicado
-  - estado interno del proceso
-  - responsable
-  - prioridad
-  - fuente principal
-  - fecha de creacion
-- acciones por proceso:
-  - asignar responsable
-  - cambiar prioridad
-  - archivar o pausar
-
-Accion primaria de la vista:
-
-- cargar procesos
-
-No debe mostrar:
-
-- timeline de snapshots como protagonista
-- alertas operativas completas
-- resumen ejecutivo de cuenta
-- panel de Lex como centro de la experiencia
-
-Lectura visual esperada:
-
-```text
-que inventario tengo
--> cuanto cupo queda
--> que puedo cargar o ajustar
-```
-
----
-
-## 8.4 Equipo
-
-Proposito:
-
-Gestionar responsables reales de la cuenta.
-
-Debe contener:
-
-- responsables activos
-- limite disponible
-- crear responsable
-- estado del usuario
-- rol
-
-Fase posterior:
-
-- desactivar
-- reasignar
-- editar
-
-No mezclar Equipo con Configuracion general.
-
-Funcion dominante:
-
-```text
-administrar quienes operan la cuenta
-```
-
-Contenido congelado:
-
-- contador de responsables activos / limite
-- lista de responsables:
-  - nombre
-  - correo
-  - rol
-  - estado
-  - fecha de creacion
-- accion de crear responsable
-- estado de ocupacion de capacidad
-
-Accion primaria de la vista:
-
-- crear responsable
-
-No debe mostrar:
-
-- procesos completos
-- bandeja operativa
-- estados de fuente por proceso
-- configuraciones no relacionadas con usuarios
-
-Lectura visual esperada:
-
-```text
-quien opera
--> cuantos cupos quedan
--> a quien puedo sumar o ajustar
-```
-
----
-
-## 8.5 Consultas
+## 8.3 Monitoreo
 
 Proposito:
 
@@ -614,15 +537,6 @@ Fase posterior:
 No debe ser el centro visual del producto.
 
 Es un modulo de soporte operativo.
-
-Decision de lenguaje:
-
-Si el termino `Consultas` se percibe ambiguo frente al usuario final, puede reemplazarse por:
-
-- `Actividad`
-- `Monitoreo`
-
-La decision final debe tomarse antes del refinamiento visual definitivo.
 
 Funcion dominante:
 
@@ -657,6 +571,94 @@ como esta corriendo la vigilancia
 -> que fallo
 -> que quedo pendiente
 -> que debo reintentar o revisar
+```
+
+---
+
+## 8.4 Configuracion
+
+Proposito:
+
+Parametrizar el espacio de trabajo del bufete.
+
+Configuracion no es un cajon de sastre.
+
+Debe concentrar todo lo que define:
+
+- identidad de la cuenta
+- usuarios y accesos
+- inventario base
+- reglas operativas
+- notificaciones
+
+Funcion dominante:
+
+```text
+ajustar como opera el sistema para este bufete
+```
+
+Subsecciones congeladas:
+
+### 8.4.1 Firma O Bufete
+
+- nombre del bufete o firma
+- logo
+- ciudad o datos generales
+- branding visible en la app
+- firma secundaria `Powered by LexControl`
+
+### 8.4.2 Colaboradores
+
+- responsables activos
+- rol
+- estado
+- alta de responsable
+- desactivacion posterior
+- control de accesos
+
+### 8.4.3 Procesos
+
+- carga individual
+- carga masiva
+- inventario maestro
+- estado interno del proceso
+- responsable
+- prioridad
+- acciones de activar, pausar o archivar
+
+La carga de procesos deja de ser modulo propio y pasa a ser parte de la parametrizacion operativa de la cuenta.
+
+### 8.4.4 Notificaciones
+
+- reglas de notificacion
+- canales disponibles
+- frecuencia o comportamiento
+
+### 8.4.5 Reglas Operativas
+
+- reglas de prioridad
+- comportamiento de consulta
+- criterios visibles de la operacion
+
+No es necesario abrir toda esta profundidad en dia uno, pero la arquitectura debe preverla desde ya.
+
+Accion primaria de la vista:
+
+- guardar configuracion o abrir modal de carga segun subseccion
+
+No debe mostrar:
+
+- bandeja operativa principal
+- timeline juridico completo como protagonista
+- bloques comerciales
+
+Lectura visual esperada:
+
+```text
+como esta configurada la cuenta
+-> quienes operan
+-> que inventario vive ahi
+-> que reglas gobiernan la operacion
 ```
 
 ---
@@ -794,15 +796,18 @@ Se congela esta navegacion inicial:
 ```text
 /          -> Inicio
 /bandeja   -> Bandeja
-/procesos  -> Procesos
-/equipo    -> Equipo
-/consultas -> Consultas
+/monitoreo -> Monitoreo
+/configuracion -> Configuracion
 ```
 
 Fase posterior:
 
 ```text
-/configuracion
+/configuracion/firma
+/configuracion/colaboradores
+/configuracion/procesos
+/configuracion/notificaciones
+/configuracion/reglas
 ```
 
 No hace falta crear todas las rutas hoy si no alcanza.
@@ -819,7 +824,7 @@ La UI operativa de `app.lexcontrol.co` se considera bien encaminada cuando:
 
 1. tiene sidebar persistente
 2. tiene header por modulo
-3. separa claramente Inicio, Bandeja, Procesos, Equipo y Consultas
+3. separa claramente Inicio, Bandeja, Monitoreo y Configuracion
 4. cada modulo tiene una funcion dominante clara
 5. la bandeja tiene ruta y comportamiento propios
 6. la cuenta muestra estado demo y capacidad
@@ -835,10 +840,10 @@ La UI operativa de `app.lexcontrol.co` se considera bien encaminada cuando:
 1. scaffold de layout con sidebar + header + rutas
 2. mover estado de demo a `Inicio`
 3. separar `Bandeja` como vista propia
-4. mover carga a `Procesos`
-5. mover responsables a `Equipo`
-6. dejar `Consultas` como vista de soporte operativo
-7. reintegrar Lex sobre la arquitectura final
+4. convertir `Consultas` en `Monitoreo`
+5. concentrar firma, colaboradores, procesos y reglas dentro de `Configuracion`
+6. reintegrar Lex sobre la arquitectura final
+7. refinar branding del bufete + firma `Powered by LexControl`
 
 Regla final:
 
