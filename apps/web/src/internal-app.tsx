@@ -178,6 +178,38 @@ type OperationalRulesRecalculationResponse = {
   elevated_attention_count: number;
 };
 
+type MonitoringSyncResponse = {
+  phase: "idle" | "initiating" | "partial" | "complete";
+  batchSize: number;
+  before: {
+    caseCount: number;
+    sourceCount: number;
+    pendingCount: number;
+    activeCount: number;
+    errorCount: number;
+    blockedCount: number;
+    notFoundCount: number;
+    snapshotCount: number;
+  };
+  after: {
+    caseCount: number;
+    sourceCount: number;
+    pendingCount: number;
+    activeCount: number;
+    errorCount: number;
+    blockedCount: number;
+    notFoundCount: number;
+    snapshotCount: number;
+  };
+  batchResult: {
+    status: "idle" | "ok";
+    message?: string;
+    processed: number;
+    recalculations: Array<Record<string, unknown>>;
+    results: Array<Record<string, unknown>>;
+  };
+};
+
 type InternalLexMessage = {
   id: number;
   role: "user" | "lex";
@@ -495,6 +527,29 @@ async function createTeamMember(
   }
 
   return payload as TeamMembersResponse & { member?: TeamMemberRecord | null };
+}
+
+async function triggerMonitoringSync(accessToken: string, batchSize = 10) {
+  const response = await fetch("/api/monitoring-sync", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ batchSize }),
+  });
+
+  const payload = (await response.json()) as MonitoringSyncResponse | { error?: string };
+
+  if (!response.ok) {
+    throw new Error(
+      "error" in payload && typeof payload.error === "string"
+        ? payload.error
+        : "No fue posible iniciar la vigilancia.",
+    );
+  }
+
+  return payload as MonitoringSyncResponse;
 }
 
 async function loadAccountUsage(organizationId: string, accessToken: string) {
@@ -2286,6 +2341,7 @@ function ConfigurationWorkspace({
         />
         <InternalProcessManager
           organizationId={organizationId}
+          accessToken={accessToken}
           refreshToken={configurationRefreshToken}
           view="procesos"
           onDataChanged={handleConfigurationDataChanged}
@@ -2355,12 +2411,14 @@ function DemoStatusPanel({
 
 function InternalProcessManager({
   organizationId,
+  accessToken,
   refreshToken = 0,
   view,
   onDataChanged,
   onLexStateChange,
 }: {
   organizationId: string;
+  accessToken: string;
   refreshToken?: number;
   view: ProcessManagerView;
   onDataChanged?: () => Promise<void> | void;
@@ -2390,6 +2448,19 @@ function InternalProcessManager({
   const [isSubmittingBulk, setSubmittingBulk] = useState(false);
   const [intakeError, setIntakeError] = useState<string | null>(null);
   const [lastIntakeResult, setLastIntakeResult] = useState<CaseIntakeResponse | null>(null);
+  const [syncState, setSyncState] = useState<{
+    isRunning: boolean;
+    phase: "idle" | "initiating" | "partial" | "complete" | "error";
+    message: string | null;
+    lastRunAt: string | null;
+    pendingCount: number | null;
+  }>({
+    isRunning: false,
+    phase: "idle",
+    message: null,
+    lastRunAt: null,
+    pendingCount: null,
+  });
 
   async function refreshCases() {
     setLoadingCases(true);
@@ -2422,6 +2493,46 @@ function InternalProcessManager({
       setLoadError(error instanceof Error ? error.message : "No fue posible cargar los procesos.");
     } finally {
       setLoadingCases(false);
+    }
+  }
+
+  async function startMonitoring(batchSize = 10, mode: "auto" | "manual" = "manual") {
+    setSyncState((current) => ({
+      ...current,
+      isRunning: true,
+      phase: current.lastRunAt ? "partial" : "initiating",
+      message:
+        mode === "auto"
+          ? "La vigilancia inicial ya está corriendo. Estamos poblando la bandeja."
+          : "Estamos consultando la cartera para actualizar la bandeja.",
+    }));
+
+    try {
+      const result = await triggerMonitoringSync(accessToken, batchSize);
+      const nextMessage =
+        result.phase === "complete"
+          ? "La sincronización inicial quedó completa."
+          : result.after.pendingCount > 0
+            ? `La sincronización sigue en curso. Quedan ${result.after.pendingCount} procesos pendientes por primera consulta.`
+            : "La vigilancia ya está corriendo sobre la cartera visible.";
+
+      setSyncState({
+        isRunning: false,
+        phase: result.phase,
+        message: nextMessage,
+        lastRunAt: new Date().toISOString(),
+        pendingCount: result.after.pendingCount,
+      });
+
+      await refreshCases();
+    } catch (error) {
+      setSyncState({
+        isRunning: false,
+        phase: "error",
+        message: getErrorMessage(error, "No fue posible iniciar la vigilancia."),
+        lastRunAt: new Date().toISOString(),
+        pendingCount: null,
+      });
     }
   }
 
@@ -2470,6 +2581,9 @@ function InternalProcessManager({
       setSinglePriority("normal");
       setSingleNotes("");
       await refreshCases();
+      if (result.inserted_count > 0) {
+        await startMonitoring(10, "auto");
+      }
     } catch (error) {
       setIntakeError(getErrorMessage(error, "No fue posible registrar el proceso."));
     } finally {
@@ -2507,6 +2621,9 @@ function InternalProcessManager({
       setBulkPriority("normal");
       setBulkNotes("");
       await refreshCases();
+      if (result.inserted_count > 0) {
+        await startMonitoring(10, "auto");
+      }
     } catch (error) {
       setIntakeError(getErrorMessage(error, "No fue posible completar la carga masiva."));
     } finally {
@@ -2572,6 +2689,41 @@ function InternalProcessManager({
     withoutOwner: cases.filter((legalCase) => !legalCase.internal_owner).length,
     readyForConsultation: caseSources.filter((caseSource) => caseSource.status === "pending").length,
   };
+  const postLoadStatus = useMemo(() => {
+    if (syncState.phase === "error") {
+      return {
+        tone: "error" as const,
+        title: "La vigilancia necesita reintento.",
+        description: syncState.message || "No pudimos iniciar la primera revisión de la cartera.",
+      };
+    }
+
+    if (syncState.isRunning || processSummary.readyForConsultation > 0) {
+      return {
+        tone: "info" as const,
+        title: "La vigilancia inicial está corriendo.",
+        description:
+          syncState.message ||
+          `Estamos consultando la cartera. Quedan ${processSummary.readyForConsultation} procesos pendientes por primera consulta.`,
+      };
+    }
+
+    if (snapshots.length > 0 && processSummary.total > 0) {
+      return {
+        tone: "ok" as const,
+        title: "La cartera ya está poblada.",
+        description:
+          syncState.message ||
+          `La operación ya tiene ${snapshots.length} snapshots y la bandeja puede empezar a leerse con contexto real.`,
+      };
+    }
+
+    return {
+      tone: "neutral" as const,
+      title: "La cuenta está lista para vigilar.",
+      description: "Carga procesos para que la primera revisión arranque automáticamente.",
+    };
+  }, [processSummary.readyForConsultation, processSummary.total, snapshots.length, syncState]);
   const recentAlerts = [...alerts].slice(0, 8);
   const recentSnapshots = [...snapshots]
     .sort((left, right) => right.fetched_at.localeCompare(left.fetched_at))
@@ -2604,9 +2756,51 @@ function InternalProcessManager({
     onLexStateChange,
   ]);
 
+  const syncPanel = (
+    <section className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]">
+      <div className="internalPanelHeader">
+        <div>
+          <strong>{postLoadStatus.title}</strong>
+          <span>{postLoadStatus.description}</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <Badge variant={getBadgeVariantFromTone(postLoadStatus.tone)}>
+            {syncState.phase === "complete"
+              ? "Sincronización completa"
+              : syncState.phase === "error"
+                ? "Requiere reintento"
+                : syncState.isRunning || processSummary.readyForConsultation > 0
+                  ? "Consultando cartera"
+                  : "Lista para iniciar"}
+          </Badge>
+          <Button
+            variant="secondary"
+            type="button"
+            disabled={syncState.isRunning || processSummary.total === 0}
+            onClick={() => void startMonitoring(10, "manual")}
+          >
+            {syncState.isRunning ? "Consultando..." : "Actualizar ahora"}
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-4">
+        <StatCard value={processSummary.total} label="Procesos cargados" className="bg-[var(--ds-color-surface-subtle)] shadow-none" />
+        <StatCard value={processSummary.readyForConsultation} label="Pendientes de primera consulta" className="bg-[var(--ds-color-surface-subtle)] shadow-none" />
+        <StatCard value={snapshots.length} label="Snapshots visibles" className="bg-[var(--ds-color-surface-subtle)] shadow-none" />
+        <StatCard
+          value={syncState.lastRunAt ? formatCaseTimestamp(syncState.lastRunAt) : "Sin corrida"}
+          label="Última actualización"
+          className="bg-[var(--ds-color-surface-subtle)] shadow-none"
+        />
+      </div>
+    </section>
+  );
+
   if (view === "inicio") {
     return (
       <section className="space-y-6 px-6 py-6 lg:px-8">
+        {syncPanel}
         <section className="grid gap-4 md:grid-cols-3">
           <StatCard
             value={operationalSummary.total}
@@ -2736,6 +2930,7 @@ function InternalProcessManager({
   if (view === "bandeja") {
     return (
       <section className="space-y-6 px-6 py-6 lg:px-8">
+        {syncPanel}
         <section
           className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]"
           id="bandeja"
@@ -3055,6 +3250,7 @@ function InternalProcessManager({
   if (view === "monitoreo") {
     return (
       <section className="space-y-6 px-6 py-6 lg:px-8">
+        {syncPanel}
         <section className="grid gap-4 md:grid-cols-3">
           <StatCard value={consultationSummary.sourcesTracked} label="Fuentes rastreadas" description="Fuentes rastreadas sobre procesos activos." />
           <StatCard value={consultationSummary.snapshots} label="Snapshots" description="Snapshots disponibles para trazabilidad." />
@@ -3155,6 +3351,7 @@ function InternalProcessManager({
 
   return (
     <section className="space-y-6" id="procesos">
+      {syncPanel}
       <header className="space-y-2 rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]">
         <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
           Inventario vigilado
@@ -3990,6 +4187,7 @@ function InternalShell({
             </section>
             <InternalProcessManager
               organizationId={membership.organization_id}
+              accessToken={session.access_token}
               view="inicio"
               onDataChanged={refreshUsage}
               onLexStateChange={setLexContext}
@@ -4000,6 +4198,7 @@ function InternalShell({
         {activeView === "bandeja" ? (
           <InternalProcessManager
             organizationId={membership.organization_id}
+            accessToken={session.access_token}
             view="bandeja"
             onDataChanged={refreshUsage}
             onLexStateChange={setLexContext}
@@ -4009,6 +4208,7 @@ function InternalShell({
         {activeView === "monitoreo" ? (
           <InternalProcessManager
             organizationId={membership.organization_id}
+            accessToken={session.access_token}
             view="monitoreo"
             onDataChanged={refreshUsage}
             onLexStateChange={setLexContext}

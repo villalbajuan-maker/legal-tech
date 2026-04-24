@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { pathToFileURL } from "node:url";
 import { cpnuSourceConnector, manualSourceConnector } from "@legal-search/connectors";
 import type { CaseSourceInput, FetchStatus, SourceFetchResult } from "@legal-search/core";
 import { createClient } from "@supabase/supabase-js";
@@ -26,6 +27,20 @@ type DatabaseCaseSourceRow = {
 
 const connectors = [cpnuSourceConnector, manualSourceConnector];
 const batchSize = Number(process.env.CRAWLER_BATCH_SIZE || "10");
+
+type ProcessBatchOptions = {
+  organizationId?: string | null;
+  batchSize?: number;
+  suppressLog?: boolean;
+};
+
+export type ProcessBatchResult = {
+  status: "idle" | "ok";
+  message?: string;
+  processed: number;
+  recalculations: Array<Record<string, unknown>>;
+  results: Array<Record<string, unknown>>;
+};
 
 type PersistedMovementRow = {
   id: string;
@@ -678,7 +693,7 @@ async function createOperationalAlerts(
   });
 }
 
-async function loadPendingCaseSources() {
+async function loadPendingCaseSources(options: Pick<ProcessBatchOptions, "organizationId" | "batchSize"> = {}) {
   const env = getSupabaseEnv();
   if (!env) {
     throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY for crawler.");
@@ -688,7 +703,31 @@ async function loadPendingCaseSources() {
     auth: { persistSession: false, autoRefreshToken: false },
   }) as ReturnType<typeof createClient<any>>;
 
-  const { data, error } = await supabase
+  const requestedBatchSize = Math.max(1, options.batchSize || batchSize);
+  let scopedCaseIds: string[] | null = null;
+
+  if (options.organizationId) {
+    const { data: organizationCases, error: organizationCasesError } = await supabase
+      .from("cases")
+      .select("id")
+      .eq("organization_id", options.organizationId)
+      .limit(1000);
+
+    if (organizationCasesError) {
+      throw organizationCasesError;
+    }
+
+    scopedCaseIds = ((organizationCases as Array<{ id: string }> | null) || []).map((row) => row.id);
+
+    if (scopedCaseIds.length === 0) {
+      return {
+        supabase,
+        rows: [] as DatabaseCaseSourceRow[],
+      };
+    }
+  }
+
+  let query = supabase
     .from("case_sources")
     .select(
       `
@@ -714,7 +753,13 @@ async function loadPendingCaseSources() {
     )
     .in("status", ["pending", "active", "error", "blocked", "not_found"])
     .order("last_checked_at", { ascending: true, nullsFirst: true })
-    .limit(batchSize);
+    .limit(requestedBatchSize);
+
+  if (scopedCaseIds) {
+    query = query.in("case_id", scopedCaseIds);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw error;
@@ -872,12 +917,26 @@ async function recalculateOrganizationsTouched(
   return summaries;
 }
 
-async function processBatch() {
-  const { supabase, rows } = await loadPendingCaseSources();
+export async function processBatch(options: ProcessBatchOptions = {}): Promise<ProcessBatchResult> {
+  const { supabase, rows } = await loadPendingCaseSources({
+    organizationId: options.organizationId,
+    batchSize: options.batchSize,
+  });
 
   if (rows.length === 0) {
-    console.log(JSON.stringify({ status: "idle", message: "No pending case_sources found." }, null, 2));
-    return;
+    const payload: ProcessBatchResult = {
+      status: "idle",
+      message: "No pending case_sources found.",
+      processed: 0,
+      recalculations: [],
+      results: [],
+    };
+
+    if (!options.suppressLog) {
+      console.log(JSON.stringify(payload, null, 2));
+    }
+
+    return payload;
   }
 
   const results: Array<Record<string, unknown>> = [];
@@ -932,13 +991,18 @@ async function processBatch() {
 
   const recalculationSummaries = await recalculateOrganizationsTouched(supabase, touchedOrganizationIds);
 
-  console.log(
-    JSON.stringify(
-      { status: "ok", processed: results.length, recalculations: recalculationSummaries, results },
-      null,
-      2,
-    ),
-  );
+  const payload: ProcessBatchResult = {
+    status: "ok",
+    processed: results.length,
+    recalculations: recalculationSummaries,
+    results,
+  };
+
+  if (!options.suppressLog) {
+    console.log(JSON.stringify(payload, null, 2));
+  }
+
+  return payload;
 }
 
 async function runSample() {
@@ -972,7 +1036,9 @@ async function main() {
   await processBatch();
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}
