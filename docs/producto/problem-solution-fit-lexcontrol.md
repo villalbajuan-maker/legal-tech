@@ -30,9 +30,17 @@ Su unidad de valor es:
 control operativo sobre una cartera de procesos
 ```
 
+Pero ese control no se expresa como mas ruido, mas dashboards o mas actividad visible.
+
+Se expresa asi:
+
+```text
+administracion de atencion sobre una cartera de procesos
+```
+
 Eso significa que el negocio no consiste en devolver datos judiciales.
 
-Consiste en convertir una operacion incierta, fragmentada y manual en una operacion visible, trazable y priorizable.
+Consiste en convertir una operacion incierta, fragmentada y manual en una operacion visible, trazable, priorizable y silenciosa por defecto.
 
 ---
 
@@ -45,11 +53,20 @@ El problema no es revisar procesos.
 Es no saber cuales no fueron revisados, cuales fallaron y cuales requieren atencion.
 ```
 
+Pero esa formulacion todavia se puede afinar.
+
+La tesis mas madura es esta:
+
+```text
+El abogado no necesita ver todo lo que pasa.
+Necesita saber, con claridad, solo que requiere su atencion.
+```
+
 Version operativa:
 
 ```text
 La vigilancia judicial manual no falla solo porque sea lenta.
-Falla porque no produce visibilidad confiable sobre lo que realmente ocurrio en la operacion.
+Falla porque no produce visibilidad confiable y tampoco administra bien la atencion sobre lo que realmente ocurrio en la operacion.
 ```
 
 Por eso el dolor real no es:
@@ -66,6 +83,7 @@ El problema nuclear es:
 
 ```text
 ausencia de trazabilidad operativa confiable
+y ausencia de un sistema que administre atencion sobre esa trazabilidad
 ```
 
 Cuando esa trazabilidad no existe, aparecen cinco consecuencias:
@@ -75,6 +93,10 @@ Cuando esa trazabilidad no existe, aparecen cinco consecuencias:
 3. No se sabe que procesos no pudieron consultarse.
 4. No se sabe que responsable debe actuar.
 5. No se puede demostrar que la operacion se ejecuto bien.
+
+Y cuando todo se muestra sin criterio, aparece un sexto problema:
+
+6. La operacion genera mas carga cognitiva de la que realmente ayuda.
 
 ---
 
@@ -91,11 +113,19 @@ ya se que fallo
 ya se que revisar ahora
 ```
 
+Y, sobre todo:
+
+```text
+no tengo que perseguir el sistema
+el sistema me muestra solo lo que merece atencion
+```
+
 Job to be done principal:
 
 ```text
 Necesito convertir una revision judicial manual y poco verificable
-en una operacion diaria con visibilidad, trazabilidad y criterio de accion.
+en una operacion diaria con visibilidad, trazabilidad y criterio de accion
+sin aumentar la carga cognitiva del equipo.
 ```
 
 Trabajos secundarios:
@@ -152,6 +182,7 @@ Por eso LexControl debe ganar en algo mucho mas fuerte que "automatiza":
 
 ```text
 hace visible lo que la operacion manual no puede demostrar bien
+y administra la atencion sobre ello
 ```
 
 Mecanismo de valor:
@@ -161,7 +192,8 @@ Mecanismo de valor:
 3. registra cada intento, incluso si falla;
 4. convierte el resultado en estados operativos;
 5. prioriza atencion mediante bandeja;
-6. da lectura conversacional sobre esa operacion via Lex.
+6. silencia lo que no requiere intervencion inmediata;
+7. da lectura conversacional sobre esa operacion via Lex.
 
 La secuencia de valor real es:
 
@@ -170,6 +202,7 @@ consulta
 -> trazabilidad
 -> clasificacion
 -> visibilidad
+-> administracion de atencion
 -> decision
 ```
 
@@ -187,14 +220,14 @@ consulta
 ### Propuesta Corta
 
 ```text
-LexControl convierte la vigilancia judicial en una operacion visible.
+LexControl convierte la vigilancia judicial en una operacion visible y silenciosa.
 ```
 
 ### Propuesta Operativa
 
 ```text
 LexControl convierte consultas, novedades y fallas de fuente
-en una bandeja operativa para decidir que requiere atencion.
+en una bandeja operativa que decide que merece atencion y que puede permanecer en silencio.
 ```
 
 ### Propuesta Completa
@@ -202,7 +235,15 @@ en una bandeja operativa para decidir que requiere atencion.
 ```text
 LexControl es un sistema operativo de vigilancia judicial
 que permite saber que cambio, que no cambio, que fallo
-y que proceso requiere revision humana.
+y que proceso requiere revision humana,
+sin obligar al equipo a consumir mas ruido del necesario.
+```
+
+### Propuesta Rectora Mas Fuerte
+
+```text
+LexControl no hace que el abogado mire mas.
+Hace que solo mire lo que importa.
 ```
 
 ---
@@ -225,6 +266,15 @@ LexControl no trata la falla como excepcion escondida.
 La vuelve parte visible del control.
 ```
 
+Y tampoco trata toda actividad como si mereciera la misma importancia.
+
+Tambien hace esto:
+
+```text
+LexControl no convierte la operacion en un feed.
+La convierte en una cola de atencion.
+```
+
 Eso es fuerte porque muchos sistemas muestran novedad, pero no muestran bien:
 
 - que no se consulto;
@@ -235,6 +285,8 @@ Eso es fuerte porque muchos sistemas muestran novedad, pero no muestran bien:
 En LexControl, la falla no destruye el valor.
 
 La falla tambien genera valor porque produce trazabilidad operativa.
+
+Y la estabilidad tambien genera valor porque puede permanecer en silencio sin dejar de estar cubierta.
 
 ---
 
@@ -502,4 +554,3 @@ Y su promesa central es:
 saber que cambio, que no cambio, que fallo y que requiere revision
 sin depender de memoria, disciplina informal o reconstruccion manual.
 ```
-

@@ -41,10 +41,20 @@ LexControl no vende consultas judiciales.
 Vende control operativo sobre una cartera de procesos.
 ```
 
+Y tampoco debe quedarse solo ahi.
+
+La capa mas madura de la tesis es esta:
+
+```text
+LexControl no hace que el abogado mire mas.
+Hace que solo mire lo que merece su atencion.
+```
+
 Y la promesa concreta que debe sentirse en toda la landing es:
 
 ```text
-saber que cambio, que no cambio, que fallo y que requiere revision
+saber que cambio, que no cambio, que fallo
+y que realmente requiere atencion humana
 ```
 
 La landing no debe vender automatizacion por si sola.
@@ -52,7 +62,8 @@ La landing no debe vender automatizacion por si sola.
 Debe vender:
 
 ```text
-visibilidad confiable sobre una operacion judicial que hoy se ejecuta con zonas ciegas
+visibilidad confiable y administracion de atencion
+sobre una operacion judicial que hoy se ejecuta con zonas ciegas
 ```
 
 ---
@@ -83,8 +94,9 @@ Lo que hoy todavia puede afinarse:
 3. A veces habla de la bandeja como vista del sistema, cuando podria hablar de la operacion del cliente.
 4. El “como funciona” todavia puede conectarse mejor con la tesis:
    no solo consulta, clasifica y prioriza;
-   tambien convierte una operacion fragmentada en una operacion legible.
+   tambien convierte una operacion fragmentada en una operacion legible y silenciosa por defecto.
 5. La seccion de precios todavia comunica capacidad, pero puede anclarse mejor a “capacidad operativa vigilada”.
+6. Aun puede reforzarse mejor que el sistema no agrega carga cognitiva; la reduce.
 
 ---
 
@@ -113,7 +125,7 @@ revisar no equivale a tener control
 ↓
 el verdadero problema es no saber que no se reviso o que fallo
 ↓
-LexControl convierte consultas en trazabilidad y estados operativos
+LexControl convierte consultas en trazabilidad y administracion de atencion
 ↓
 la bandeja demuestra ese control
 ↓
@@ -161,6 +173,9 @@ cartera de procesos
 
 Ni deja claro que lo que se controla no es un caso aislado sino la operacion completa.
 
+Tampoco deja explicito que el sistema no viene a pedir mas tiempo mental,
+sino a liberar atencion para lo que de verdad importa.
+
 ### Ajuste Recomendado
 
 Conservar la apertura.
@@ -171,13 +186,13 @@ Reforzar en la segunda o tercera linea que el producto controla una cartera oper
 
 ```text
 El problema no es revisar procesos.
-Es no saber cuáles no fueron revisados, cuáles fallaron y cuáles requieren atención.
+Es no saber cuáles no fueron revisados, cuáles fallaron y cuáles realmente requieren tu atención.
 
 La mayoría de los equipos jurídicos cree que está al día.
 Pero no puede demostrar qué pasó realmente en su cartera de procesos:
 qué cambió, qué sigue igual y qué no se pudo consultar.
 
-LexControl convierte esa incertidumbre en control operativo.
+LexControl convierte esa incertidumbre en control operativo y atención bien administrada.
 ```
 
 ### Funcion Narrativa
@@ -187,6 +202,7 @@ Abrir la herida correcta:
 ```text
 no falta trabajo
 falta visibilidad confiable
+y sobra carga cognitiva innecesaria
 ```
 
 ---
@@ -212,6 +228,13 @@ Hacer que el microcopy no solo reduzca friccion sino que recuerde el tipo de val
 
 ```text
 Demo controlada para equipos que necesitan control operativo sobre volumen real de procesos.
+No necesitas datos sensibles para solicitar acceso.
+```
+
+Version aun mas afinada:
+
+```text
+Demo controlada para equipos que necesitan control operativo sin aumentar la carga de revision.
 No necesitas datos sensibles para solicitar acceso.
 ```
 
@@ -253,6 +276,7 @@ hacia:
 
 ```text
 cobertura operativa
+y administracion de atencion
 ```
 
 ---
@@ -284,6 +308,8 @@ Muy alineado con la tesis.
 ### Lo Que Puede Mejorar
 
 Todavia puede profundizar mejor la idea de operacion, no solo de proceso.
+Y puede decir con mas fuerza que el costo no es solo la omision.
+Tambien es el desgaste mental de perseguir actividad sin jerarquia.
 
 ### Copy Recomendado
 
@@ -308,6 +334,13 @@ Es un problema de trazabilidad operativa.
 
 Si no puedes demostrar qué se consultó, qué falló y qué quedó pendiente,
 no tienes control.
+```
+
+Version con la nueva tesis:
+
+```text
+Y si todo exige la misma atencion,
+tampoco tienes control.
 ```
 
 ### Funcion Narrativa
@@ -744,4 +777,3 @@ La landing debe vender:
 ```text
 una forma de recuperar control operativo sobre una cartera de procesos
 ```
-
