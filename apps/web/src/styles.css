@@ -295,10 +295,20 @@ button {
 
 .internalSidebarNav {
   display: grid;
+  gap: 14px;
+}
+
+.internalSidebarNavGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.internalSidebarNavLinks {
+  display: grid;
   gap: 6px;
 }
 
-.internalSidebarNav a {
+.internalSidebarNavLinks a {
   min-height: 40px;
   border-radius: 8px;
   padding: 10px 12px;
@@ -310,8 +320,8 @@ button {
     transform 160ms ease;
 }
 
-.internalSidebarNav a:hover,
-.internalSidebarNav a.is-active {
+.internalSidebarNavLinks a:hover,
+.internalSidebarNavLinks a.is-active {
   background: var(--brand-soft);
   color: var(--brand);
   transform: translateY(-1px);
@@ -355,6 +365,10 @@ button {
 .internalHeaderAccount strong {
   color: var(--brand);
   font-size: var(--font-small);
+}
+
+.internalHeaderAction {
+  justify-self: end;
 }
 
 .internalSummaryGrid {
@@ -974,6 +988,22 @@ button {
 
   .internalHeaderAccount {
     justify-items: start;
+  }
+
+  .internalSidebarNav {
+    gap: 12px;
+  }
+
+  .internalSidebarNavLinks {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .internalSidebarNavLinks a {
+    white-space: nowrap;
   }
 
   .internalSummaryGrid,

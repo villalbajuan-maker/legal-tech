@@ -221,12 +221,25 @@ const internalModules = [
   },
 ];
 
-const internalNavItems: Array<{ view: AppView; label: string }> = [
-  { view: "inicio", label: "Inicio" },
-  { view: "bandeja", label: "Bandeja" },
-  { view: "procesos", label: "Procesos" },
-  { view: "equipo", label: "Equipo" },
-  { view: "consultas", label: "Consultas" },
+const internalNavSections: Array<{
+  label: string;
+  items: Array<{ view: AppView; label: string }>;
+}> = [
+  {
+    label: "Operación",
+    items: [
+      { view: "inicio", label: "Inicio" },
+      { view: "bandeja", label: "Bandeja" },
+      { view: "procesos", label: "Procesos" },
+    ],
+  },
+  {
+    label: "Cuenta",
+    items: [
+      { view: "equipo", label: "Equipo" },
+      { view: "consultas", label: "Consultas" },
+    ],
+  },
 ];
 
 const internalViewMeta: Record<
@@ -484,6 +497,25 @@ function formatOperationalStatus(value: string) {
   }
 }
 
+function formatSourceStatus(value: OperationalCaseRow["sourceStatus"]) {
+  switch (value) {
+    case "active":
+      return "Consulta activa";
+    case "pending":
+      return "Pendiente";
+    case "paused":
+      return "Pausada";
+    case "error":
+      return "Error de fuente";
+    case "blocked":
+      return "Fuente bloqueada";
+    case "not_found":
+      return "No encontrado";
+    default:
+      return value;
+  }
+}
+
 function getSourceStatusTone(value: OperationalCaseRow["sourceStatus"]) {
   switch (value) {
     case "active":
@@ -501,6 +533,21 @@ function getSourceStatusTone(value: OperationalCaseRow["sourceStatus"]) {
   }
 }
 
+function formatSnapshotStatus(value: InternalSnapshotRow["fetch_status"]) {
+  switch (value) {
+    case "success":
+      return "Consulta exitosa";
+    case "error":
+      return "Error";
+    case "blocked":
+      return "Bloqueada";
+    case "not_found":
+      return "No encontrado";
+    default:
+      return value;
+  }
+}
+
 function getSnapshotStatusTone(value: InternalSnapshotRow["fetch_status"]) {
   switch (value) {
     case "success":
@@ -513,6 +560,66 @@ function getSnapshotStatusTone(value: InternalSnapshotRow["fetch_status"]) {
       return "warning";
     default:
       return "neutral";
+  }
+}
+
+function formatEventType(value: InternalLegalEventRow["event_type"]) {
+  switch (value) {
+    case "audiencia":
+      return "Audiencia";
+    case "termino":
+      return "Término";
+    case "vencimiento":
+      return "Vencimiento";
+    case "actuacion":
+      return "Actuación";
+    case "otro":
+      return "Otro";
+    default:
+      return value;
+  }
+}
+
+function formatChangeStatus(value: InternalLegalEventRow["change_status"]) {
+  switch (value) {
+    case "new":
+      return "Nuevo";
+    case "unchanged":
+      return "Sin cambios";
+    case "changed":
+      return "Actualizado";
+    case "cancelled":
+      return "Cancelado";
+    default:
+      return value;
+  }
+}
+
+function formatPriorityLabel(value: InternalCaseRow["priority"]) {
+  switch (value) {
+    case "critical":
+      return "Crítica";
+    case "high":
+      return "Alta";
+    case "normal":
+      return "Normal";
+    case "low":
+      return "Baja";
+    default:
+      return value;
+  }
+}
+
+function formatCaseRecordStatus(value: InternalCaseRow["status"]) {
+  switch (value) {
+    case "active":
+      return "Activo";
+    case "paused":
+      return "Pausado";
+    case "closed":
+      return "Cerrado";
+    default:
+      return value;
   }
 }
 
@@ -1378,7 +1485,7 @@ function InternalProcessManager({
                           {formatOperationalStatus(row.operationalStatus)}
                         </span>
                         <span className={`internalStatusBadge is-${getSourceStatusTone(row.sourceStatus)}`}>
-                          Fuente {row.sourceStatus}
+                          {formatSourceStatus(row.sourceStatus)}
                         </span>
                       </div>
                       <div className="internalTrayStack">
@@ -1393,7 +1500,7 @@ function InternalProcessManager({
                       </div>
                       <div className="internalTrayStack">
                         <span>{row.responsible || "Sin responsable"}</span>
-                        <span className={`internalPriorityBadge is-${row.priority}`}>{row.priority}</span>
+                        <span className={`internalPriorityBadge is-${row.priority}`}>{formatPriorityLabel(row.priority)}</span>
                       </div>
                       <div className="internalTrayStack">
                         <span>{row.sourceName}</span>
@@ -1432,13 +1539,7 @@ function InternalProcessManager({
                         <div>
                           <span>Prioridad</span>
                           <strong>
-                            {selectedCase.priority === "critical"
-                              ? "Crítica"
-                              : selectedCase.priority === "high"
-                                ? "Alta"
-                                : selectedCase.priority === "normal"
-                                  ? "Normal"
-                                  : "Baja"}
+                            {formatPriorityLabel(selectedCase.priority)}
                           </strong>
                         </div>
                         <div>
@@ -1465,8 +1566,8 @@ function InternalProcessManager({
                             {selectedEvents.map((event) => (
                               <article key={event.id}>
                                 <strong>{event.title}</strong>
-                                <span>{event.event_type} · {formatDateTimeLabel(event.event_date)}</span>
-                                <span>Estado: {event.change_status}</span>
+                                <span>{formatEventType(event.event_type)} · {formatDateTimeLabel(event.event_date)}</span>
+                                <span>Estado: {formatChangeStatus(event.change_status)}</span>
                               </article>
                             ))}
                           </div>
@@ -1512,7 +1613,7 @@ function InternalProcessManager({
                                 <div className="internalDetailTitleLine">
                                   <strong>{formatDateTimeLabel(snapshot.fetched_at)}</strong>
                                   <span className={`internalStatusBadge is-${getSnapshotStatusTone(snapshot.fetch_status)}`}>
-                                    {snapshot.fetch_status}
+                                    {formatSnapshotStatus(snapshot.fetch_status)}
                                   </span>
                                 </div>
                                 <span>
@@ -1604,7 +1705,7 @@ function InternalProcessManager({
           <div className="internalDetailList">
             <article>
               <strong>Fuentes no encontradas</strong>
-              <span>{consultationSummary.noEncontrados} procesos devolvieron `not_found` en la última lectura.</span>
+              <span>{consultationSummary.noEncontrados} procesos no fueron encontrados en la última lectura.</span>
             </article>
             <article>
               <strong>Alertas activas</strong>
@@ -1630,7 +1731,7 @@ function InternalProcessManager({
                     <div className="internalDetailTitleLine">
                       <strong>{formatDateTimeLabel(snapshot.fetched_at)}</strong>
                       <span className={`internalStatusBadge is-${getSnapshotStatusTone(snapshot.fetch_status)}`}>
-                        {snapshot.fetch_status}
+                        {formatSnapshotStatus(snapshot.fetch_status)}
                       </span>
                     </div>
                     <span>{snapshot.duration_ms ? `${snapshot.duration_ms} ms` : "Sin duración reportada"}</span>
@@ -1878,8 +1979,8 @@ function InternalProcessManager({
               <article key={legalCase.id} className="internalCasesRow">
                 <strong>{legalCase.radicado}</strong>
                 <span>{legalCase.internal_owner || "Sin responsable"}</span>
-                <span className={`internalPriorityBadge is-${legalCase.priority}`}>{legalCase.priority}</span>
-                <span>{legalCase.status}</span>
+                <span className={`internalPriorityBadge is-${legalCase.priority}`}>{formatPriorityLabel(legalCase.priority)}</span>
+                <span>{formatCaseRecordStatus(legalCase.status)}</span>
                 <span>{formatCaseTimestamp(legalCase.created_at)}</span>
               </article>
             ))}
@@ -2019,6 +2120,16 @@ function InternalShell({
   const canManageTeam = membership.role === "account_admin" || membership.role === "platform_admin";
   const [activeView, setActiveView] = useState<AppView>(() => getViewFromHash(window.location.hash));
   const currentViewMeta = internalViewMeta[activeView];
+  const primaryAction =
+    activeView === "inicio"
+      ? { label: "Abrir bandeja", target: "bandeja" as AppView }
+      : activeView === "bandeja"
+        ? { label: "Cargar procesos", target: "procesos" as AppView }
+        : activeView === "procesos"
+          ? { label: "Ver equipo", target: "equipo" as AppView }
+          : activeView === "equipo"
+            ? { label: "Revisar consultas", target: "consultas" as AppView }
+            : { label: "Volver al inicio", target: "inicio" as AppView };
 
   useEffect(() => {
     const syncView = () => setActiveView(getViewFromHash(window.location.hash));
@@ -2062,21 +2173,28 @@ function InternalShell({
           </span>
         </div>
 
-        <nav className="internalSidebarNav" aria-label="Módulos internos">
-          {internalNavItems.map((item) => (
-            <a
-              key={item.view}
-              href={buildViewHash(item.view)}
-              className={activeView === item.view ? "is-active" : undefined}
-              onClick={(event) => {
-                event.preventDefault();
-                navigateTo(item.view);
-              }}
-            >
-              {item.label}
-            </a>
+        <div className="internalSidebarNav" aria-label="Módulos internos">
+          {internalNavSections.map((section) => (
+            <div key={section.label} className="internalSidebarNavGroup">
+              <span className="internalSidebarLabel">{section.label}</span>
+              <div className="internalSidebarNavLinks">
+                {section.items.map((item) => (
+                  <a
+                    key={item.view}
+                    href={buildViewHash(item.view)}
+                    className={activeView === item.view ? "is-active" : undefined}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      navigateTo(item.view);
+                    }}
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            </div>
           ))}
-        </nav>
+        </div>
 
         <button className="internalGhostButton" type="button" onClick={handleSignOut}>
           Cerrar sesión
@@ -2099,6 +2217,13 @@ function InternalShell({
               <span>{userName}</span>
               <span>Rol: {formatMemberRole(membership.role as TeamMemberRecord["role"])}</span>
             </div>
+            <button
+              className="internalGhostButton internalHeaderAction"
+              type="button"
+              onClick={() => navigateTo(primaryAction.target)}
+            >
+              {primaryAction.label}
+            </button>
           </div>
         </header>
 
