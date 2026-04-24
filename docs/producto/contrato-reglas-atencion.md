@@ -252,6 +252,12 @@ Minimo conceptual:
 - evento critico puede entrar a bandeja y notificar;
 - severidad y canal deben depender de reglas de atencion + notificaciones.
 
+Contrato relacionado:
+
+```text
+docs/producto/contrato-reglas-notificaciones.md
+```
+
 ---
 
 ## 11. Relacion Con Lex

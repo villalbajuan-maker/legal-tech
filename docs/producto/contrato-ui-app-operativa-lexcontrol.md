@@ -685,6 +685,12 @@ docs/producto/contrato-reglas-atencion.md
 - comportamiento por responsable
 - escalamiento de alertas
 
+Contrato rector:
+
+```text
+docs/producto/contrato-reglas-notificaciones.md
+```
+
 #### e. Asignacion
 
 - reglas para asignar responsables
