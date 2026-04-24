@@ -9,7 +9,7 @@ import type {
 } from "../../../packages/core/src";
 import lexSymbolUrl from "./assets/lex-control-logo-symbol.png";
 import logoUrl from "./assets/lexcontrol-logo.png";
-import "./styles.css";
+import "./design-system.css";
 
 type SpeechRecognitionAlternative = {
   transcript: string;
