@@ -474,6 +474,10 @@ Con este contrato integrador ya se puede pasar a dos piezas de implementacion:
 1. **UI de `Configuracion > Reglas operativas`**
 2. **modelo de datos / metadata para soportar estas familias**
 
+Contrato relacionado:
+
+`docs/producto/contrato-modelo-datos-reglas-operativas.md`
+
 La recomendacion es traducir primero:
 
 - estructura de UI

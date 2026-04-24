@@ -427,3 +427,7 @@ La UI de reglas operativas no debe hacer sentir al usuario
 que esta configurando software.
 Debe hacerle sentir que esta afinando como opera su bufete.
 ```
+
+Contrato relacionado:
+
+`docs/producto/contrato-modelo-datos-reglas-operativas.md`
