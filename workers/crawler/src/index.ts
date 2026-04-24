@@ -59,6 +59,22 @@ type MovementOutcome = {
   newEventIds: string[];
 };
 
+type SourceIdentity = {
+  processId?: number | null;
+  processKey?: string | null;
+  despacho?: string | null;
+  departamento?: string | null;
+  sujetosProcesales?: string | null;
+  fechaProceso?: string | null;
+  fechaUltimaActuacion?: string | null;
+  tipoProceso?: string | null;
+  claseProceso?: string | null;
+  subclaseProceso?: string | null;
+  multipleMatches?: boolean;
+  processCount?: number;
+  subjects?: Record<string, unknown>[];
+};
+
 const EVENT_ELIGIBLE_MOVEMENT_TYPES = ["Audiencia", "Traslado", "Sentencia / fallo", "Medida cautelar"];
 
 function getSupabaseEnv() {
@@ -140,6 +156,81 @@ function getLatestMovementSummary(result: SourceFetchResult) {
     description: latest.description || null,
     movement_type: latest.movementType || null,
   };
+}
+
+function getSourceIdentity(result: SourceFetchResult): SourceIdentity | null {
+  const identity = result.metadata?.sourceIdentity;
+  if (!identity || typeof identity !== "object" || Array.isArray(identity)) {
+    return null;
+  }
+
+  return identity as SourceIdentity;
+}
+
+function toTimestamp(value?: string | null) {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.includes("T")) return trimmed;
+  return `${trimmed}T00:00:00.000Z`;
+}
+
+async function persistCaseSourceIdentity(
+  supabase: ReturnType<typeof createClient<any>>,
+  input: CaseSourceInput,
+  result: SourceFetchResult,
+) {
+  if (result.status !== "success") {
+    return;
+  }
+
+  const identity = getSourceIdentity(result);
+  if (!identity) {
+    return;
+  }
+
+  const caseUpdate: Record<string, unknown> = {};
+  if (typeof identity.processId === "number") {
+    caseUpdate.external_process_id = identity.processId;
+  }
+  if (typeof identity.processKey === "string" && identity.processKey.trim()) {
+    caseUpdate.external_process_key = identity.processKey.trim();
+  }
+  if (typeof identity.despacho === "string" && identity.despacho.trim()) {
+    caseUpdate.court = identity.despacho.trim();
+  }
+  if (typeof identity.departamento === "string" && identity.departamento.trim()) {
+    caseUpdate.department = identity.departamento.trim();
+  }
+
+  const processType =
+    (typeof identity.claseProceso === "string" && identity.claseProceso.trim() && identity.claseProceso.trim()) ||
+    (typeof identity.tipoProceso === "string" && identity.tipoProceso.trim() && identity.tipoProceso.trim()) ||
+    null;
+
+  if (processType) {
+    caseUpdate.process_type = processType;
+  }
+
+  if (typeof identity.sujetosProcesales === "string" && identity.sujetosProcesales.trim()) {
+    caseUpdate.source_parties_summary = identity.sujetosProcesales.trim();
+  }
+
+  if (Array.isArray(identity.subjects) && identity.subjects.length > 0) {
+    caseUpdate.parties = identity.subjects;
+  }
+
+  const sourceLastMovementAt = toTimestamp(identity.fechaUltimaActuacion);
+  if (sourceLastMovementAt) {
+    caseUpdate.source_last_movement_at = sourceLastMovementAt;
+  }
+
+  if (Object.keys(caseUpdate).length > 0) {
+    const { error } = await supabase.from("cases").update(caseUpdate as never).eq("id", input.caseId);
+    if (error) {
+      throw error;
+    }
+  }
 }
 
 function shouldRequireReview(movement: PersistedMovementRow) {
@@ -694,13 +785,21 @@ async function persistSnapshot(
 
   const nextStatus = nextCaseSourceStatus(result.status);
   const latestSummary = getLatestMovementSummary(result);
+  const sourceIdentity = getSourceIdentity(result);
   const updatePayload: Record<string, unknown> = {
     last_checked_at: result.fetchedAt,
     status: nextStatus,
+    external_reference:
+      typeof sourceIdentity?.processId === "number"
+        ? String(sourceIdentity.processId)
+        : typeof sourceIdentity?.processKey === "string"
+          ? sourceIdentity.processKey
+          : input.externalReference || null,
     metadata: {
       ...(input.metadata || {}),
       case_source_status: nextStatus,
       latest_fetch: result.metadata || null,
+      source_identity: sourceIdentity,
       latest_summary: latestSummary,
       operational_status: movementOutcome.operationalStatus,
       new_movements_count: movementOutcome.newMovementsCount,
@@ -724,6 +823,8 @@ async function persistSnapshot(
   if (updateError) {
     throw updateError;
   }
+
+  await persistCaseSourceIdentity(supabase, input, result);
 
   await createOperationalAlerts(supabase, input, result, movementOutcome, latestSummary, nextStatus);
 

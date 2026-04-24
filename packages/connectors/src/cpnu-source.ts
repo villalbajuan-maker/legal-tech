@@ -69,6 +69,22 @@ type CPNUProcessBundle = {
   sujetosPagination: CPNUPagination[];
 };
 
+type CPNUSourceIdentity = {
+  processId: number | null;
+  processKey: string | null;
+  despacho: string | null;
+  departamento: string | null;
+  sujetosProcesales: string | null;
+  fechaProceso: string | null;
+  fechaUltimaActuacion: string | null;
+  tipoProceso: string | null;
+  claseProceso: string | null;
+  subclaseProceso: string | null;
+  multipleMatches: boolean;
+  processCount: number;
+  subjects: Record<string, unknown>[];
+};
+
 async function fetchCPNUJson<T>(path: string, params?: Record<string, string>) {
   const url = new URL(`${CPNU_API_ROOT}${path}`);
   if (params) {
@@ -102,6 +118,17 @@ function normalizeText(value?: string | null) {
     .replace(/\p{Diacritic}/gu, "")
     .toLowerCase()
     .trim();
+}
+
+function getDetailString(detail: CPNUDetailResponse | null, key: string) {
+  const value = detail?.[key];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function compareDescendingDates(left?: string | null, right?: string | null) {
+  const leftValue = normalizeIsoDate(left) || "";
+  const rightValue = normalizeIsoDate(right) || "";
+  return rightValue.localeCompare(leftValue);
 }
 
 function classifyMovementType(actuacion: CPNUActuacion) {
@@ -195,6 +222,43 @@ function buildMovementHash(processId: number, actuacion: CPNUActuacion) {
   });
 
   return createHash("sha256").update(basis).digest("hex");
+}
+
+function pickPrimaryBundle(bundles: CPNUProcessBundle[]) {
+  return [...bundles].sort((left, right) => {
+    const latestComparison = compareDescendingDates(
+      left.process.fechaUltimaActuacion,
+      right.process.fechaUltimaActuacion,
+    );
+
+    if (latestComparison !== 0) return latestComparison;
+
+    return compareDescendingDates(left.process.fechaProceso, right.process.fechaProceso);
+  })[0];
+}
+
+function extractSourceIdentity(bundles: CPNUProcessBundle[]): CPNUSourceIdentity | null {
+  if (bundles.length === 0) {
+    return null;
+  }
+
+  const primary = pickPrimaryBundle(bundles);
+
+  return {
+    processId: primary.process.idProceso ?? null,
+    processKey: primary.process.llaveProceso?.trim() || null,
+    despacho: primary.process.despacho?.trim() || getDetailString(primary.detail, "despacho"),
+    departamento: primary.process.departamento?.trim() || null,
+    sujetosProcesales: primary.process.sujetosProcesales?.trim() || null,
+    fechaProceso: normalizeIsoDate(primary.process.fechaProceso) || null,
+    fechaUltimaActuacion: normalizeIsoDate(primary.process.fechaUltimaActuacion) || null,
+    tipoProceso: getDetailString(primary.detail, "tipoProceso"),
+    claseProceso: getDetailString(primary.detail, "claseProceso"),
+    subclaseProceso: getDetailString(primary.detail, "subclaseProceso"),
+    multipleMatches: bundles.length > 1,
+    processCount: bundles.length,
+    subjects: primary.sujetos,
+  };
 }
 
 function parseMovements(bundle: CPNUProcessBundle): ParsedMovement[] {
@@ -334,6 +398,7 @@ export const cpnuSourceConnector: SourceConnector = {
           },
           processCount: bundles.length,
           totalMovements: movements.length,
+          sourceIdentity: extractSourceIdentity(bundles),
           latestActuacionDate:
             bundles
               .flatMap((bundle) => bundle.actuaciones.map((actuacion) => actuacion.fechaActuacion))
