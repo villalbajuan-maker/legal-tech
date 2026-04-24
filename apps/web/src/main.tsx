@@ -251,11 +251,11 @@ const solutionBlocks = [
   },
   {
     title: "Clasifica",
-    text: "Separa automáticamente novedades, sin cambios y fallas.",
+    text: "Convierte el resultado en estados operativos: novedad, estabilidad, falla o revisión.",
   },
   {
     title: "Prioriza",
-    text: "Muestra qué requiere atención y quién es responsable.",
+    text: "Muestra qué proceso requiere atención, quién responde y qué parte de la operación sigue pendiente.",
   },
 ];
 
@@ -1837,12 +1837,12 @@ function MarketingApp() {
         <div className="heroContent" data-reveal>
           <p className="eyebrow">LexControl — vigilancia judicial operativa</p>
           <h1>
-            El problema no es revisar procesos. Es no saber cuáles nunca fueron revisados.
+            El problema no es revisar procesos. Es no saber cuáles no fueron revisados, cuáles fallaron y cuáles requieren atención.
           </h1>
           <p className="lead">
             La mayoría de los equipos jurídicos cree que está al día. Pero no puede
-            demostrar qué procesos fueron realmente consultados, cuáles fallaron y
-            cuáles nunca se revisaron.
+            demostrar qué pasó realmente en su cartera de procesos: qué cambió,
+            qué sigue igual y qué no se pudo consultar.
           </p>
           <p className="lead strongLead">
             LexControl convierte esa incertidumbre en control operativo.
@@ -1856,7 +1856,7 @@ function MarketingApp() {
             </a>
           </div>
           <p className="microcopy">
-            Demo controlada para abogados y firmas que manejan volumen real de procesos.
+            Demo controlada para equipos que necesitan control operativo sobre volumen real de procesos.
             No necesitas datos sensibles para solicitar acceso.
           </p>
         </div>
@@ -1864,14 +1864,14 @@ function MarketingApp() {
 
       <section className="transitionSection" data-reveal>
         <p>Puedes revisar procesos todos los días.</p>
-        <strong>Y aún así estar dejando casos sin revisar.</strong>
+        <strong>Y aun así no saber qué parte de tu operación quedó sin cubrir.</strong>
       </section>
 
       <section className="problemSection" id="problema" data-reveal>
         <div>
           <p className="eyebrow">Problema</p>
           <h2>El riesgo no está solo en que un proceso cambie.</h2>
-          <h3>Está en no saber si fue revisado.</h3>
+          <h3>Está en no poder leer con claridad qué pasó en la operación.</h3>
         </div>
         <div className="problemList">
           <p>Una actuación puede aparecer.</p>
@@ -1879,20 +1879,20 @@ function MarketingApp() {
           <p>Una fuente puede fallar.</p>
           <p>Un proceso puede no consultarse.</p>
           <p>Un responsable puede asumir que alguien más lo vio.</p>
-          <strong>Y no hay una forma clara de saber cuándo pasó.</strong>
+          <strong>Y la operación sigue adelante sin una señal clara de lo que realmente ocurrió.</strong>
         </div>
         <div className="problemTruth">
           <p>No es un problema de disciplina.</p>
-          <h2>Es un problema de visibilidad.</h2>
-          <p>Si no tienes trazabilidad, no tienes control. Solo tienes confianza en que alguien revisó.</p>
+          <h2>Es un problema de trazabilidad operativa.</h2>
+          <p>Si no puedes demostrar qué se consultó, qué falló y qué quedó pendiente, no tienes control.</p>
         </div>
       </section>
 
       <section className="diagnosticEntry" id="diagnostico" data-reveal>
         <div>
           <p className="eyebrow">Diagnóstico de Riesgo Operativo Judicial</p>
-          <h2>Este diagnóstico no mide qué tan organizado estás.</h2>
-          <p>Hace parte de la activación de demo y mide qué tan expuesta está tu operación a errores que no puedes detectar.</p>
+          <h2>Esta activación no parte de una llamada comercial.</h2>
+          <p>Parte de una pregunta simple: qué tan visible es hoy tu operación cuando algo cambia, algo falla o algo queda sin consultar.</p>
         </div>
         <button className="button primary" type="button" onClick={() => setActivationOpen(true)}>
           Activar demo gratis
@@ -1933,12 +1933,12 @@ function MarketingApp() {
         </div>
         <div className="shiftColumn">
           <span>Con LexControl</span>
-          <strong>Una operación visible, trazable y priorizada.</strong>
+          <strong>Una cartera visible, consultas trazables y prioridades claras.</strong>
           <ul>
-            <li>Una bandeja clara</li>
-            <li>Estados visibles</li>
-            <li>Errores identificados</li>
-            <li>Responsables asignados</li>
+            <li>Una cartera visible</li>
+            <li>Consultas trazables</li>
+            <li>Fallas explícitas</li>
+            <li>Responsables visibles</li>
           </ul>
         </div>
       </section>
@@ -1948,7 +1948,7 @@ function MarketingApp() {
           <div>
             <p className="eyebrow">Panel</p>
             <h2>Una bandeja para decidir. No otra tabla para revisar.</h2>
-            <p>Todo en un solo lugar. Con trazabilidad.</p>
+            <p>La cartera deja de vivirse como consultas dispersas y empieza a leerse como una operación visible.</p>
           </div>
         </div>
 
@@ -2102,8 +2102,8 @@ function MarketingApp() {
         <div className="betaContent">
           <p className="eyebrow">Demo gratuita controlada</p>
           <h2>Activa LexControl con una muestra real de tu operación.</h2>
-          <p>Estamos activando un grupo reducido de abogados y firmas que operan volumen real de procesos.</p>
-          <p>Ideal para equipos que manejan 50 a 500 procesos activos.</p>
+          <p>Durante 14 días verás tu cartera convertida en una bandeja operativa: qué cambió, qué no cambió, qué falló y qué requiere revisión.</p>
+          <p>Ideal para equipos que ya manejan volumen real de procesos.</p>
           <ul className="demoChecklist">
             <li>Hasta 100 procesos</li>
             <li>Hasta 4 responsables</li>
@@ -2122,7 +2122,7 @@ function MarketingApp() {
           <p className="eyebrow">Preguntas frecuentes</p>
           <h2>Antes de hablar de precio, aclaremos la operación.</h2>
           <p>
-            Estas respuestas explican por qué existe LexControl, cómo opera la demo y qué recibe un equipo durante la activación controlada.
+            Antes de decidir, aclaremos algo más importante: qué control ganas, cómo opera la activación y qué recibe realmente tu equipo.
           </p>
         </div>
         <div className="faqGrid">
@@ -2138,10 +2138,9 @@ function MarketingApp() {
       <section className="pricingSection" id="precios" data-reveal>
         <div className="sectionIntro">
           <p className="eyebrow">Precios de lanzamiento</p>
-          <h2>Precios claros antes de activar la demo.</h2>
+          <h2>Precios claros para operar con capacidad real.</h2>
           <p>
-            Puedes activar una demo gratuita antes de elegir plan. Estos precios aplican
-            para los primeros equipos que validen LexControl con procesos reales.
+            Puedes activar una demo gratuita antes de elegir plan. Cada plan expresa capacidad operativa vigilada: procesos activos, responsables y profundidad de operación.
           </p>
         </div>
         <div className="pricingGrid">
@@ -2170,7 +2169,7 @@ function MarketingApp() {
         <div className="addOnsPanel" data-reveal>
           <div>
             <p className="eyebrow">Complementos disponibles</p>
-            <h3>Activa más capacidad según plan y volumen.</h3>
+            <h3>Extiende la operación según volumen, canal y nivel de servicio.</h3>
           </div>
           <div className="addOnsGrid">
             {addOns.map((addOn) => (
@@ -2189,8 +2188,8 @@ function MarketingApp() {
 
       <section className="closingSection" data-reveal>
         <h2>No puedes controlar lo que no puedes ver.</h2>
-        <p>Activa una demo gratuita y revisa cómo se ve tu operación cuando cada consulta deja trazabilidad.</p>
-        <strong>LexControl convierte esa incertidumbre en sistema.</strong>
+        <p>Activa una demo gratuita y mira tu cartera de procesos como debería verse: con trazabilidad, fallas visibles y prioridad operativa.</p>
+        <strong>LexControl convierte esa incertidumbre en control.</strong>
         <button className="button primary" type="button" onClick={() => setActivationOpen(true)}>
           Activar demo gratis
         </button>
