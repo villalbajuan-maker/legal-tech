@@ -9,6 +9,7 @@ Contrato complementario obligatorio:
 
 ```text
 docs/producto/contrato-design-system-lexcontrol.md
+docs/producto/contrato-postcarga-inicio-vigilancia.md
 ```
 
 ---
