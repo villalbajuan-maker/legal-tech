@@ -112,10 +112,10 @@ function SocialIcon({ name }: { name: SocialIconName }) {
 const demoFeatures = [
   "Hasta 100 procesos activos",
   "Hasta 4 responsables operativos",
-  "Bandeja operativa con estados visibles",
+  "Bandeja operativa con prioridades visibles",
   "Lex sobre una muestra real de la cuenta",
   "Activación guiada de la operación",
-  "Lectura inicial de resultados y prioridades",
+  "Lectura inicial de atención y prioridades",
 ];
 
 const demoLimits = [
@@ -136,7 +136,7 @@ const launchPlans = [
     features: [
       "1 responsable operativo",
       "Bandeja operativa",
-      "Lectura visible de cambios, estabilidad y fallas",
+      "Atención visible sobre cambios, estabilidad y fallas",
       "Consulta CPNU / Rama Judicial",
     ],
   },
@@ -149,7 +149,7 @@ const launchPlans = [
       "Hasta 2 responsables operativos",
       "Bandeja operativa",
       "Lex sobre la operación",
-      "Prioridades y lectura por responsable",
+      "Prioridades y atención por responsable",
       "Resumen diario",
     ],
   },
@@ -197,12 +197,12 @@ const faqs = [
   {
     question: "¿Esto reemplaza la revisión del abogado?",
     answer:
-      "No. LexControl no reemplaza criterio jurídico. Hace visible qué cambió, qué no cambió, qué falló y qué requiere intervención para que el responsable actúe donde corresponde.",
+      "No. LexControl no reemplaza criterio jurídico. Hace visible qué cambió, qué no cambió, qué falló y qué sí merece intervención para que el responsable actúe donde corresponde.",
   },
   {
     question: "¿Por qué no basta con revisar manualmente?",
     answer:
-      "Porque revisar no equivale a tener control. La revisión manual puede funcionar, pero no siempre deja trazabilidad sobre qué se consultó, qué quedó pendiente o qué fuente falló.",
+      "Porque revisar no equivale a tener control. La revisión manual puede funcionar, pero no siempre deja trazabilidad ni administra bien la atención sobre qué se consultó, qué quedó pendiente o qué fuente falló.",
   },
   {
     question: "¿Para quién tiene sentido?",
@@ -217,7 +217,7 @@ const faqs = [
   {
     question: "¿Qué pasa si una fuente falla?",
     answer:
-      "La falla queda visible. LexControl no la oculta ni la interpreta como ausencia de novedad. La operación mantiene trazabilidad y el proceso pasa a estado no consultado o error de fuente.",
+      "La falla queda visible. LexControl no la oculta ni la interpreta como ausencia de novedad. La operación mantiene trazabilidad y eleva esa falla como atención requerida, en lugar de esconderla dentro del ruido.",
   },
   {
     question: "¿Puedo cargar mis procesos reales?",
@@ -227,12 +227,12 @@ const faqs = [
   {
     question: "¿Qué recibo en la demo gratuita?",
     answer:
-      "Una activación controlada con hasta 100 procesos activos, hasta 4 responsables, bandeja operativa, Lex sobre la muestra real y una lectura inicial de resultados y prioridades.",
+      "Una activación controlada con hasta 100 procesos activos, hasta 4 responsables, bandeja operativa, Lex sobre la muestra real y una lectura inicial de qué necesita atención y qué puede permanecer en silencio.",
   },
   {
     question: "¿Cuánto dura la demo?",
     answer:
-      "La duración recomendada es de 14 días. Es suficiente para observar cambios, estabilidad, fallas y comportamiento operativo real sobre una cartera activa.",
+      "La duración recomendada es de 14 días. Es suficiente para observar cambios, estabilidad, fallas y cómo se organiza la atención sobre una cartera activa.",
   },
   {
     question: "¿Tengo que pagar antes de probar?",
@@ -254,8 +254,8 @@ const solutionBlocks = [
     text: "Convierte el resultado en estados operativos: novedad, estabilidad, falla o revisión.",
   },
   {
-    title: "Prioriza",
-    text: "Muestra qué proceso requiere atención, quién responde y qué parte de la operación sigue pendiente.",
+    title: "Administra atención",
+    text: "Deja en silencio lo estable y eleva solo lo que requiere intervención, responsable o revisión.",
   },
 ];
 
@@ -696,7 +696,7 @@ function ActivationModal({
                 </div>
                 <div className="activationFooter">
                   <p>
-                    En menos de dos minutos identificamos si tu vigilancia puede convertirse en control operativo visible.
+                    En menos de dos minutos identificamos si tu vigilancia puede convertirse en control operativo con atención bien administrada.
                   </p>
                   <button className="activationPrimaryNav" type="button" onClick={goNext} aria-label="Continuar">
                     →
@@ -815,7 +815,7 @@ function ActivationModal({
               <section className="activationStep">
                 <h2>¿Qué riesgos pueden estar ocurriendo hoy?</h2>
                 <p>
-                  Puedes marcar más de uno. El riesgo no es solo que algo cambie. Es no saber qué parte de la operación quedó sin cubrir.
+                  Puedes marcar más de uno. El riesgo no es solo que algo cambie. Es no saber qué parte de la operación quedó sin cubrir o qué sí merece atención ahora.
                 </p>
 
                 <div className="activationQuestionBlock">
@@ -972,7 +972,7 @@ function ActivationModal({
               <section className="activationStep">
                 <h2>¿Cuándo tendría sentido activar la demo?</h2>
                 <p>
-                  No se trata de agendar una llamada de ventas. Se trata de revisar si una muestra real puede convertirse en control operativo sobre tu cartera.
+                  No se trata de agendar una llamada de ventas. Se trata de revisar si una muestra real puede convertirse en control operativo y atención bien administrada sobre tu cartera.
                 </p>
                 <div className="activationChoiceGrid compact compact-three">
                   {decisionWindowOptions.map((option) => (
@@ -1081,7 +1081,7 @@ function ActivationModal({
                     {submitError
                       ? submitError
                       : canProceed(step)
-                        ? "Con estos datos podemos validar si la muestra tiene sentido para activar control operativo sin pedir información sensible."
+                        ? "Con estos datos podemos validar si la muestra tiene sentido para activar control operativo sin aumentar el ruido de revisión."
                         : "Completa los datos de contacto para solicitar la activación."}
                   </p>
                   <button
@@ -1103,7 +1103,7 @@ function ActivationModal({
               <>
                 <h2>Tu operación encaja con esta activación.</h2>
                 <p>
-                  El siguiente paso es agendar una sesión para revisar alcance, carga inicial y responsables sobre una muestra real de tu cartera.
+                  El siguiente paso es agendar una sesión para revisar alcance, carga inicial y responsables sobre una muestra real de tu cartera y su criterio de atención.
                 </p>
                 <div className="activationResultActions">
                   <button className="button primary" type="button" onClick={() => void openCalendarFromActivation()}>
@@ -1118,7 +1118,7 @@ function ActivationModal({
               <>
                 <h2>Revisaremos si tu operación encaja con esta activación.</h2>
                 <p>
-                  Te contactaremos si la muestra tiene sentido para esta etapa. La activación se prioriza para operaciones con volumen y necesidad clara de control operativo visible.
+                  Te contactaremos si la muestra tiene sentido para esta etapa. La activación se prioriza para operaciones con volumen y necesidad clara de control operativo con atención bien administrada.
                 </p>
                 <button className="activationPrimaryNav" type="button" onClick={onClose} aria-label="Cerrar activación">
                   →
@@ -1835,7 +1835,7 @@ function MarketingApp() {
         <div className="heroContent" data-reveal>
           <p className="eyebrow">LexControl — vigilancia judicial operativa</p>
           <h1>
-            El problema no es revisar procesos. Es no saber cuáles no fueron revisados, cuáles fallaron y cuáles requieren atención.
+            El problema no es revisar procesos. Es no saber qué parte de tu cartera realmente merece tu atención.
           </h1>
           <p className="lead">
             La mayoría de los equipos jurídicos cree que está al día. Pero no puede
@@ -1843,7 +1843,7 @@ function MarketingApp() {
             qué sigue igual y qué no se pudo consultar.
           </p>
           <p className="lead strongLead">
-            LexControl convierte esa incertidumbre en control operativo.
+            LexControl convierte esa incertidumbre en control operativo y atención bien administrada.
           </p>
           <div className="actions">
             <button className="button primary" type="button" onClick={() => setActivationOpen(true)}>
@@ -1854,7 +1854,7 @@ function MarketingApp() {
             </a>
           </div>
           <p className="microcopy">
-            Demo controlada para equipos que necesitan control operativo sobre volumen real de procesos.
+            Demo controlada para equipos que necesitan control operativo sin aumentar la carga de revisión.
             No necesitas datos sensibles para solicitar acceso.
           </p>
         </div>
@@ -1862,14 +1862,14 @@ function MarketingApp() {
 
       <section className="transitionSection" data-reveal>
         <p>Puedes revisar procesos todos los días.</p>
-        <strong>Y aun así no saber qué parte de tu operación quedó sin cubrir.</strong>
+        <strong>Y aun así seguir cargando con más ruido del que realmente ayuda.</strong>
       </section>
 
       <section className="problemSection" id="problema" data-reveal>
         <div>
           <p className="eyebrow">Problema</p>
           <h2>El riesgo no está solo en que un proceso cambie.</h2>
-          <h3>Está en no poder leer con claridad qué pasó en la operación.</h3>
+          <h3>Está en no poder leer con claridad qué pasó y qué sí requiere intervención.</h3>
         </div>
         <div className="problemList">
           <p>Una actuación puede aparecer.</p>
@@ -1877,12 +1877,12 @@ function MarketingApp() {
           <p>Una fuente puede fallar.</p>
           <p>Un proceso puede no consultarse.</p>
           <p>Un responsable puede asumir que alguien más lo vio.</p>
-          <strong>Y la operación sigue adelante sin una señal clara de lo que realmente ocurrió.</strong>
+          <strong>Y la operación sigue adelante sin una señal clara de lo que realmente ocurrió ni de qué merece atención ahora.</strong>
         </div>
         <div className="problemTruth">
           <p>No es un problema de disciplina.</p>
-          <h2>Es un problema de trazabilidad operativa.</h2>
-          <p>Si no puedes demostrar qué se consultó, qué falló y qué quedó pendiente, no tienes control.</p>
+          <h2>Es un problema de trazabilidad operativa y administración de atención.</h2>
+          <p>Si no puedes demostrar qué se consultó, qué falló, qué quedó pendiente y qué sí importa ahora, no tienes control.</p>
         </div>
       </section>
 
@@ -1890,7 +1890,7 @@ function MarketingApp() {
         <div>
           <p className="eyebrow">Diagnóstico de Riesgo Operativo Judicial</p>
           <h2>Esta activación no parte de una llamada comercial.</h2>
-          <p>Parte de una pregunta simple: qué tan visible es hoy tu operación cuando algo cambia, algo falla o algo queda sin consultar.</p>
+          <p>Parte de una pregunta simple: qué tan bien administrada está hoy tu atención cuando algo cambia, algo falla o algo queda sin consultar.</p>
         </div>
         <button className="button primary" type="button" onClick={() => setActivationOpen(true)}>
           Activar demo gratis
@@ -1900,7 +1900,7 @@ function MarketingApp() {
       <section className="solutionSection" data-reveal>
         <div>
           <p className="eyebrow">Solución</p>
-          <h2>De revisión manual a control operativo.</h2>
+          <h2>De revisión manual a control operativo con menos ruido.</h2>
         </div>
         <div className="solutionFlow" aria-label="Flujo operativo de LexControl">
           {solutionBlocks.map((item, index) => (
@@ -1918,7 +1918,7 @@ function MarketingApp() {
       <section className="modelShift" data-reveal>
         <div className="shiftColumn">
           <span>Hoy operas así</span>
-          <strong>Revisión manual, Excel, mensajes y supuestos.</strong>
+          <strong>Revisión manual, señales dispersas, Excel, mensajes y supuestos.</strong>
           <ul>
             <li>Revisión manual</li>
             <li>Excel</li>
@@ -1931,12 +1931,12 @@ function MarketingApp() {
         </div>
         <div className="shiftColumn">
           <span>Con LexControl</span>
-          <strong>Una cartera visible, consultas trazables y prioridades claras.</strong>
+          <strong>Una cartera visible, consultas trazables y una atención mejor administrada.</strong>
           <ul>
             <li>Una cartera visible</li>
             <li>Consultas trazables</li>
             <li>Fallas explícitas</li>
-            <li>Responsables visibles</li>
+            <li>Solo lo que merece atención</li>
           </ul>
         </div>
       </section>
@@ -1946,7 +1946,7 @@ function MarketingApp() {
           <div>
             <p className="eyebrow">Panel</p>
             <h2>Una bandeja para decidir. No otra tabla para revisar.</h2>
-            <p>La cartera deja de vivirse como consultas dispersas y empieza a leerse como una operación visible.</p>
+            <p>La cartera deja de vivirse como actividad dispersa y empieza a leerse como una operación visible donde la atención se concentra solo en lo importante.</p>
           </div>
         </div>
 
@@ -2100,7 +2100,7 @@ function MarketingApp() {
         <div className="betaContent">
           <p className="eyebrow">Demo gratuita controlada</p>
           <h2>Activa LexControl con una muestra real de tu operación.</h2>
-          <p>Durante 14 días verás tu cartera convertida en una bandeja operativa: qué cambió, qué no cambió, qué falló y qué requiere revisión.</p>
+          <p>Durante 14 días verás tu cartera convertida en una bandeja operativa que separa lo estable de lo que sí requiere atención humana.</p>
           <p>Ideal para equipos que ya manejan volumen real de procesos.</p>
           <ul className="demoChecklist">
             <li>Hasta 100 procesos</li>
@@ -2120,7 +2120,7 @@ function MarketingApp() {
           <p className="eyebrow">Preguntas frecuentes</p>
           <h2>Antes de hablar de precio, aclaremos la operación.</h2>
           <p>
-            Antes de decidir, aclaremos algo más importante: qué control ganas, cómo opera la activación y qué recibe realmente tu equipo.
+            Antes de decidir, aclaremos algo más importante: cómo se reduce ruido operativo, cómo funciona la activación y qué recibe realmente tu equipo.
           </p>
         </div>
         <div className="faqGrid">
@@ -2138,7 +2138,7 @@ function MarketingApp() {
           <p className="eyebrow">Precios de lanzamiento</p>
           <h2>Precios claros para operar con capacidad real.</h2>
           <p>
-            Puedes activar una demo gratuita antes de elegir plan. Cada plan expresa capacidad operativa vigilada: procesos activos, responsables y profundidad de operación.
+            Puedes activar una demo gratuita antes de elegir plan. Cada plan expresa capacidad operativa vigilada sin convertir la vigilancia en una carga mental adicional.
           </p>
         </div>
         <div className="pricingGrid">
