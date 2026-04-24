@@ -733,6 +733,44 @@ async function persistSnapshot(
   };
 }
 
+async function recalculateOrganizationsTouched(
+  supabase: ReturnType<typeof createClient<any>>,
+  organizationIds: string[],
+) {
+  const uniqueOrganizationIds = [...new Set(organizationIds.filter(Boolean))];
+
+  if (uniqueOrganizationIds.length === 0) {
+    return [];
+  }
+
+  const summaries: Array<Record<string, unknown>> = [];
+
+  for (const organizationId of uniqueOrganizationIds) {
+    const { data, error } = await supabase
+      .rpc("recalculate_organization_case_derived_fields", {
+        target_organization_id: organizationId,
+      })
+      .single<{
+        updated_count: number;
+        default_assigned_count: number;
+        elevated_attention_count: number;
+      }>();
+
+    if (error) {
+      throw error;
+    }
+
+    summaries.push({
+      organizationId,
+      updatedCount: data.updated_count,
+      defaultAssignedCount: data.default_assigned_count,
+      elevatedAttentionCount: data.elevated_attention_count,
+    });
+  }
+
+  return summaries;
+}
+
 async function processBatch() {
   const { supabase, rows } = await loadPendingCaseSources();
 
@@ -742,6 +780,7 @@ async function processBatch() {
   }
 
   const results: Array<Record<string, unknown>> = [];
+  const touchedOrganizationIds: string[] = [];
 
   for (const row of rows) {
     const input = mapToInput(row);
@@ -768,6 +807,12 @@ async function processBatch() {
 
     const fetchResult = await connector.fetchCase(input);
     const persistResult = await persistSnapshot(supabase, input, fetchResult);
+    const organizationId =
+      typeof input.metadata?.organization_id === "string" ? input.metadata.organization_id : null;
+
+    if (organizationId) {
+      touchedOrganizationIds.push(organizationId);
+    }
 
     results.push({
       caseSourceId: row.id,
@@ -784,7 +829,15 @@ async function processBatch() {
     });
   }
 
-  console.log(JSON.stringify({ status: "ok", processed: results.length, results }, null, 2));
+  const recalculationSummaries = await recalculateOrganizationsTouched(supabase, touchedOrganizationIds);
+
+  console.log(
+    JSON.stringify(
+      { status: "ok", processed: results.length, recalculations: recalculationSummaries, results },
+      null,
+      2,
+    ),
+  );
 }
 
 async function runSample() {
