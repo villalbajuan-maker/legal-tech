@@ -697,6 +697,12 @@ docs/producto/contrato-reglas-notificaciones.md
 - defaults por tipo de proceso o criterio operativo
 - comportamiento cuando un caso entra sin responsable
 
+Contrato rector:
+
+```text
+docs/producto/contrato-reglas-asignacion.md
+```
+
 #### f. Escalamiento
 
 - cuando una falla pasa a revision
