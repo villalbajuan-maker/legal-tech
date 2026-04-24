@@ -560,6 +560,171 @@ button {
   gap: 18px;
 }
 
+.internalConfigurationWorkspace {
+  display: grid;
+  gap: 22px;
+}
+
+.internalConfigurationSections {
+  display: grid;
+  gap: 22px;
+}
+
+.internalRulesPanel {
+  gap: 18px;
+}
+
+.internalRulesHeader {
+  align-items: start;
+}
+
+.internalRulesHeaderActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.internalRulesOverview {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.internalRulesOverview article {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  background: linear-gradient(180deg, rgba(20, 42, 84, 0.03), rgba(20, 42, 84, 0.01));
+}
+
+.internalRulesOverview strong {
+  color: var(--brand);
+  font-size: var(--font-small);
+  line-height: 1.45;
+}
+
+.internalRulesFeedback {
+  margin: 0;
+  border: 1px solid var(--info-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: var(--info-soft);
+  color: var(--info);
+  font-size: var(--font-small);
+}
+
+.internalRulesFamilies {
+  display: grid;
+  gap: 14px;
+}
+
+.internalRuleCard {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.internalRuleCard.is-expanded {
+  border-color: var(--brand-border);
+  box-shadow: 0 18px 34px rgba(20, 42, 84, 0.05);
+}
+
+.internalRuleCardHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(260px, 1.1fr);
+  gap: 18px;
+  width: 100%;
+  border: 0;
+  padding: 18px;
+  background: #ffffff;
+  color: inherit;
+  text-align: left;
+}
+
+.internalRuleCardHeader:hover {
+  background: var(--surface-subtle);
+}
+
+.internalRuleCardHeader strong {
+  color: var(--brand);
+  font-size: 1rem;
+}
+
+.internalRuleCardHeader p,
+.internalRuleCardMeta span:first-child {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: var(--font-small);
+  line-height: 1.5;
+}
+
+.internalRuleCardMeta {
+  display: grid;
+  align-content: start;
+  justify-items: end;
+  gap: 8px;
+}
+
+.internalRuleCardToggle {
+  border: 1px solid var(--brand-border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  color: var(--brand);
+  font-size: var(--font-micro);
+  font-weight: 700;
+}
+
+.internalRuleCardBody {
+  display: grid;
+  gap: 14px;
+  border-top: 1px solid var(--border);
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(20, 42, 84, 0.025), rgba(20, 42, 84, 0));
+}
+
+.internalRulesFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.internalRuleCheck {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 14px;
+  background: #ffffff;
+  font-weight: 650 !important;
+}
+
+.internalRuleCheck input {
+  width: 18px !important;
+  min-height: auto !important;
+  margin: 0;
+}
+
+.internalRuleCheck span {
+  color: var(--text);
+  font-size: var(--font-small);
+  font-weight: 650;
+}
+
+.internalRuleCardAdvanced {
+  border: 1px dashed var(--brand-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: rgba(20, 42, 84, 0.03);
+  color: var(--muted);
+  font-size: var(--font-small);
+}
+
 .internalTeamList {
   display: grid;
   gap: 12px;
@@ -1020,8 +1185,17 @@ button {
   .internalDetailSummary,
   .internalTeamSummary,
   .internalDemoStatusSummary,
-  .internalTeamGrid {
+  .internalTeamGrid,
+  .internalRulesOverview,
+  .internalRulesFormGrid,
+  .internalRuleCardHeader {
     grid-template-columns: 1fr;
+  }
+
+  .internalRulesHeaderActions,
+  .internalRuleCardMeta {
+    justify-items: start;
+    justify-content: start;
   }
 
   .internalTraySummary {

@@ -135,7 +135,15 @@ type AccountUsage = {
   memberCount: number;
 };
 
-type AppView = "inicio" | "bandeja" | "procesos" | "equipo" | "consultas";
+type AppView = "inicio" | "bandeja" | "monitoreo" | "configuracion";
+type ProcessManagerView = "inicio" | "bandeja" | "procesos" | "monitoreo";
+type RuleFamilyKey =
+  | "consulta"
+  | "prioridad"
+  | "atencion"
+  | "asignacion"
+  | "notificaciones"
+  | "escalamiento";
 
 function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error && error.message) {
@@ -229,24 +237,24 @@ async function loadAccountUsage(organizationId: string, accessToken: string) {
 
 const internalModules = [
   {
+    name: "Inicio",
+    status: "Operando",
+    description: "Panorama ejecutivo de cuenta, capacidad disponible y salud operativa.",
+  },
+  {
     name: "Bandeja",
     status: "Operando",
-    description: "Estados operativos, errores visibles y detalle por proceso.",
+    description: "Cola de atención con procesos priorizados, detalle y evidencia operativa.",
   },
   {
-    name: "Procesos",
+    name: "Monitoreo",
     status: "Operando",
-    description: "Inventario vigilado, carga individual y lotes controlados.",
+    description: "Corridas, fuentes, snapshots y alertas que sostienen la cobertura.",
   },
   {
-    name: "Equipo",
-    status: "Operando",
-    description: "Responsables reales, cupos disponibles y control de acceso.",
-  },
-  {
-    name: "Consultas",
-    status: "Visible",
-    description: "Salud de fuente, snapshots y alertas que sostienen la cuenta.",
+    name: "Configuración",
+    status: "En expansión",
+    description: "Firma, colaboradores, procesos y reglas operativas en una sola superficie.",
   },
 ];
 
@@ -259,14 +267,13 @@ const internalNavSections: Array<{
     items: [
       { view: "inicio", label: "Inicio" },
       { view: "bandeja", label: "Bandeja" },
-      { view: "procesos", label: "Procesos" },
+      { view: "monitoreo", label: "Monitoreo" },
     ],
   },
   {
     label: "Cuenta",
     items: [
-      { view: "equipo", label: "Equipo" },
-      { view: "consultas", label: "Consultas" },
+      { view: "configuracion", label: "Configuración" },
     ],
   },
 ];
@@ -289,35 +296,27 @@ const internalViewMeta: Record<
     title: "Bandeja",
     description: "Procesos consultados, errores visibles y decisiones pendientes.",
   },
-  procesos: {
-    eyebrow: "Inventario operativo",
-    title: "Procesos",
-    description: "Carga, administra y revisa el inventario vigilado por la cuenta.",
-  },
-  equipo: {
-    eyebrow: "Equipo de trabajo",
-    title: "Equipo",
-    description: "Responsables reales de la cuenta y capacidad disponible para operar.",
-  },
-  consultas: {
-    eyebrow: "Trazabilidad",
-    title: "Consultas",
+  monitoreo: {
+    eyebrow: "Supervisión",
+    title: "Monitoreo",
     description: "Estado de fuente, snapshots y alertas que sostienen la operación.",
+  },
+  configuracion: {
+    eyebrow: "Sistema operativo",
+    title: "Configuración",
+    description: "Firma, colaboradores, procesos y reglas operativas para este bufete.",
   },
 };
 
 function getViewFromHash(hash: string): AppView {
   const cleaned = hash.replace(/^#\/?/, "").trim().toLowerCase();
 
-  if (
-    cleaned === "inicio" ||
-    cleaned === "bandeja" ||
-    cleaned === "procesos" ||
-    cleaned === "equipo" ||
-    cleaned === "consultas"
-  ) {
+  if (cleaned === "inicio" || cleaned === "bandeja" || cleaned === "monitoreo" || cleaned === "configuracion") {
     return cleaned;
   }
+
+  if (cleaned === "consultas") return "monitoreo";
+  if (cleaned === "procesos" || cleaned === "equipo") return "configuracion";
 
   return "inicio";
 }
@@ -818,6 +817,65 @@ function getTeamMemberName(member: TeamMemberRecord) {
   return member.full_name || titleCaseFromEmail(member.email);
 }
 
+const operationalRulesHighlights = [
+  "Consulta reforzada en casos críticos y con eventos próximos.",
+  "La prioridad final combina criterio manual y señales del sistema.",
+  "Los procesos sin responsable suben de visibilidad cuando pierden cobertura.",
+  "Las alertas relevantes entran a resumen antes de interrumpir por canal.",
+  "Los errores persistentes pueden escalar de nivel y destinatario.",
+];
+
+const operationalRuleFamilyMeta: Array<{
+  key: RuleFamilyKey;
+  title: string;
+  effect: string;
+  summary: string;
+  advancedLabel: string;
+}> = [
+  {
+    key: "consulta",
+    title: "Consulta",
+    effect: "Define cada cuánto vigila LexControl y cómo protege la fuente.",
+    summary: "Hoy: la vigilancia sube frecuencia en casos críticos y permite consulta puntual.",
+    advancedLabel: "Ver criterios de recencia y protección de fuente",
+  },
+  {
+    key: "prioridad",
+    title: "Prioridad",
+    effect: "Define qué casos pesan más dentro de la cartera.",
+    summary: "Hoy: la prioridad final combina criterio manual y señales del sistema.",
+    advancedLabel: "Ver factores que elevan o reducen prioridad",
+  },
+  {
+    key: "atencion",
+    title: "Atención",
+    effect: "Decide qué permanece en silencio y qué se eleva a Bandeja.",
+    summary: "Hoy: lo estable queda cubierto y lo relevante entra a la cola de atención.",
+    advancedLabel: "Ver umbrales de elevación y silencio operativo",
+  },
+  {
+    key: "asignacion",
+    title: "Asignación",
+    effect: "Distribuye cobertura entre responsables reales del bufete.",
+    summary: "Hoy: cada proceso puede tener un responsable principal y un default operativo.",
+    advancedLabel: "Ver reglas de cobertura y procesos sin responsable",
+  },
+  {
+    key: "notificaciones",
+    title: "Notificaciones",
+    effect: "Decide cuándo una señal se resume y cuándo interrumpe por canal.",
+    summary: "Hoy: primero se ve en la app, luego entra a resumen y solo después interrumpe.",
+    advancedLabel: "Ver severidad mínima, canal y resumen",
+  },
+  {
+    key: "escalamiento",
+    title: "Escalamiento",
+    effect: "Cambia el nivel de respuesta cuando la situación ya no puede quedarse igual.",
+    summary: "Hoy: la persistencia y la cercanía temporal pueden subir visibilidad, destinatario o canal.",
+    advancedLabel: "Ver persistencia, cercanía y cambio de nivel",
+  },
+];
+
 function TeamManager({
   accessToken,
   canManage,
@@ -1021,6 +1079,417 @@ function TeamManager({
   );
 }
 
+function OperationalRulesPanel() {
+  const [expandedFamilies, setExpandedFamilies] = useState<Record<RuleFamilyKey, boolean>>({
+    consulta: true,
+    prioridad: false,
+    atencion: false,
+    asignacion: false,
+    notificaciones: false,
+    escalamiento: false,
+  });
+  const [saveFeedback, setSaveFeedback] = useState<string | null>(null);
+  const [rulesDraft, setRulesDraft] = useState({
+    consultaCritica: "Cada hora",
+    consultaAlta: "Cada 4 horas",
+    consultaPuntual: true,
+    proteccionFuente: "Equilibrada",
+    prioridadBase: "La mayor entre manual y calculada",
+    prioridadEvento: "Audiencia próxima o término cercano",
+    prioridadSinResponsable: true,
+    atencionSilencio: "Mantener en silencio los procesos estables",
+    atencionBandeja: "Elevar errores de fuente y requiere revisión",
+    atencionEventos: "Elevar eventos próximos a 3 días",
+    asignacionDefault: "Administrador de cuenta",
+    asignacionSinResponsable: "Mantener visible y elevar si hay novedad",
+    asignacionCobertura: true,
+    notificacionCanal: "Email",
+    notificacionResumen: "Diario",
+    notificacionUmbral: "Alta",
+    escalamientoPersistencia: "Después de 2 corridas fallidas",
+    escalamientoEventos: "A 48 horas del evento",
+    escalamientoSinCobertura: true,
+  });
+
+  function toggleFamily(key: RuleFamilyKey) {
+    setExpandedFamilies((current) => ({
+      ...current,
+      [key]: !current[key],
+    }));
+  }
+
+  function markDraftReady() {
+    setSaveFeedback(
+      "La estructura operativa ya quedó lista en esta sesión. El siguiente paso conecta persistencia por cuenta y modelo de datos.",
+    );
+  }
+
+  return (
+    <section className="internalPanel internalRulesPanel">
+      <div className="internalPanelHeader internalRulesHeader">
+        <div>
+          <span className="internalEyebrow">Configuración operativa</span>
+          <strong>Reglas operativas</strong>
+          <span>
+            Ajusta cómo LexControl consulta, prioriza, asigna y eleva la operación del bufete sin volver esto un panel técnico.
+          </span>
+        </div>
+        <div className="internalRulesHeaderActions">
+          <button className="internalGhostButton" type="button">
+            Restablecer valores recomendados
+          </button>
+          <button className="internalPrimaryButton" type="button" onClick={markDraftReady}>
+            Guardar cambios
+          </button>
+        </div>
+      </div>
+
+      <section className="internalRulesOverview">
+        {operationalRulesHighlights.map((highlight) => (
+          <article key={highlight}>
+            <strong>{highlight}</strong>
+          </article>
+        ))}
+      </section>
+
+      {saveFeedback ? <p className="internalRulesFeedback">{saveFeedback}</p> : null}
+
+      <div className="internalRulesFamilies">
+        {operationalRuleFamilyMeta.map((family) => {
+          const isExpanded = expandedFamilies[family.key];
+
+          return (
+            <article key={family.key} className={`internalRuleCard ${isExpanded ? "is-expanded" : ""}`}>
+              <button className="internalRuleCardHeader" type="button" onClick={() => toggleFamily(family.key)}>
+                <div>
+                  <strong>{family.title}</strong>
+                  <p>{family.effect}</p>
+                </div>
+                <div className="internalRuleCardMeta">
+                  <span>{family.summary}</span>
+                  <span className="internalRuleCardToggle">{isExpanded ? "Ocultar" : "Expandir"}</span>
+                </div>
+              </button>
+
+              {isExpanded ? (
+                <div className="internalRuleCardBody">
+                  {family.key === "consulta" ? (
+                    <div className="internalRulesFormGrid">
+                      <label>
+                        Frecuencia en crítica
+                        <select
+                          value={rulesDraft.consultaCritica}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, consultaCritica: event.target.value }))
+                          }
+                        >
+                          <option>Cada hora</option>
+                          <option>Cada 2 horas</option>
+                          <option>Cada 4 horas</option>
+                        </select>
+                      </label>
+                      <label>
+                        Frecuencia en alta
+                        <select
+                          value={rulesDraft.consultaAlta}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, consultaAlta: event.target.value }))
+                          }
+                        >
+                          <option>Cada 4 horas</option>
+                          <option>Cada 8 horas</option>
+                          <option>Diaria</option>
+                        </select>
+                      </label>
+                      <label className="internalRuleCheck">
+                        <input
+                          type="checkbox"
+                          checked={rulesDraft.consultaPuntual}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, consultaPuntual: event.target.checked }))
+                          }
+                        />
+                        <span>Permitir consulta puntual por proceso</span>
+                      </label>
+                      <label>
+                        Protección de fuente
+                        <select
+                          value={rulesDraft.proteccionFuente}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, proteccionFuente: event.target.value }))
+                          }
+                        >
+                          <option>Estricta</option>
+                          <option>Equilibrada</option>
+                          <option>Intensiva</option>
+                        </select>
+                      </label>
+                    </div>
+                  ) : null}
+
+                  {family.key === "prioridad" ? (
+                    <div className="internalRulesFormGrid">
+                      <label>
+                        Regla final
+                        <select
+                          value={rulesDraft.prioridadBase}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, prioridadBase: event.target.value }))
+                          }
+                        >
+                          <option>La mayor entre manual y calculada</option>
+                          <option>Manual prevalece</option>
+                          <option>Calculada prevalece</option>
+                        </select>
+                      </label>
+                      <label>
+                        Factor visible
+                        <select
+                          value={rulesDraft.prioridadEvento}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, prioridadEvento: event.target.value }))
+                          }
+                        >
+                          <option>Audiencia próxima o término cercano</option>
+                          <option>Actuación relevante reciente</option>
+                          <option>Error de fuente persistente</option>
+                        </select>
+                      </label>
+                      <label className="internalRuleCheck">
+                        <input
+                          type="checkbox"
+                          checked={rulesDraft.prioridadSinResponsable}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({
+                              ...current,
+                              prioridadSinResponsable: event.target.checked,
+                            }))
+                          }
+                        />
+                        <span>Elevar si el proceso cambia y no tiene responsable</span>
+                      </label>
+                    </div>
+                  ) : null}
+
+                  {family.key === "atencion" ? (
+                    <div className="internalRulesFormGrid">
+                      <label>
+                        Silencio operativo
+                        <select
+                          value={rulesDraft.atencionSilencio}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, atencionSilencio: event.target.value }))
+                          }
+                        >
+                          <option>Mantener en silencio los procesos estables</option>
+                          <option>Mostrar estables en resumen</option>
+                        </select>
+                      </label>
+                      <label>
+                        Elevación a Bandeja
+                        <select
+                          value={rulesDraft.atencionBandeja}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, atencionBandeja: event.target.value }))
+                          }
+                        >
+                          <option>Elevar errores de fuente y requiere revisión</option>
+                          <option>Elevar solo novedad relevante</option>
+                        </select>
+                      </label>
+                      <label>
+                        Eventos próximos
+                        <select
+                          value={rulesDraft.atencionEventos}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, atencionEventos: event.target.value }))
+                          }
+                        >
+                          <option>Elevar eventos próximos a 3 días</option>
+                          <option>Elevar eventos próximos a 5 días</option>
+                          <option>Elevar solo en 24 horas</option>
+                        </select>
+                      </label>
+                    </div>
+                  ) : null}
+
+                  {family.key === "asignacion" ? (
+                    <div className="internalRulesFormGrid">
+                      <label>
+                        Responsable por default
+                        <select
+                          value={rulesDraft.asignacionDefault}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, asignacionDefault: event.target.value }))
+                          }
+                        >
+                          <option>Administrador de cuenta</option>
+                          <option>Primer responsable disponible</option>
+                          <option>Sin asignación automática</option>
+                        </select>
+                      </label>
+                      <label>
+                        Proceso sin responsable
+                        <select
+                          value={rulesDraft.asignacionSinResponsable}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, asignacionSinResponsable: event.target.value }))
+                          }
+                        >
+                          <option>Mantener visible y elevar si hay novedad</option>
+                          <option>Asignar por default inmediatamente</option>
+                          <option>Enviar a revisión manual</option>
+                        </select>
+                      </label>
+                      <label className="internalRuleCheck">
+                        <input
+                          type="checkbox"
+                          checked={rulesDraft.asignacionCobertura}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, asignacionCobertura: event.target.checked }))
+                          }
+                        />
+                        <span>Destacar procesos sin cobertura en Inicio y Bandeja</span>
+                      </label>
+                    </div>
+                  ) : null}
+
+                  {family.key === "notificaciones" ? (
+                    <div className="internalRulesFormGrid">
+                      <label>
+                        Canal base
+                        <select
+                          value={rulesDraft.notificacionCanal}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, notificacionCanal: event.target.value }))
+                          }
+                        >
+                          <option>Email</option>
+                          <option>Solo interno</option>
+                          <option>WhatsApp</option>
+                        </select>
+                      </label>
+                      <label>
+                        Frecuencia de resumen
+                        <select
+                          value={rulesDraft.notificacionResumen}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, notificacionResumen: event.target.value }))
+                          }
+                        >
+                          <option>Diario</option>
+                          <option>Dos veces al día</option>
+                          <option>Semanal</option>
+                        </select>
+                      </label>
+                      <label>
+                        Umbral para interrumpir
+                        <select
+                          value={rulesDraft.notificacionUmbral}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, notificacionUmbral: event.target.value }))
+                          }
+                        >
+                          <option>Alta</option>
+                          <option>Crítica</option>
+                          <option>Normal</option>
+                        </select>
+                      </label>
+                    </div>
+                  ) : null}
+
+                  {family.key === "escalamiento" ? (
+                    <div className="internalRulesFormGrid">
+                      <label>
+                        Persistencia
+                        <select
+                          value={rulesDraft.escalamientoPersistencia}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({
+                              ...current,
+                              escalamientoPersistencia: event.target.value,
+                            }))
+                          }
+                        >
+                          <option>Después de 2 corridas fallidas</option>
+                          <option>Después de 3 corridas fallidas</option>
+                          <option>Después de 24 horas</option>
+                        </select>
+                      </label>
+                      <label>
+                        Eventos próximos
+                        <select
+                          value={rulesDraft.escalamientoEventos}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({ ...current, escalamientoEventos: event.target.value }))
+                          }
+                        >
+                          <option>A 48 horas del evento</option>
+                          <option>A 24 horas del evento</option>
+                          <option>A 72 horas del evento</option>
+                        </select>
+                      </label>
+                      <label className="internalRuleCheck">
+                        <input
+                          type="checkbox"
+                          checked={rulesDraft.escalamientoSinCobertura}
+                          onChange={(event) =>
+                            setRulesDraft((current) => ({
+                              ...current,
+                              escalamientoSinCobertura: event.target.checked,
+                            }))
+                          }
+                        />
+                        <span>Escalar si un proceso crítico sigue sin responsable</span>
+                      </label>
+                    </div>
+                  ) : null}
+
+                  <div className="internalRuleCardAdvanced">
+                    <span>{family.advancedLabel}</span>
+                  </div>
+                </div>
+              ) : null}
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function ConfigurationWorkspace({
+  membership,
+  usage,
+  accessToken,
+  canManageTeam,
+  organizationId,
+  onDataChanged,
+}: {
+  membership: MembershipRecord;
+  usage: {
+    processCount: number | null;
+    memberCount: number | null;
+    isLoading: boolean;
+    error: string | null;
+  };
+  accessToken: string;
+  canManageTeam: boolean;
+  organizationId: string;
+  onDataChanged?: () => Promise<void> | void;
+}) {
+  return (
+    <section className="internalConfigurationWorkspace">
+      <DemoStatusPanel membership={membership} usage={usage} />
+      <OperationalRulesPanel />
+      <div className="internalConfigurationSections">
+        <TeamManager accessToken={accessToken} canManage={canManageTeam} onDataChanged={onDataChanged} />
+        <InternalProcessManager organizationId={organizationId} view="procesos" onDataChanged={onDataChanged} />
+      </div>
+    </section>
+  );
+}
+
 function DemoStatusPanel({
   membership,
   usage,
@@ -1086,7 +1555,7 @@ function InternalProcessManager({
   onDataChanged,
 }: {
   organizationId: string;
-  view: AppView;
+  view: ProcessManagerView;
   onDataChanged?: () => Promise<void> | void;
 }) {
   const [cases, setCases] = useState<InternalCaseRow[]>([]);
@@ -1329,7 +1798,7 @@ function InternalProcessManager({
             </article>
             <article>
               <div>
-                <strong>Consultas</strong>
+                <strong>Monitoreo</strong>
                 <span>{consultationSummary.snapshots} snapshots</span>
               </div>
               <p>Cada corrida deja trazabilidad persistida para comparar cambios y eventos.</p>
@@ -1350,15 +1819,15 @@ function InternalProcessManager({
             <strong>Abrir bandeja</strong>
             <p>Empieza por procesos con revisión, fallas de fuente o novedad visible.</p>
           </button>
-          <button className="internalActionCard" type="button" onClick={() => window.location.hash = buildViewHash("procesos")}>
+          <button className="internalActionCard" type="button" onClick={() => window.location.hash = buildViewHash("configuracion")}>
             <span className="internalSidebarLabel">Capacidad</span>
-            <strong>Cargar procesos</strong>
-            <p>Amplía el inventario vigilado y deja listos nuevos radicados para consulta.</p>
+            <strong>Ajustar configuración</strong>
+            <p>Amplía el inventario vigilado y mantén la cobertura alineada al bufete.</p>
           </button>
-          <button className="internalActionCard" type="button" onClick={() => window.location.hash = buildViewHash("equipo")}>
-            <span className="internalSidebarLabel">Equipo</span>
-            <strong>Gestionar responsables</strong>
-            <p>Configura responsables reales y mantén visible la capacidad disponible.</p>
+          <button className="internalActionCard" type="button" onClick={() => window.location.hash = buildViewHash("monitoreo")}>
+            <span className="internalSidebarLabel">Salud operativa</span>
+            <strong>Abrir monitoreo</strong>
+            <p>Revisa fuentes, snapshots y alertas que sostienen la vigilancia.</p>
           </button>
         </section>
       </section>
@@ -1661,7 +2130,7 @@ function InternalProcessManager({
     );
   }
 
-  if (view === "consultas") {
+  if (view === "monitoreo") {
     return (
       <section className="internalProcessManager">
         <section className="internalSummaryGrid">
@@ -2138,11 +2607,11 @@ function InternalShell({
     activeView === "inicio"
       ? { label: "Abrir bandeja", target: "bandeja" as AppView }
       : activeView === "bandeja"
-        ? { label: "Cargar procesos", target: "procesos" as AppView }
-        : activeView === "procesos"
-          ? { label: "Ver equipo", target: "equipo" as AppView }
-          : activeView === "equipo"
-            ? { label: "Revisar consultas", target: "consultas" as AppView }
+        ? { label: "Abrir configuración", target: "configuracion" as AppView }
+        : activeView === "monitoreo"
+          ? { label: "Abrir configuración", target: "configuracion" as AppView }
+          : activeView === "configuracion"
+            ? { label: "Volver a bandeja", target: "bandeja" as AppView }
             : { label: "Volver al inicio", target: "inicio" as AppView };
 
   useEffect(() => {
@@ -2322,17 +2791,6 @@ function InternalShell({
           </>
         ) : null}
 
-        {activeView === "equipo" ? (
-          <>
-            <DemoStatusPanel membership={membership} usage={usage} />
-            <TeamManager
-              accessToken={session.access_token}
-              canManage={canManageTeam}
-              onDataChanged={refreshUsage}
-            />
-          </>
-        ) : null}
-
         {activeView === "bandeja" ? (
           <InternalProcessManager
             organizationId={membership.organization_id}
@@ -2341,18 +2799,21 @@ function InternalShell({
           />
         ) : null}
 
-        {activeView === "procesos" ? (
+        {activeView === "monitoreo" ? (
           <InternalProcessManager
             organizationId={membership.organization_id}
-            view="procesos"
+            view="monitoreo"
             onDataChanged={refreshUsage}
           />
         ) : null}
 
-        {activeView === "consultas" ? (
-          <InternalProcessManager
+        {activeView === "configuracion" ? (
+          <ConfigurationWorkspace
+            membership={membership}
+            usage={usage}
+            accessToken={session.access_token}
+            canManageTeam={canManageTeam}
             organizationId={membership.organization_id}
-            view="consultas"
             onDataChanged={refreshUsage}
           />
         ) : null}
