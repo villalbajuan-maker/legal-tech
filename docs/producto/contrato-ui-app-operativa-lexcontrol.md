@@ -636,14 +636,74 @@ La carga de procesos deja de ser modulo propio y pasa a ser parte de la parametr
 
 ### 8.4.5 Reglas Operativas
 
-- reglas de prioridad
-- comportamiento de consulta
-- criterios visibles de la operacion
+La subseccion `Reglas operativas` no se limita a consulta.
+
+Es la capa con la que el bufete adapta como se comporta LexControl sin convertir la cuenta en desarrollo a medida.
+
+Debe dividirse explicitamente en:
+
+#### a. Consulta
+
+- frecuencia por prioridad
+- reglas de recencia
+- tratamiento de errores de fuente
+- consulta puntual por proceso
+- proteccion de la fuente ante volumen
+
+#### b. Prioridad
+
+- criterios que elevan prioridad
+- criterios que reducen prioridad
+- reglas por tipo de actuacion
+- reglas por cercania de evento
+- prioridad manual y prioridad calculada
+
+#### c. Atencion
+
+- que aparece en bandeja principal
+- que queda visible solo en monitoreo
+- que puede permanecer en silencio
+- que entra a resumen ejecutivo o lectura de Lex
+
+#### d. Notificaciones
+
+- canales
+- frecuencia
+- severidad minima para interrumpir
+- comportamiento por responsable
+- escalamiento de alertas
+
+#### e. Asignacion
+
+- reglas para asignar responsables
+- defaults por tipo de proceso o criterio operativo
+- comportamiento cuando un caso entra sin responsable
+
+#### f. Escalamiento
+
+- cuando una falla pasa a revision
+- cuando un evento sube de severidad
+- cuando una alerta no atendida debe escalar
+- cuando una situacion debe salir del silencio operativo
+
+Principio:
+
+```text
+reglas operativas = como este bufete quiere que el sistema interprete,
+priorice, señale y distribuya la operacion
+```
 
 Contrato rector:
 
 ```text
 docs/producto/contrato-reglas-operativas-consulta.md
+```
+
+Contrato complementario futuro:
+
+```text
+las otras familias de reglas operativas deben documentarse
+con el mismo nivel de precision que hoy tiene consulta
 ```
 
 No es necesario abrir toda esta profundidad en dia uno, pero la arquitectura debe preverla desde ya.

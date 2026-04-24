@@ -329,13 +329,26 @@ La vista `Configuracion` debe prever una subseccion de:
 Reglas operativas
 ```
 
-Esa subseccion debe gobernar, al menos en arquitectura, estas capacidades:
+La capa `Reglas operativas` tiene un alcance mas amplio que consulta.
 
-- frecuencia base por prioridad;
-- criterios de prioridad;
-- comportamiento de consulta;
-- reglas de notificacion;
-- tratamiento de errores de fuente.
+Consulta es solo una de sus familias.
+
+La arquitectura debe prever, como minimo:
+
+- consulta;
+- prioridad;
+- atencion;
+- notificaciones;
+- asignacion;
+- escalamiento.
+
+Este documento congela solo la familia:
+
+```text
+consulta
+```
+
+Las demas familias deben documentarse despues con contrato propio o como anexo estructurado.
 
 No es necesario abrir toda la parametrizacion en dia uno.
 
