@@ -57,6 +57,26 @@ Por defecto consulta todos los procesos (`SoloActivos=false`). Para replicar la 
 python3 scripts/probes/cpnu_api_probe.py --file tmp/radicados-cpnu.txt --solo-activos --write-report
 ```
 
+Discovery tecnico por nombre o razon social en CPNU:
+
+```bash
+python3 scripts/probes/cpnu_discovery_name_probe.py \
+  --query "NOMBRE PUBLICO DE PRUEBA" \
+  --person-type Natural \
+  --all-processes \
+  --write-report
+```
+
+Discovery tecnico por juez / magistrado y clase de proceso en CPNU:
+
+```bash
+python3 scripts/probes/cpnu_discovery_judge_probe.py \
+  --judge "NOMBRE PUBLICO DE PRUEBA" \
+  --process-class "CLASE DE PROCESO" \
+  --all-processes \
+  --write-report
+```
+
 UI local para consulta:
 
 ```bash
@@ -81,6 +101,7 @@ python3 scripts/probes/samai_api_probe.py --radicado 11001333603820250000100
 - No autentica usuarios.
 - No consulta radicados reales todavia.
 - No descarga documentos.
-- Solo hace una solicitud inicial por fuente.
+- No se debe usar para barridos masivos de discovery.
+- Solo hace discovery tecnico acotado.
 
 El siguiente paso, despues de clasificar una fuente, es crear un conector especifico con fixtures y pruebas reproducibles.
