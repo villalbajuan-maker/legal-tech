@@ -48,6 +48,9 @@ type InternalCaseRow = {
   priority_calculated: "low" | "normal" | "high" | "critical";
   priority_final: "low" | "normal" | "high" | "critical";
   attention_level: "silencio_operativo" | "atencion_visible" | "atencion_elevada" | "interrupcion";
+  priority_reason: string | null;
+  attention_reason: string | null;
+  attention_updated_at: string | null;
   responsible_membership_id: string | null;
   assignment_origin: "manual" | "rule" | "default" | "unassigned";
   status: "active" | "paused" | "closed";
@@ -121,6 +124,9 @@ type OperationalCaseRow = {
   priorityManual: InternalCaseRow["priority_manual"];
   priorityCalculated: InternalCaseRow["priority_calculated"];
   attentionLevel: InternalCaseRow["attention_level"];
+  priorityReason: InternalCaseRow["priority_reason"];
+  attentionReason: InternalCaseRow["attention_reason"];
+  attentionUpdatedAt: InternalCaseRow["attention_updated_at"];
   assignmentOrigin: InternalCaseRow["assignment_origin"];
   caseStatus: InternalCaseRow["status"];
   sourceStatus: InternalCaseSourceRow["status"] | "pending";
@@ -424,7 +430,7 @@ async function loadOrganizationCases(organizationId: string) {
   const { data, error } = await supabase
     .from("cases")
     .select(
-      "id, radicado, normalized_radicado, internal_owner, priority, priority_manual, priority_calculated, priority_final, attention_level, responsible_membership_id, assignment_origin, status, created_at",
+      "id, radicado, normalized_radicado, internal_owner, priority, priority_manual, priority_calculated, priority_final, attention_level, priority_reason, attention_reason, attention_updated_at, responsible_membership_id, assignment_origin, status, created_at",
     )
     .eq("organization_id", organizationId)
     .order("created_at", { ascending: false })
@@ -839,6 +845,37 @@ function formatAssignmentOrigin(value: InternalCaseRow["assignment_origin"] | Op
   }
 }
 
+function formatDerivedReason(value: string | null) {
+  switch (value) {
+    case "evento_critico":
+      return "Evento crítico";
+    case "evento_proximo":
+      return "Evento próximo";
+    case "error_fuente":
+      return "Error de fuente";
+    case "requiere_revision":
+      return "Requiere revisión";
+    case "novedad_reciente":
+      return "Novedad reciente";
+    case "proceso_no_encontrado":
+      return "Proceso no encontrado";
+    case "sin_responsable_con_novedad":
+      return "Sin responsable con novedad";
+    case "estable":
+      return "Estable";
+    case "silencio_por_estabilidad":
+      return "Silencio por estabilidad";
+    case "visible_por_novedad":
+      return "Visible por novedad";
+    case "elevada_por_riesgo":
+      return "Elevada por riesgo";
+    case "interrupcion_por_criticidad":
+      return "Interrupción por criticidad";
+    default:
+      return value ? value.replace(/_/g, " ") : "Sin razón visible";
+  }
+}
+
 function buildOperationalRulesDraft(
   rules: OrganizationOperationalRulesRecord | null,
   teamMembers: TeamMemberRecord[],
@@ -1163,6 +1200,9 @@ function buildOperationalRows(
       priorityManual: legalCase.priority_manual,
       priorityCalculated: legalCase.priority_calculated,
       attentionLevel: legalCase.attention_level,
+      priorityReason: legalCase.priority_reason,
+      attentionReason: legalCase.attention_reason,
+      attentionUpdatedAt: legalCase.attention_updated_at,
       assignmentOrigin: legalCase.assignment_origin,
       caseStatus: legalCase.status,
       sourceStatus: primarySource?.status || "pending",
@@ -2534,10 +2574,17 @@ function InternalProcessManager({
                           <strong>
                             {formatPriorityLabel(selectedCase.priority)}
                           </strong>
+                          <small>{formatDerivedReason(selectedCase.priorityReason)}</small>
                         </div>
                         <div>
                           <span>Atención</span>
                           <strong>{formatAttentionLevel(selectedCase.attentionLevel)}</strong>
+                          <small>{formatDerivedReason(selectedCase.attentionReason)}</small>
+                          <small>
+                            {selectedCase.attentionUpdatedAt
+                              ? `Actualizada ${formatCaseTimestamp(selectedCase.attentionUpdatedAt)}`
+                              : "Sin marca de recalculo"}
+                          </small>
                         </div>
                         <div>
                           <span>Fuente</span>
