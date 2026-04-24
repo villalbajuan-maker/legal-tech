@@ -348,6 +348,12 @@ Este documento congela solo la familia:
 consulta
 ```
 
+Contrato relacionado:
+
+```text
+docs/producto/contrato-reglas-prioridad.md
+```
+
 Las demas familias deben documentarse despues con contrato propio o como anexo estructurado.
 
 No es necesario abrir toda la parametrizacion en dia uno.

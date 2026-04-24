@@ -658,6 +658,12 @@ Debe dividirse explicitamente en:
 - reglas por cercania de evento
 - prioridad manual y prioridad calculada
 
+Contrato rector:
+
+```text
+docs/producto/contrato-reglas-prioridad.md
+```
+
 #### c. Atencion
 
 - que aparece en bandeja principal
