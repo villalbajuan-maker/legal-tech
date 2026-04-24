@@ -1648,15 +1648,15 @@ function TeamManager({
   }
 
   return (
-    <section className="internalPanel" id="equipo">
+    <section className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]" id="equipo">
       <div className="internalPanelHeader">
         <div>
           <strong>Responsables de la cuenta</strong>
           <span>Gestiona el equipo real que operará la demo.</span>
         </div>
-        <button className="internalGhostButton" type="button" onClick={() => void refreshTeam()}>
+        <Button variant="secondary" type="button" onClick={() => void refreshTeam()}>
           Recargar
-        </button>
+        </Button>
       </div>
 
       <section className="internalIntakeResult internalTeamSummary">
@@ -1675,7 +1675,7 @@ function TeamManager({
       </section>
 
       <div className="internalTeamGrid">
-        <div className="internalPanel">
+        <div className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-5">
           <div className="internalPanelHeader">
             <strong>Equipo actual</strong>
             <span>{teamMembers.length} registro{teamMembers.length === 1 ? "" : "s"}</span>
@@ -1695,12 +1695,12 @@ function TeamManager({
                     <span>{member.email || "Sin correo"}</span>
                   </div>
                   <div className="internalTeamMeta">
-                    <span className={`internalStatusBadge is-${member.role === "operator" ? "info" : "review"}`}>
+                    <Badge variant={member.role === "operator" ? "info" : "warning"}>
                       {formatMemberRole(member.role)}
-                    </span>
-                    <span className={`internalStatusBadge is-${member.status === "active" ? "ok" : "neutral"}`}>
+                    </Badge>
+                    <Badge variant={member.status === "active" ? "success" : "neutral"}>
                       {formatMemberStatus(member.status)}
-                    </span>
+                    </Badge>
                   </div>
                 </article>
               ))}
@@ -1708,7 +1708,7 @@ function TeamManager({
           ) : null}
         </div>
 
-        <form className="internalPanel" onSubmit={handleSubmit}>
+        <form className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-5" onSubmit={handleSubmit}>
           <div className="internalPanelHeader">
             <strong>Crear responsable</strong>
             <span>Alta directa dentro de la cuenta</span>
@@ -1724,7 +1724,7 @@ function TeamManager({
             <>
               <label>
                 Nombre completo
-                <input
+                <Input
                   value={form.fullName}
                   onChange={(event) => setForm((current) => ({ ...current, fullName: event.target.value }))}
                   placeholder="Laura Pérez"
@@ -1734,7 +1734,7 @@ function TeamManager({
 
               <label>
                 Correo
-                <input
+                <Input
                   type="email"
                   autoComplete="off"
                   value={form.email}
@@ -1746,7 +1746,7 @@ function TeamManager({
 
               <label>
                 Contraseña inicial
-                <input
+                <Input
                   type="password"
                   autoComplete="new-password"
                   value={form.password}
@@ -1761,17 +1761,13 @@ function TeamManager({
                 <span>Esta cuenta puede operar con hasta {limit} responsables en total.</span>
               </div>
 
-              <button
-                className="internalPrimaryButton"
-                type="submit"
-                disabled={isSubmitting || availableSlots === 0}
-              >
+              <Button type="submit" disabled={isSubmitting || availableSlots === 0}>
                 {isSubmitting
                   ? "Creando responsable..."
                   : availableSlots === 0
                     ? "Límite alcanzado"
                     : "Crear responsable"}
-              </button>
+              </Button>
             </>
           ) : null}
 
@@ -1866,7 +1862,7 @@ function OperationalRulesPanel({
   }
 
   return (
-    <section className="internalPanel internalRulesPanel">
+    <section className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]">
       <div className="internalPanelHeader internalRulesHeader">
         <div>
           <span className="internalEyebrow">Configuración operativa</span>
@@ -1876,22 +1872,21 @@ function OperationalRulesPanel({
           </span>
         </div>
         <div className="internalRulesHeaderActions">
-          <button
-            className="internalGhostButton"
+          <Button
+            variant="secondary"
             type="button"
             onClick={() => setRulesDraft(buildOperationalRulesDraft(rulesRecord, teamMembers))}
             disabled={isLoadingRules || isSavingRules}
           >
             Restablecer valores cargados
-          </button>
-          <button
-            className="internalPrimaryButton"
+          </Button>
+          <Button
             type="button"
             onClick={() => void handleSaveRules()}
             disabled={isLoadingRules || isSavingRules || !rulesRecord}
           >
             {isSavingRules ? "Guardando..." : "Guardar cambios"}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -1930,7 +1925,7 @@ function OperationalRulesPanel({
                     <div className="internalRulesFormGrid">
                       <label>
                         Frecuencia en crítica
-                        <select
+                        <Select
                           value={rulesDraft.consultaCritica}
                           onChange={(event) =>
                             setRulesDraft((current) => ({ ...current, consultaCritica: event.target.value }))
@@ -1939,11 +1934,11 @@ function OperationalRulesPanel({
                           <option>Cada hora</option>
                           <option>Cada 2 horas</option>
                           <option>Cada 4 horas</option>
-                        </select>
+                        </Select>
                       </label>
                       <label>
                         Frecuencia en alta
-                        <select
+                        <Select
                           value={rulesDraft.consultaAlta}
                           onChange={(event) =>
                             setRulesDraft((current) => ({ ...current, consultaAlta: event.target.value }))
@@ -1952,7 +1947,7 @@ function OperationalRulesPanel({
                           <option>Cada 4 horas</option>
                           <option>Cada 8 horas</option>
                           <option>Diaria</option>
-                        </select>
+                        </Select>
                       </label>
                       <label className="internalRuleCheck">
                         <input
@@ -1966,7 +1961,7 @@ function OperationalRulesPanel({
                       </label>
                       <label>
                         Protección de fuente
-                        <select
+                        <Select
                           value={rulesDraft.proteccionFuente}
                           onChange={(event) =>
                             setRulesDraft((current) => ({ ...current, proteccionFuente: event.target.value }))
@@ -1975,7 +1970,7 @@ function OperationalRulesPanel({
                           <option>Estricta</option>
                           <option>Equilibrada</option>
                           <option>Intensiva</option>
-                        </select>
+                        </Select>
                       </label>
                     </div>
                   ) : null}
@@ -1984,7 +1979,7 @@ function OperationalRulesPanel({
                     <div className="internalRulesFormGrid">
                       <label>
                         Regla final
-                        <select
+                        <Select
                           value={rulesDraft.prioridadBase}
                           onChange={(event) =>
                             setRulesDraft((current) => ({ ...current, prioridadBase: event.target.value }))
@@ -1993,11 +1988,11 @@ function OperationalRulesPanel({
                           <option>La mayor entre manual y calculada</option>
                           <option>Manual prevalece</option>
                           <option>Calculada prevalece</option>
-                        </select>
+                        </Select>
                       </label>
                       <label>
                         Factor visible
-                        <select
+                        <Select
                           value={rulesDraft.prioridadEvento}
                           onChange={(event) =>
                             setRulesDraft((current) => ({ ...current, prioridadEvento: event.target.value }))
@@ -2006,7 +2001,7 @@ function OperationalRulesPanel({
                           <option>Audiencia próxima o término cercano</option>
                           <option>Actuación relevante reciente</option>
                           <option>Error de fuente persistente</option>
-                        </select>
+                        </Select>
                       </label>
                       <label className="internalRuleCheck">
                         <input
@@ -2028,7 +2023,7 @@ function OperationalRulesPanel({
                     <div className="internalRulesFormGrid">
                       <label>
                         Silencio operativo
-                        <select
+                        <Select
                           value={rulesDraft.atencionSilencio}
                           onChange={(event) =>
                             setRulesDraft((current) => ({ ...current, atencionSilencio: event.target.value }))
@@ -2036,11 +2031,11 @@ function OperationalRulesPanel({
                         >
                           <option>Mantener en silencio los procesos estables</option>
                           <option>Mostrar estables en resumen</option>
-                        </select>
+                        </Select>
                       </label>
                       <label>
                         Elevación a Bandeja
-                        <select
+                        <Select
                           value={rulesDraft.atencionBandeja}
                           onChange={(event) =>
                             setRulesDraft((current) => ({ ...current, atencionBandeja: event.target.value }))
@@ -2048,11 +2043,11 @@ function OperationalRulesPanel({
                         >
                           <option>Elevar errores de fuente y requiere revisión</option>
                           <option>Elevar solo novedad relevante</option>
-                        </select>
+                        </Select>
                       </label>
                       <label>
                         Eventos próximos
-                        <select
+                        <Select
                           value={rulesDraft.atencionEventos}
                           onChange={(event) =>
                             setRulesDraft((current) => ({ ...current, atencionEventos: event.target.value }))
@@ -2061,7 +2056,7 @@ function OperationalRulesPanel({
                           <option>Elevar eventos próximos a 3 días</option>
                           <option>Elevar eventos próximos a 5 días</option>
                           <option>Elevar solo en 24 horas</option>
-                        </select>
+                        </Select>
                       </label>
                     </div>
                   ) : null}
@@ -2070,7 +2065,7 @@ function OperationalRulesPanel({
                     <div className="internalRulesFormGrid">
                       <label>
                         Responsable por default
-                        <select
+                        <Select
                           value={rulesDraft.asignacionDefault}
                           onChange={(event) =>
                             setRulesDraft((current) => ({ ...current, asignacionDefault: event.target.value }))
@@ -2079,11 +2074,11 @@ function OperationalRulesPanel({
                           <option>Administrador de cuenta</option>
                           <option>Primer responsable disponible</option>
                           <option>Sin asignación automática</option>
-                        </select>
+                        </Select>
                       </label>
                       <label>
                         Proceso sin responsable
-                        <select
+                        <Select
                           value={rulesDraft.asignacionSinResponsable}
                           onChange={(event) =>
                             setRulesDraft((current) => ({ ...current, asignacionSinResponsable: event.target.value }))
@@ -2092,7 +2087,7 @@ function OperationalRulesPanel({
                           <option>Mantener visible y elevar si hay novedad</option>
                           <option>Asignar por default inmediatamente</option>
                           <option>Enviar a revisión manual</option>
-                        </select>
+                        </Select>
                       </label>
                       <label className="internalRuleCheck">
                         <input
@@ -2111,7 +2106,7 @@ function OperationalRulesPanel({
                     <div className="internalRulesFormGrid">
                       <label>
                         Canal base
-                        <select
+                        <Select
                           value={rulesDraft.notificacionCanal}
                           onChange={(event) =>
                             setRulesDraft((current) => ({ ...current, notificacionCanal: event.target.value }))
@@ -2120,11 +2115,11 @@ function OperationalRulesPanel({
                           <option>Email</option>
                           <option>Solo interno</option>
                           <option>WhatsApp</option>
-                        </select>
+                        </Select>
                       </label>
                       <label>
                         Frecuencia de resumen
-                        <select
+                        <Select
                           value={rulesDraft.notificacionResumen}
                           onChange={(event) =>
                             setRulesDraft((current) => ({ ...current, notificacionResumen: event.target.value }))
@@ -2133,11 +2128,11 @@ function OperationalRulesPanel({
                           <option>Diario</option>
                           <option>Dos veces al día</option>
                           <option>Semanal</option>
-                        </select>
+                        </Select>
                       </label>
                       <label>
                         Umbral para interrumpir
-                        <select
+                        <Select
                           value={rulesDraft.notificacionUmbral}
                           onChange={(event) =>
                             setRulesDraft((current) => ({ ...current, notificacionUmbral: event.target.value }))
@@ -2146,7 +2141,7 @@ function OperationalRulesPanel({
                           <option>Alta</option>
                           <option>Crítica</option>
                           <option>Normal</option>
-                        </select>
+                        </Select>
                       </label>
                     </div>
                   ) : null}
@@ -2155,7 +2150,7 @@ function OperationalRulesPanel({
                     <div className="internalRulesFormGrid">
                       <label>
                         Persistencia
-                        <select
+                        <Select
                           value={rulesDraft.escalamientoPersistencia}
                           onChange={(event) =>
                             setRulesDraft((current) => ({
@@ -2167,11 +2162,11 @@ function OperationalRulesPanel({
                           <option>Después de 2 corridas fallidas</option>
                           <option>Después de 3 corridas fallidas</option>
                           <option>Después de 24 horas</option>
-                        </select>
+                        </Select>
                       </label>
                       <label>
                         Eventos próximos
-                        <select
+                        <Select
                           value={rulesDraft.escalamientoEventos}
                           onChange={(event) =>
                             setRulesDraft((current) => ({ ...current, escalamientoEventos: event.target.value }))
@@ -2180,7 +2175,7 @@ function OperationalRulesPanel({
                           <option>A 48 horas del evento</option>
                           <option>A 24 horas del evento</option>
                           <option>A 72 horas del evento</option>
-                        </select>
+                        </Select>
                       </label>
                       <label className="internalRuleCheck">
                         <input
@@ -2258,14 +2253,27 @@ function ConfigurationWorkspace({
   }
 
   return (
-    <section className="internalConfigurationWorkspace">
+    <section className="space-y-6 px-6 py-6 lg:px-8">
+      <section className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]">
+        <div className="space-y-2">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
+            Configuración
+          </span>
+          <h2 className="text-xl font-semibold tracking-tight text-[var(--ds-color-text)]">
+            Afina cómo opera tu bufete dentro del sistema.
+          </h2>
+          <p className="max-w-3xl text-sm leading-6 text-[var(--ds-color-text-muted)]">
+            Aquí viven la capacidad de la cuenta, las reglas operativas, la cobertura del equipo y el inventario vigilado. La idea no es configurar software, sino ajustar cómo se observa y distribuye la operación.
+          </p>
+        </div>
+      </section>
       <DemoStatusPanel membership={membership} usage={usage} />
       <OperationalRulesPanel
         organizationId={organizationId}
         teamMembers={teamMembers}
         onRulesApplied={handleRulesApplied}
       />
-      <div className="internalConfigurationSections">
+      <div className="space-y-6">
         <TeamManager
           accessToken={accessToken}
           canManage={canManageTeam}
@@ -2300,27 +2308,27 @@ function DemoStatusPanel({
   const daysRemaining = getDaysRemaining(demoEndsAt);
 
   return (
-    <section className="internalPanel internalDemoStatusPanel">
+    <section className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]">
       <div className="internalPanelHeader">
         <div>
           <strong>Estado de la cuenta</strong>
           <span>Capacidad visible y tiempo restante de la demo.</span>
         </div>
-        <span className={`internalStatusBadge is-${getDemoStatusTone(membership.organization?.account_status ?? "closed")}`}>
+        <Badge variant={getBadgeVariantFromTone(getDemoStatusTone(membership.organization?.account_status ?? "closed"))}>
           {getDemoStatusLabel(membership.organization?.account_status ?? "closed")}
-        </span>
+        </Badge>
       </div>
 
-      <section className="internalIntakeResult internalDemoStatusSummary">
-        <article>
+      <section className="grid gap-3 md:grid-cols-3">
+        <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
           <strong>{daysRemaining ?? "-"}</strong>
           <span>Días restantes</span>
         </article>
-        <article>
+        <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
           <strong>{usage.processCount ?? "-"}</strong>
           <span>{`${usage.processCount ?? "-"} / ${processLimit} procesos activos`}</span>
         </article>
-        <article>
+        <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
           <strong>{usage.memberCount ?? "-"}</strong>
           <span>{`${usage.memberCount ?? "-"} / ${memberLimit} responsables`}</span>
         </article>
@@ -3070,43 +3078,43 @@ function InternalProcessManager({
 
   if (view === "monitoreo") {
     return (
-      <section className="internalProcessManager">
-        <section className="internalSummaryGrid">
-          <article>
-            <strong>{consultationSummary.sourcesTracked}</strong>
-            <p>Fuentes rastreadas sobre procesos activos.</p>
+      <section className="space-y-6 px-6 py-6 lg:px-8">
+        <section className="grid gap-4 md:grid-cols-3">
+          <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
+            <strong className="block text-3xl font-semibold text-[var(--ds-color-text)]">{consultationSummary.sourcesTracked}</strong>
+            <p className="mt-2 text-sm leading-6 text-[var(--ds-color-text-muted)]">Fuentes rastreadas sobre procesos activos.</p>
           </article>
-          <article>
-            <strong>{consultationSummary.snapshots}</strong>
-            <p>Snapshots disponibles para trazabilidad.</p>
+          <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
+            <strong className="block text-3xl font-semibold text-[var(--ds-color-text)]">{consultationSummary.snapshots}</strong>
+            <p className="mt-2 text-sm leading-6 text-[var(--ds-color-text-muted)]">Snapshots disponibles para trazabilidad.</p>
           </article>
-          <article>
-            <strong>{consultationSummary.alertas}</strong>
-            <p>Alertas registradas por novedades o fallas.</p>
+          <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
+            <strong className="block text-3xl font-semibold text-[var(--ds-color-text)]">{consultationSummary.alertas}</strong>
+            <p className="mt-2 text-sm leading-6 text-[var(--ds-color-text-muted)]">Alertas registradas por novedades o fallas.</p>
           </article>
         </section>
 
-        <section className="internalPanel">
+        <section className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]">
           <div className="internalPanelHeader">
             <div>
               <strong>Estado de consultas y fuentes</strong>
               <span>Visibilidad operativa sobre salud de ejecución.</span>
             </div>
-            <button className="internalGhostButton" type="button" onClick={() => void refreshCases()}>
+            <Button variant="secondary" type="button" onClick={() => void refreshCases()}>
               Recargar
-            </button>
+            </Button>
           </div>
 
-          <section className="internalIntakeResult">
-            <article>
+          <section className="grid gap-3 md:grid-cols-3">
+            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
               <strong>{consultationSummary.fuentesActivas}</strong>
               <span>Fuentes activas</span>
             </article>
-            <article>
+            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
               <strong>{consultationSummary.erroresFuente}</strong>
               <span>Errores de fuente</span>
             </article>
-            <article>
+            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
               <strong>{consultationSummary.bloqueosFuente}</strong>
               <span>Fuentes bloqueadas</span>
             </article>
@@ -3129,7 +3137,7 @@ function InternalProcessManager({
         </section>
 
         <div className="internalStackGrid">
-          <section className="internalPanel">
+          <section className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]">
             <div className="internalPanelHeader">
               <strong>Snapshots recientes</strong>
               <span>{recentSnapshots.length} visibles</span>
@@ -3140,9 +3148,9 @@ function InternalProcessManager({
                   <article key={snapshot.id}>
                     <div className="internalDetailTitleLine">
                       <strong>{formatDateTimeLabel(snapshot.fetched_at)}</strong>
-                      <span className={`internalStatusBadge is-${getSnapshotStatusTone(snapshot.fetch_status)}`}>
+                      <Badge variant={getBadgeVariantFromTone(getSnapshotStatusTone(snapshot.fetch_status))}>
                         {formatSnapshotStatus(snapshot.fetch_status)}
-                      </span>
+                      </Badge>
                     </div>
                     <span>{snapshot.duration_ms ? `${snapshot.duration_ms} ms` : "Sin duración reportada"}</span>
                     {snapshot.error_message ? <span>{snapshot.error_message}</span> : null}
@@ -3154,7 +3162,7 @@ function InternalProcessManager({
             )}
           </section>
 
-          <section className="internalPanel">
+          <section className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]">
             <div className="internalPanelHeader">
               <strong>Alertas recientes</strong>
               <span>{recentAlerts.length} visibles</span>
@@ -3165,9 +3173,9 @@ function InternalProcessManager({
                   <article key={alert.id}>
                     <div className="internalDetailTitleLine">
                       <strong>{alert.title}</strong>
-                      <span className={`internalStatusBadge is-${getAlertTone(alert.severity)}`}>
+                      <Badge variant={getBadgeVariantFromTone(getAlertTone(alert.severity))}>
                         {formatAlertType(alert.alert_type)}
-                      </span>
+                      </Badge>
                     </div>
                     <span>{alert.message}</span>
                     <span>{formatDateTimeLabel(alert.created_at)}</span>
@@ -3188,37 +3196,39 @@ function InternalProcessManager({
   }
 
   return (
-    <section className="internalProcessManager" id="procesos">
-      <header>
-        <span className="internalEyebrow">Inventario vigilado</span>
-        <h2>Carga radicados reales y déjalos listos para consulta.</h2>
-        <p>
+    <section className="space-y-6" id="procesos">
+      <header className="space-y-2 rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
+          Inventario vigilado
+        </span>
+        <h2 className="text-xl font-semibold tracking-tight text-[var(--ds-color-text)]">Carga radicados reales y déjalos listos para consulta.</h2>
+        <p className="max-w-3xl text-sm leading-6 text-[var(--ds-color-text-muted)]">
           Cada proceso entra validado, asociado a tu organización y con una fuente inicial
           lista para consulta.
         </p>
       </header>
 
-      <section className="internalSummaryGrid">
-        <article>
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
           <strong>{processSummary.total}</strong>
           <p>Procesos activos cargados en la cuenta.</p>
         </article>
-        <article>
+        <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
           <strong>{processSummary.criticalPriority}</strong>
           <p>Procesos marcados hoy con prioridad crítica.</p>
         </article>
-        <article>
+        <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
           <strong>{processSummary.withoutOwner}</strong>
           <p>Procesos sin responsable explícito.</p>
         </article>
-        <article>
+        <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
           <strong>{processSummary.readyForConsultation}</strong>
           <p>Procesos aún pendientes de su primera consulta visible.</p>
         </article>
       </section>
 
       <div className="internalProcessGrid">
-        <form className="internalPanel" onSubmit={handleSingleSubmit}>
+        <form className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]" onSubmit={handleSingleSubmit}>
           <div className="internalPanelHeader">
             <strong>Carga individual</strong>
             <span>Un radicado a la vez</span>
@@ -3226,7 +3236,7 @@ function InternalProcessManager({
 
           <label>
             Radicado
-            <input
+            <Input
               value={singleRadicado}
               onChange={(event) => setSingleRadicado(event.target.value)}
               placeholder="11001400303520230010700"
@@ -3241,7 +3251,7 @@ function InternalProcessManager({
 
           <label>
             Responsable
-            <input
+            <Input
               value={singleOwner}
               onChange={(event) => setSingleOwner(event.target.value)}
               placeholder="Laura P."
@@ -3250,17 +3260,18 @@ function InternalProcessManager({
 
           <label>
             Prioridad
-            <select value={singlePriority} onChange={(event) => setSinglePriority(event.target.value as typeof singlePriority)}>
+            <Select value={singlePriority} onChange={(event) => setSinglePriority(event.target.value as typeof singlePriority)}>
               <option value="low">Baja</option>
               <option value="normal">Normal</option>
               <option value="high">Alta</option>
               <option value="critical">Crítica</option>
-            </select>
+            </Select>
           </label>
 
           <label>
             Nota interna
             <textarea
+              className="min-h-[120px] w-full rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border)] bg-white px-3 py-2.5 text-sm text-[var(--ds-color-text)] shadow-[var(--ds-shadow-xs)] outline-none transition-colors placeholder:text-[var(--ds-color-text-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--ds-color-info)] focus-visible:ring-offset-2"
               value={singleNotes}
               onChange={(event) => setSingleNotes(event.target.value)}
               placeholder="Cliente prioritario, caso sensible o cualquier contexto útil."
@@ -3268,12 +3279,12 @@ function InternalProcessManager({
             />
           </label>
 
-          <button className="internalPrimaryButton" type="submit" disabled={isSubmittingSingle}>
+          <Button type="submit" disabled={isSubmittingSingle}>
             {isSubmittingSingle ? "Guardando..." : "Guardar proceso"}
-          </button>
+          </Button>
         </form>
 
-        <form className="internalPanel" onSubmit={handleBulkSubmit}>
+        <form className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]" onSubmit={handleBulkSubmit}>
           <div className="internalPanelHeader">
             <strong>Carga masiva</strong>
             <span>Hasta donde quieras, separados por línea, coma o tab</span>
@@ -3282,6 +3293,7 @@ function InternalProcessManager({
           <label>
             Radicados
             <textarea
+              className="min-h-[180px] w-full rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border)] bg-white px-3 py-2.5 text-sm text-[var(--ds-color-text)] shadow-[var(--ds-shadow-xs)] outline-none transition-colors placeholder:text-[var(--ds-color-text-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--ds-color-info)] focus-visible:ring-offset-2"
               value={bulkRadicados}
               onChange={(event) => setBulkRadicados(event.target.value)}
               placeholder={"11001400303520230010700\n11001400306620230164700\n11001400307720220072200"}
@@ -3297,7 +3309,7 @@ function InternalProcessManager({
 
           <label>
             Responsable por defecto
-            <input
+            <Input
               value={bulkOwner}
               onChange={(event) => setBulkOwner(event.target.value)}
               placeholder="Carlos M."
@@ -3306,17 +3318,18 @@ function InternalProcessManager({
 
           <label>
             Prioridad por defecto
-            <select value={bulkPriority} onChange={(event) => setBulkPriority(event.target.value as typeof bulkPriority)}>
+            <Select value={bulkPriority} onChange={(event) => setBulkPriority(event.target.value as typeof bulkPriority)}>
               <option value="low">Baja</option>
               <option value="normal">Normal</option>
               <option value="high">Alta</option>
               <option value="critical">Crítica</option>
-            </select>
+            </Select>
           </label>
 
           <label>
             Nota interna
             <textarea
+              className="min-h-[120px] w-full rounded-[var(--ds-radius-sm)] border border-[var(--ds-color-border)] bg-white px-3 py-2.5 text-sm text-[var(--ds-color-text)] shadow-[var(--ds-shadow-xs)] outline-none transition-colors placeholder:text-[var(--ds-color-text-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--ds-color-info)] focus-visible:ring-offset-2"
               value={bulkNotes}
               onChange={(event) => setBulkNotes(event.target.value)}
               placeholder="Aplica la misma nota para toda la carga."
@@ -3324,9 +3337,9 @@ function InternalProcessManager({
             />
           </label>
 
-          <button className="internalPrimaryButton" type="submit" disabled={isSubmittingBulk}>
+          <Button type="submit" disabled={isSubmittingBulk}>
             {isSubmittingBulk ? "Procesando..." : "Cargar lote"}
-          </button>
+          </Button>
         </form>
       </div>
 
@@ -3357,15 +3370,15 @@ function InternalProcessManager({
         </div>
       ) : null}
 
-      <section className="internalPanel" id="bandeja">
+      <section className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]" id="bandeja">
         <div className="internalPanelHeader">
           <div>
             <strong>Procesos cargados recientemente</strong>
             <span>{cases.length} visibles en este inventario</span>
           </div>
-          <button className="internalGhostButton" type="button" onClick={() => void refreshCases()}>
+          <Button variant="secondary" type="button" onClick={() => void refreshCases()}>
             Recargar
-          </button>
+          </Button>
         </div>
 
         {isLoadingCases ? <p className="internalPanelEmpty">Cargando procesos...</p> : null}
@@ -3390,10 +3403,10 @@ function InternalProcessManager({
               <article key={legalCase.id} className="internalCasesRow">
                 <strong>{legalCase.radicado}</strong>
                 <span>{legalCase.internal_owner || "Sin responsable"}</span>
-                <span className={`internalPriorityBadge is-${legalCase.priority_final}`}>{formatPriorityLabel(legalCase.priority_final)}</span>
-                <span className={`internalStatusBadge is-${getAttentionTone(legalCase.attention_level)}`}>
+                <Badge variant={getBadgeVariantFromTone(getPriorityTone(legalCase.priority_final))}>{formatPriorityLabel(legalCase.priority_final)}</Badge>
+                <Badge variant={getBadgeVariantFromTone(getAttentionTone(legalCase.attention_level))}>
                   {formatAttentionLevel(legalCase.attention_level)}
-                </span>
+                </Badge>
                 <span>{formatCaseRecordStatus(legalCase.status)}</span>
                 <span>{formatCaseTimestamp(legalCase.created_at)}</span>
               </article>
@@ -3657,19 +3670,19 @@ function InternalLexLayer({
 
       {isOpen ? (
         <section className="lexMiniModal" id="lex-operational-panel" aria-label="Lex sobre operación real">
-          <header className="lexModalHeader">
+          <header className="lexModalHeader border-b border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)]">
             <div>
-              <span className="lexModalBrand">
+              <span className="lexModalBrand text-[var(--ds-color-text-subtle)]">
                 <img src={lexSymbolUrl} alt="" aria-hidden="true" />
                 Lex · atención operativa
               </span>
-              <strong>
+              <strong className="text-[var(--ds-color-text)]">
                 {organizationName ? `Lectura viva de ${organizationName}` : "Lectura viva de la cuenta"}
               </strong>
             </div>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Cerrar Lex">
+            <Button variant="quiet" size="icon" type="button" onClick={() => setOpen(false)} aria-label="Cerrar Lex">
               ×
-            </button>
+            </Button>
           </header>
 
           <div className="lexMessages" ref={messagesRef}>
@@ -3704,14 +3717,16 @@ function InternalLexLayer({
           {promptOptions.length ? (
             <div className="lexPromptRail" aria-label="Consultas sugeridas">
               {promptOptions.map((prompt) => (
-                <button
+                <Button
                   key={`${prompt.intent}-${prompt.label}`}
                   type="button"
+                  variant="secondary"
+                  size="sm"
                   onClick={() => void askLex(prompt.intent, prompt.value)}
                   disabled={isTyping}
                 >
                   {prompt.label}
-                </button>
+                </Button>
               ))}
             </div>
           ) : null}
