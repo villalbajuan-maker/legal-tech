@@ -47,7 +47,8 @@ Busca responder:
 2. en que orden actuan;
 3. que ve el usuario en la UI;
 4. que necesita el modelo de datos;
-5. que se puede implementar primero sin perder coherencia.
+5. que se puede implementar primero sin perder coherencia;
+6. que debe recalcular el sistema y con cuanta sofisticacion.
 
 Busca evitar:
 
@@ -83,6 +84,10 @@ Debe funcionar como:
 ```text
 una capa de cobertura, criterio y atencion administrada
 ```
+
+Contrato complementario de recalculo:
+
+`docs/producto/contrato-recalculo-derivados-operativos.md`
 
 ---
 

@@ -39,6 +39,10 @@ Este documento define la estructura minima para persistir por cuenta:
 - umbrales de escalamiento;
 - y el estado operativo derivado que necesita cada proceso.
 
+Contrato complementario de derivacion y recalculo:
+
+`docs/producto/contrato-recalculo-derivados-operativos.md`
+
 Busca evitar:
 
 1. dejar las reglas solo en UI;
