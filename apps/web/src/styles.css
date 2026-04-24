@@ -885,7 +885,7 @@ button {
 .internalCasesTableHead,
 .internalCasesRow {
   display: grid;
-  grid-template-columns: minmax(200px, 2fr) minmax(140px, 1fr) 110px 100px 170px;
+  grid-template-columns: minmax(200px, 1.8fr) minmax(140px, 1fr) 110px 150px 100px 170px;
   gap: 14px;
   align-items: center;
   padding: 14px 0;

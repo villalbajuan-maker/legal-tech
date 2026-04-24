@@ -44,8 +44,27 @@ type InternalCaseRow = {
   normalized_radicado: string;
   internal_owner: string | null;
   priority: "low" | "normal" | "high" | "critical";
+  priority_manual: "low" | "normal" | "high" | "critical";
+  priority_calculated: "low" | "normal" | "high" | "critical";
+  priority_final: "low" | "normal" | "high" | "critical";
+  attention_level: "silencio_operativo" | "atencion_visible" | "atencion_elevada" | "interrupcion";
+  responsible_membership_id: string | null;
+  assignment_origin: "manual" | "rule" | "default" | "unassigned";
   status: "active" | "paused" | "closed";
   created_at: string;
+};
+
+type OrganizationOperationalRulesRecord = {
+  id: string;
+  organization_id: string;
+  consultation_rules: Record<string, unknown>;
+  priority_rules: Record<string, unknown>;
+  attention_rules: Record<string, unknown>;
+  assignment_rules: Record<string, unknown>;
+  notification_rules: Record<string, unknown>;
+  escalation_rules: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
 };
 
 type InternalCaseSourceRow = {
@@ -99,6 +118,10 @@ type OperationalCaseRow = {
   radicado: string;
   responsible: string | null;
   priority: InternalCaseRow["priority"];
+  priorityManual: InternalCaseRow["priority_manual"];
+  priorityCalculated: InternalCaseRow["priority_calculated"];
+  attentionLevel: InternalCaseRow["attention_level"];
+  assignmentOrigin: InternalCaseRow["assignment_origin"];
   caseStatus: InternalCaseRow["status"];
   sourceStatus: InternalCaseSourceRow["status"] | "pending";
   sourceName: string;
@@ -144,6 +167,50 @@ type RuleFamilyKey =
   | "asignacion"
   | "notificaciones"
   | "escalamiento";
+
+type OperationalRulesDraft = {
+  consultaCritica: string;
+  consultaAlta: string;
+  consultaPuntual: boolean;
+  proteccionFuente: string;
+  prioridadBase: string;
+  prioridadEvento: string;
+  prioridadSinResponsable: boolean;
+  atencionSilencio: string;
+  atencionBandeja: string;
+  atencionEventos: string;
+  asignacionDefault: string;
+  asignacionSinResponsable: string;
+  asignacionCobertura: boolean;
+  notificacionCanal: string;
+  notificacionResumen: string;
+  notificacionUmbral: string;
+  escalamientoPersistencia: string;
+  escalamientoEventos: string;
+  escalamientoSinCobertura: boolean;
+};
+
+const defaultOperationalRulesDraft: OperationalRulesDraft = {
+  consultaCritica: "Cada hora",
+  consultaAlta: "Cada 4 horas",
+  consultaPuntual: true,
+  proteccionFuente: "Equilibrada",
+  prioridadBase: "La mayor entre manual y calculada",
+  prioridadEvento: "Audiencia próxima o término cercano",
+  prioridadSinResponsable: true,
+  atencionSilencio: "Mantener en silencio los procesos estables",
+  atencionBandeja: "Elevar errores de fuente y requiere revisión",
+  atencionEventos: "Elevar eventos próximos a 3 días",
+  asignacionDefault: "Administrador de cuenta",
+  asignacionSinResponsable: "Mantener visible y elevar si hay novedad",
+  asignacionCobertura: true,
+  notificacionCanal: "Email",
+  notificacionResumen: "Diario",
+  notificacionUmbral: "Alta",
+  escalamientoPersistencia: "Después de 2 corridas fallidas",
+  escalamientoEventos: "A 48 horas del evento",
+  escalamientoSinCobertura: true,
+};
 
 function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error && error.message) {
@@ -350,7 +417,9 @@ async function loadOrganizationCases(organizationId: string) {
 
   const { data, error } = await supabase
     .from("cases")
-    .select("id, radicado, normalized_radicado, internal_owner, priority, status, created_at")
+    .select(
+      "id, radicado, normalized_radicado, internal_owner, priority, priority_manual, priority_calculated, priority_final, attention_level, responsible_membership_id, assignment_origin, status, created_at",
+    )
     .eq("organization_id", organizationId)
     .order("created_at", { ascending: false })
     .limit(50);
@@ -360,6 +429,56 @@ async function loadOrganizationCases(organizationId: string) {
   }
 
   return (data as InternalCaseRow[]) ?? [];
+}
+
+async function loadOrganizationOperationalRules(organizationId: string) {
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("organization_operational_rules")
+    .select(
+      "id, organization_id, consultation_rules, priority_rules, attention_rules, assignment_rules, notification_rules, escalation_rules, created_at, updated_at",
+    )
+    .eq("organization_id", organizationId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return (data as OrganizationOperationalRulesRecord | null) ?? null;
+}
+
+async function updateOrganizationOperationalRules(
+  rulesId: string,
+  payload: Pick<
+    OrganizationOperationalRulesRecord,
+    | "consultation_rules"
+    | "priority_rules"
+    | "attention_rules"
+    | "assignment_rules"
+    | "notification_rules"
+    | "escalation_rules"
+  >,
+) {
+  if (!supabase) {
+    throw new Error("Supabase no está configurado.");
+  }
+
+  const { data, error } = await supabase
+    .from("organization_operational_rules")
+    .update(payload)
+    .eq("id", rulesId)
+    .select(
+      "id, organization_id, consultation_rules, priority_rules, attention_rules, assignment_rules, notification_rules, escalation_rules, created_at, updated_at",
+    )
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data as OrganizationOperationalRulesRecord;
 }
 
 async function loadOrganizationCaseSources(caseIds: string[]) {
@@ -651,6 +770,287 @@ function formatCaseRecordStatus(value: InternalCaseRow["status"]) {
   }
 }
 
+function formatAttentionLevel(value: InternalCaseRow["attention_level"] | OperationalCaseRow["attentionLevel"]) {
+  switch (value) {
+    case "silencio_operativo":
+      return "Silencio operativo";
+    case "atencion_visible":
+      return "Atención visible";
+    case "atencion_elevada":
+      return "Atención elevada";
+    case "interrupcion":
+      return "Interrupción";
+    default:
+      return "Atención";
+  }
+}
+
+function getAttentionTone(value: InternalCaseRow["attention_level"] | OperationalCaseRow["attentionLevel"]) {
+  switch (value) {
+    case "silencio_operativo":
+      return "ok";
+    case "atencion_visible":
+      return "info";
+    case "atencion_elevada":
+      return "review";
+    case "interrupcion":
+      return "error";
+    default:
+      return "neutral";
+  }
+}
+
+function formatAssignmentOrigin(value: InternalCaseRow["assignment_origin"] | OperationalCaseRow["assignmentOrigin"]) {
+  switch (value) {
+    case "manual":
+      return "Manual";
+    case "rule":
+      return "Por regla";
+    case "default":
+      return "Por default";
+    case "unassigned":
+      return "Sin asignación";
+    default:
+      return value;
+  }
+}
+
+function buildOperationalRulesDraft(
+  rules: OrganizationOperationalRulesRecord | null,
+  teamMembers: TeamMemberRecord[],
+): OperationalRulesDraft {
+  if (!rules) {
+    return defaultOperationalRulesDraft;
+  }
+
+  const consultationRules = rules.consultation_rules || {};
+  const priorityRules = rules.priority_rules || {};
+  const attentionRules = rules.attention_rules || {};
+  const assignmentRules = rules.assignment_rules || {};
+  const notificationRules = rules.notification_rules || {};
+  const escalationRules = rules.escalation_rules || {};
+
+  const defaultMembershipId =
+    typeof assignmentRules.default_membership_id === "string" ? assignmentRules.default_membership_id : null;
+  const defaultMember = defaultMembershipId
+    ? teamMembers.find((member) => member.id === defaultMembershipId)
+    : null;
+
+  return {
+    consultaCritica:
+      consultationRules.critical_frequency === "hourly"
+        ? "Cada hora"
+        : consultationRules.critical_frequency === "every_2_hours"
+          ? "Cada 2 horas"
+          : consultationRules.critical_frequency === "every_4_hours"
+            ? "Cada 4 horas"
+            : defaultOperationalRulesDraft.consultaCritica,
+    consultaAlta:
+      consultationRules.high_frequency === "every_4_hours"
+        ? "Cada 4 horas"
+        : consultationRules.high_frequency === "every_8_hours"
+          ? "Cada 8 horas"
+          : consultationRules.high_frequency === "daily"
+            ? "Diaria"
+            : defaultOperationalRulesDraft.consultaAlta,
+    consultaPuntual:
+      typeof consultationRules.point_query_enabled === "boolean"
+        ? consultationRules.point_query_enabled
+        : defaultOperationalRulesDraft.consultaPuntual,
+    proteccionFuente:
+      consultationRules.source_protection_mode === "strict"
+        ? "Estricta"
+        : consultationRules.source_protection_mode === "intensive"
+          ? "Intensiva"
+          : "Equilibrada",
+    prioridadBase:
+      priorityRules.final_resolution === "manual_precedes"
+        ? "Manual prevalece"
+        : priorityRules.final_resolution === "calculated_precedes"
+          ? "Calculada prevalece"
+          : "La mayor entre manual y calculada",
+    prioridadEvento:
+      priorityRules.event_proximity_factor === "actuacion_relevante_reciente"
+        ? "Actuación relevante reciente"
+        : priorityRules.event_proximity_factor === "error_fuente_persistente"
+          ? "Error de fuente persistente"
+          : "Audiencia próxima o término cercano",
+    prioridadSinResponsable:
+      typeof priorityRules.raise_if_unassigned_with_change === "boolean"
+        ? priorityRules.raise_if_unassigned_with_change
+        : defaultOperationalRulesDraft.prioridadSinResponsable,
+    atencionSilencio:
+      attentionRules.stable_cases_mode === "show_in_summary"
+        ? "Mostrar estables en resumen"
+        : "Mantener en silencio los procesos estables",
+    atencionBandeja:
+      attentionRules.bandeja_elevation_mode === "only_relevant_change"
+        ? "Elevar solo novedad relevante"
+        : "Elevar errores de fuente y requiere revisión",
+    atencionEventos:
+      Number(attentionRules.upcoming_event_window_days || 3) === 5
+        ? "Elevar eventos próximos a 5 días"
+        : Number(attentionRules.upcoming_event_window_days || 3) === 1
+          ? "Elevar solo en 24 horas"
+          : "Elevar eventos próximos a 3 días",
+    asignacionDefault: defaultMember ? getTeamMemberName(defaultMember) : "Administrador de cuenta",
+    asignacionSinResponsable:
+      assignmentRules.unassigned_behavior === "assign_default_immediately"
+        ? "Asignar por default inmediatamente"
+        : assignmentRules.unassigned_behavior === "send_to_manual_review"
+          ? "Enviar a revisión manual"
+          : "Mantener visible y elevar si hay novedad",
+    asignacionCobertura:
+      typeof assignmentRules.highlight_uncovered_cases === "boolean"
+        ? assignmentRules.highlight_uncovered_cases
+        : defaultOperationalRulesDraft.asignacionCobertura,
+    notificacionCanal:
+      notificationRules.base_channel === "internal"
+        ? "Solo interno"
+        : notificationRules.base_channel === "whatsapp"
+          ? "WhatsApp"
+          : "Email",
+    notificacionResumen:
+      notificationRules.summary_frequency === "twice_daily"
+        ? "Dos veces al día"
+        : notificationRules.summary_frequency === "weekly"
+          ? "Semanal"
+          : "Diario",
+    notificacionUmbral:
+      notificationRules.interrupt_threshold === "critical"
+        ? "Crítica"
+        : notificationRules.interrupt_threshold === "normal"
+          ? "Normal"
+          : "Alta",
+    escalamientoPersistencia:
+      Number(escalationRules.persistent_failure_threshold || 2) === 3
+        ? "Después de 3 corridas fallidas"
+        : Number(escalationRules.persistent_failure_threshold || 2) === 24
+          ? "Después de 24 horas"
+          : "Después de 2 corridas fallidas",
+    escalamientoEventos:
+      Number(escalationRules.upcoming_event_window_hours || 48) === 24
+        ? "A 24 horas del evento"
+        : Number(escalationRules.upcoming_event_window_hours || 48) === 72
+          ? "A 72 horas del evento"
+          : "A 48 horas del evento",
+    escalamientoSinCobertura:
+      typeof escalationRules.raise_if_critical_without_owner === "boolean"
+        ? escalationRules.raise_if_critical_without_owner
+        : defaultOperationalRulesDraft.escalamientoSinCobertura,
+  };
+}
+
+function serializeOperationalRulesDraft(
+  draft: OperationalRulesDraft,
+  teamMembers: TeamMemberRecord[],
+): Pick<
+  OrganizationOperationalRulesRecord,
+  | "consultation_rules"
+  | "priority_rules"
+  | "attention_rules"
+  | "assignment_rules"
+  | "notification_rules"
+  | "escalation_rules"
+> {
+  const defaultMember = teamMembers.find((member) => getTeamMemberName(member) === draft.asignacionDefault) || null;
+
+  return {
+    consultation_rules: {
+      critical_frequency:
+        draft.consultaCritica === "Cada 2 horas"
+          ? "every_2_hours"
+          : draft.consultaCritica === "Cada 4 horas"
+            ? "every_4_hours"
+            : "hourly",
+      high_frequency:
+        draft.consultaAlta === "Cada 8 horas"
+          ? "every_8_hours"
+          : draft.consultaAlta === "Diaria"
+            ? "daily"
+            : "every_4_hours",
+      point_query_enabled: draft.consultaPuntual,
+      source_protection_mode:
+        draft.proteccionFuente === "Estricta"
+          ? "strict"
+          : draft.proteccionFuente === "Intensiva"
+            ? "intensive"
+            : "balanced",
+    },
+    priority_rules: {
+      final_resolution:
+        draft.prioridadBase === "Manual prevalece"
+          ? "manual_precedes"
+          : draft.prioridadBase === "Calculada prevalece"
+            ? "calculated_precedes"
+            : "max_manual_and_calculated",
+      event_proximity_factor:
+        draft.prioridadEvento === "Actuación relevante reciente"
+          ? "actuacion_relevante_reciente"
+          : draft.prioridadEvento === "Error de fuente persistente"
+            ? "error_fuente_persistente"
+            : "audiencia_o_termino_cercano",
+      raise_if_unassigned_with_change: draft.prioridadSinResponsable,
+    },
+    attention_rules: {
+      stable_cases_mode: draft.atencionSilencio === "Mostrar estables en resumen" ? "show_in_summary" : "keep_silent",
+      bandeja_elevation_mode:
+        draft.atencionBandeja === "Elevar solo novedad relevante" ? "only_relevant_change" : "source_error_and_review",
+      upcoming_event_window_days:
+        draft.atencionEventos === "Elevar eventos próximos a 5 días"
+          ? 5
+          : draft.atencionEventos === "Elevar solo en 24 horas"
+            ? 1
+            : 3,
+    },
+    assignment_rules: {
+      default_membership_id: defaultMember?.id ?? null,
+      unassigned_behavior:
+        draft.asignacionSinResponsable === "Asignar por default inmediatamente"
+          ? "assign_default_immediately"
+          : draft.asignacionSinResponsable === "Enviar a revisión manual"
+            ? "send_to_manual_review"
+            : "visible_and_raise_if_changed",
+      highlight_uncovered_cases: draft.asignacionCobertura,
+    },
+    notification_rules: {
+      base_channel:
+        draft.notificacionCanal === "Solo interno"
+          ? "internal"
+          : draft.notificacionCanal === "WhatsApp"
+            ? "whatsapp"
+            : "email",
+      summary_frequency:
+        draft.notificacionResumen === "Dos veces al día"
+          ? "twice_daily"
+          : draft.notificacionResumen === "Semanal"
+            ? "weekly"
+            : "daily",
+      interrupt_threshold:
+        draft.notificacionUmbral === "Crítica"
+          ? "critical"
+          : draft.notificacionUmbral === "Normal"
+            ? "normal"
+            : "high",
+    },
+    escalation_rules: {
+      persistent_failure_threshold:
+        draft.escalamientoPersistencia === "Después de 3 corridas fallidas"
+          ? 3
+          : draft.escalamientoPersistencia === "Después de 24 horas"
+            ? 24
+            : 2,
+      upcoming_event_window_hours:
+        draft.escalamientoEventos === "A 24 horas del evento"
+          ? 24
+          : draft.escalamientoEventos === "A 72 horas del evento"
+            ? 72
+            : 48,
+      raise_if_critical_without_owner: draft.escalamientoSinCobertura,
+    },
+  };
+}
+
 function getOperationalTone(value: string) {
   switch (value) {
     case "con_novedad":
@@ -735,7 +1135,11 @@ function buildOperationalRows(
       caseId: legalCase.id,
       radicado: legalCase.radicado,
       responsible: legalCase.internal_owner,
-      priority: legalCase.priority,
+      priority: legalCase.priority_final || legalCase.priority,
+      priorityManual: legalCase.priority_manual,
+      priorityCalculated: legalCase.priority_calculated,
+      attentionLevel: legalCase.attention_level,
+      assignmentOrigin: legalCase.assignment_origin,
       caseStatus: legalCase.status,
       sourceStatus: primarySource?.status || "pending",
       sourceName: primarySource?.source?.[0]?.name || "Sin fuente",
@@ -1079,7 +1483,13 @@ function TeamManager({
   );
 }
 
-function OperationalRulesPanel() {
+function OperationalRulesPanel({
+  organizationId,
+  teamMembers,
+}: {
+  organizationId: string;
+  teamMembers: TeamMemberRecord[];
+}) {
   const [expandedFamilies, setExpandedFamilies] = useState<Record<RuleFamilyKey, boolean>>({
     consulta: true,
     prioridad: false,
@@ -1088,28 +1498,40 @@ function OperationalRulesPanel() {
     notificaciones: false,
     escalamiento: false,
   });
+  const [rulesRecord, setRulesRecord] = useState<OrganizationOperationalRulesRecord | null>(null);
+  const [rulesDraft, setRulesDraft] = useState<OperationalRulesDraft>(defaultOperationalRulesDraft);
+  const [isLoadingRules, setLoadingRules] = useState(true);
+  const [isSavingRules, setSavingRules] = useState(false);
+  const [rulesError, setRulesError] = useState<string | null>(null);
   const [saveFeedback, setSaveFeedback] = useState<string | null>(null);
-  const [rulesDraft, setRulesDraft] = useState({
-    consultaCritica: "Cada hora",
-    consultaAlta: "Cada 4 horas",
-    consultaPuntual: true,
-    proteccionFuente: "Equilibrada",
-    prioridadBase: "La mayor entre manual y calculada",
-    prioridadEvento: "Audiencia próxima o término cercano",
-    prioridadSinResponsable: true,
-    atencionSilencio: "Mantener en silencio los procesos estables",
-    atencionBandeja: "Elevar errores de fuente y requiere revisión",
-    atencionEventos: "Elevar eventos próximos a 3 días",
-    asignacionDefault: "Administrador de cuenta",
-    asignacionSinResponsable: "Mantener visible y elevar si hay novedad",
-    asignacionCobertura: true,
-    notificacionCanal: "Email",
-    notificacionResumen: "Diario",
-    notificacionUmbral: "Alta",
-    escalamientoPersistencia: "Después de 2 corridas fallidas",
-    escalamientoEventos: "A 48 horas del evento",
-    escalamientoSinCobertura: true,
-  });
+
+  useEffect(() => {
+    let active = true;
+
+    async function refreshRules() {
+      setLoadingRules(true);
+      setRulesError(null);
+
+      try {
+        const nextRules = await loadOrganizationOperationalRules(organizationId);
+        if (!active) return;
+        setRulesRecord(nextRules);
+        setRulesDraft(buildOperationalRulesDraft(nextRules, teamMembers));
+      } catch (nextError) {
+        if (!active) return;
+        setRulesError(getErrorMessage(nextError, "No fue posible cargar las reglas operativas."));
+      } finally {
+        if (!active) return;
+        setLoadingRules(false);
+      }
+    }
+
+    void refreshRules();
+
+    return () => {
+      active = false;
+    };
+  }, [organizationId, teamMembers]);
 
   function toggleFamily(key: RuleFamilyKey) {
     setExpandedFamilies((current) => ({
@@ -1118,10 +1540,24 @@ function OperationalRulesPanel() {
     }));
   }
 
-  function markDraftReady() {
-    setSaveFeedback(
-      "La estructura operativa ya quedó lista en esta sesión. El siguiente paso conecta persistencia por cuenta y modelo de datos.",
-    );
+  async function handleSaveRules() {
+    if (!rulesRecord || isSavingRules) return;
+
+    setSavingRules(true);
+    setRulesError(null);
+    setSaveFeedback(null);
+
+    try {
+      const payload = serializeOperationalRulesDraft(rulesDraft, teamMembers);
+      const nextRules = await updateOrganizationOperationalRules(rulesRecord.id, payload);
+      setRulesRecord(nextRules);
+      setRulesDraft(buildOperationalRulesDraft(nextRules, teamMembers));
+      setSaveFeedback("Las reglas operativas de esta cuenta quedaron guardadas.");
+    } catch (nextError) {
+      setRulesError(getErrorMessage(nextError, "No fue posible guardar las reglas operativas."));
+    } finally {
+      setSavingRules(false);
+    }
   }
 
   return (
@@ -1135,11 +1571,21 @@ function OperationalRulesPanel() {
           </span>
         </div>
         <div className="internalRulesHeaderActions">
-          <button className="internalGhostButton" type="button">
-            Restablecer valores recomendados
+          <button
+            className="internalGhostButton"
+            type="button"
+            onClick={() => setRulesDraft(buildOperationalRulesDraft(rulesRecord, teamMembers))}
+            disabled={isLoadingRules || isSavingRules}
+          >
+            Restablecer valores cargados
           </button>
-          <button className="internalPrimaryButton" type="button" onClick={markDraftReady}>
-            Guardar cambios
+          <button
+            className="internalPrimaryButton"
+            type="button"
+            onClick={() => void handleSaveRules()}
+            disabled={isLoadingRules || isSavingRules || !rulesRecord}
+          >
+            {isSavingRules ? "Guardando..." : "Guardar cambios"}
           </button>
         </div>
       </div>
@@ -1152,6 +1598,8 @@ function OperationalRulesPanel() {
         ))}
       </section>
 
+      {isLoadingRules ? <p className="internalPanelEmpty">Cargando reglas operativas de la cuenta...</p> : null}
+      {rulesError ? <p className="internalAuthError">{rulesError}</p> : null}
       {saveFeedback ? <p className="internalRulesFeedback">{saveFeedback}</p> : null}
 
       <div className="internalRulesFamilies">
@@ -1478,13 +1926,41 @@ function ConfigurationWorkspace({
   organizationId: string;
   onDataChanged?: () => Promise<void> | void;
 }) {
+  const [teamMembers, setTeamMembers] = useState<TeamMemberRecord[]>([]);
+
+  async function refreshTeamMembers() {
+    try {
+      const next = await fetchTeamMembers(accessToken);
+      setTeamMembers(next.team);
+    } catch {
+      setTeamMembers([]);
+    }
+  }
+
+  useEffect(() => {
+    void refreshTeamMembers();
+  }, [accessToken]);
+
+  async function handleConfigurationDataChanged() {
+    await refreshTeamMembers();
+    await onDataChanged?.();
+  }
+
   return (
     <section className="internalConfigurationWorkspace">
       <DemoStatusPanel membership={membership} usage={usage} />
-      <OperationalRulesPanel />
+      <OperationalRulesPanel organizationId={organizationId} teamMembers={teamMembers} />
       <div className="internalConfigurationSections">
-        <TeamManager accessToken={accessToken} canManage={canManageTeam} onDataChanged={onDataChanged} />
-        <InternalProcessManager organizationId={organizationId} view="procesos" onDataChanged={onDataChanged} />
+        <TeamManager
+          accessToken={accessToken}
+          canManage={canManageTeam}
+          onDataChanged={handleConfigurationDataChanged}
+        />
+        <InternalProcessManager
+          organizationId={organizationId}
+          view="procesos"
+          onDataChanged={handleConfigurationDataChanged}
+        />
       </div>
     </section>
   );
@@ -1973,10 +2449,12 @@ function InternalProcessManager({
                       <div className="internalTrayStack">
                         <span>{row.responsible || "Sin responsable"}</span>
                         <span className={`internalPriorityBadge is-${row.priority}`}>{formatPriorityLabel(row.priority)}</span>
+                        <span>{formatAttentionLevel(row.attentionLevel)}</span>
                       </div>
                       <div className="internalTrayStack">
                         <span>{row.sourceName}</span>
                         <span>{row.legalEventsCount} evento{row.legalEventsCount === 1 ? "" : "s"}</span>
+                        <span>{formatAssignmentOrigin(row.assignmentOrigin)}</span>
                       </div>
                     </article>
                   ))}
@@ -2015,6 +2493,10 @@ function InternalProcessManager({
                           </strong>
                         </div>
                         <div>
+                          <span>Atención</span>
+                          <strong>{formatAttentionLevel(selectedCase.attentionLevel)}</strong>
+                        </div>
+                        <div>
                           <span>Fuente</span>
                           <strong>{selectedCase.sourceName}</strong>
                         </div>
@@ -2025,6 +2507,10 @@ function InternalProcessManager({
                         <div>
                           <span>Alertas activas</span>
                           <strong>{selectedCaseAlertCount}</strong>
+                        </div>
+                        <div>
+                          <span>Asignación</span>
+                          <strong>{formatAssignmentOrigin(selectedCase.assignmentOrigin)}</strong>
                         </div>
                       </div>
 
@@ -2444,6 +2930,7 @@ function InternalProcessManager({
               <span>Radicado</span>
               <span>Responsable</span>
               <span>Prioridad</span>
+              <span>Atención</span>
               <span>Estado</span>
               <span>Creado</span>
             </div>
@@ -2451,7 +2938,10 @@ function InternalProcessManager({
               <article key={legalCase.id} className="internalCasesRow">
                 <strong>{legalCase.radicado}</strong>
                 <span>{legalCase.internal_owner || "Sin responsable"}</span>
-                <span className={`internalPriorityBadge is-${legalCase.priority}`}>{formatPriorityLabel(legalCase.priority)}</span>
+                <span className={`internalPriorityBadge is-${legalCase.priority_final}`}>{formatPriorityLabel(legalCase.priority_final)}</span>
+                <span className={`internalStatusBadge is-${getAttentionTone(legalCase.attention_level)}`}>
+                  {formatAttentionLevel(legalCase.attention_level)}
+                </span>
                 <span>{formatCaseRecordStatus(legalCase.status)}</span>
                 <span>{formatCaseTimestamp(legalCase.created_at)}</span>
               </article>
