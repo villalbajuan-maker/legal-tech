@@ -259,6 +259,17 @@ No poner:
 
 ## 8. Modulos De La App
 
+Regla general:
+
+Cada modulo debe tener:
+
+- una funcion principal
+- una lectura dominante
+- una accion primaria clara
+- limites visibles sobre lo que no pertenece a esa vista
+
+La app no debe volver a mezclarse como una sola pantalla con bloques.
+
 ## 8.1 Inicio
 
 Proposito:
@@ -278,11 +289,53 @@ No es la bandeja completa.
 
 Es una vista de orientacion.
 
+Funcion dominante:
+
+```text
+entender el estado general de la cuenta en menos de un minuto
+```
+
 Preguntas que debe responder:
 
 - como esta mi cuenta hoy?
 - cuanto espacio me queda?
 - que requiere atencion?
+
+Contenido congelado:
+
+- franja superior de cuenta:
+  - demo activa / estado de cuenta
+  - dias restantes
+  - procesos activos usados / limite
+  - responsables usados / limite
+- resumen operativo del dia:
+  - con novedad
+  - requieren revision
+  - errores de fuente
+  - no consultados
+- proximos eventos
+- alertas operativas recientes
+- acciones rapidas:
+  - ir a bandeja
+  - cargar procesos
+  - crear responsable
+  - abrir Lex
+
+No debe mostrar:
+
+- la lista completa de procesos
+- el detalle completo de un proceso
+- formularios largos
+- trazabilidad tecnica de snapshots
+
+Lectura visual esperada:
+
+```text
+cuenta
+-> salud operativa
+-> lo urgente
+-> siguiente accion
+```
 
 ---
 
@@ -322,6 +375,70 @@ Principio:
 ```text
 La bandeja se abre para operar.
 No para configurar.
+```
+
+Funcion dominante:
+
+```text
+leer la cartera y decidir donde intervenir
+```
+
+Contenido congelado:
+
+- encabezado operativo:
+  - total visible
+  - con novedad
+  - requieren revision
+  - errores de fuente
+  - eventos activos
+- filtros:
+  - estado operativo
+  - responsable
+  - prioridad
+  - fuente
+  - proximidad de evento
+- lista o tabla principal:
+  - radicado
+  - estado operativo
+  - ultima actuacion
+  - proximo evento
+  - responsable
+  - prioridad
+  - fuente
+- panel de detalle por proceso:
+  - resumen del proceso
+  - ultima actuacion
+  - anotacion de ultima actuacion
+  - alertas
+  - eventos juridicos
+  - historial de snapshots
+  - acceso a Lex contextual
+
+Accion primaria de la vista:
+
+- filtrar y priorizar
+
+Acciones secundarias permitidas:
+
+- refrescar vista
+- abrir detalle
+- abrir proceso en su modulo completo si aplica
+
+No debe mostrar:
+
+- modulo de equipo
+- bloque de capacidad comercial
+- formularios de carga masiva
+- elementos de marketing
+- explicaciones largas
+
+Lectura visual esperada:
+
+```text
+que pasa
+-> que requiere atencion
+-> a quien le corresponde
+-> que evidencia tengo
 ```
 
 ### Layout recomendado
@@ -368,6 +485,50 @@ Procesos = administrar inventario
 Bandeja = operar ese inventario
 ```
 
+Funcion dominante:
+
+```text
+incorporar, ordenar y mantener la cartera activa
+```
+
+Contenido congelado:
+
+- capacidad usada:
+  - procesos activos / limite
+- acciones de carga:
+  - carga individual
+  - carga masiva
+- inventario maestro:
+  - radicado
+  - estado interno del proceso
+  - responsable
+  - prioridad
+  - fuente principal
+  - fecha de creacion
+- acciones por proceso:
+  - asignar responsable
+  - cambiar prioridad
+  - archivar o pausar
+
+Accion primaria de la vista:
+
+- cargar procesos
+
+No debe mostrar:
+
+- timeline de snapshots como protagonista
+- alertas operativas completas
+- resumen ejecutivo de cuenta
+- panel de Lex como centro de la experiencia
+
+Lectura visual esperada:
+
+```text
+que inventario tengo
+-> cuanto cupo queda
+-> que puedo cargar o ajustar
+```
+
 ---
 
 ## 8.4 Equipo
@@ -391,6 +552,43 @@ Fase posterior:
 - editar
 
 No mezclar Equipo con Configuracion general.
+
+Funcion dominante:
+
+```text
+administrar quienes operan la cuenta
+```
+
+Contenido congelado:
+
+- contador de responsables activos / limite
+- lista de responsables:
+  - nombre
+  - correo
+  - rol
+  - estado
+  - fecha de creacion
+- accion de crear responsable
+- estado de ocupacion de capacidad
+
+Accion primaria de la vista:
+
+- crear responsable
+
+No debe mostrar:
+
+- procesos completos
+- bandeja operativa
+- estados de fuente por proceso
+- configuraciones no relacionadas con usuarios
+
+Lectura visual esperada:
+
+```text
+quien opera
+-> cuantos cupos quedan
+-> a quien puedo sumar o ajustar
+```
 
 ---
 
@@ -416,6 +614,50 @@ Fase posterior:
 No debe ser el centro visual del producto.
 
 Es un modulo de soporte operativo.
+
+Decision de lenguaje:
+
+Si el termino `Consultas` se percibe ambiguo frente al usuario final, puede reemplazarse por:
+
+- `Actividad`
+- `Monitoreo`
+
+La decision final debe tomarse antes del refinamiento visual definitivo.
+
+Funcion dominante:
+
+```text
+supervisar la salud de la vigilancia y de las fuentes
+```
+
+Contenido congelado:
+
+- resumen de corridas recientes
+- estado por fuente
+- procesos no consultados
+- errores de fuente
+- reintentos o ultima ejecucion
+- lista de snapshots recientes o actividad reciente
+
+Accion primaria de la vista:
+
+- ejecutar lote manual o refrescar corrida, cuando esa accion exista
+
+No debe mostrar:
+
+- la bandeja principal completa
+- gestion de responsables
+- carga masiva de procesos como accion dominante
+- copy comercial
+
+Lectura visual esperada:
+
+```text
+como esta corriendo la vigilancia
+-> que fallo
+-> que quedo pendiente
+-> que debo reintentar o revisar
+```
 
 ---
 
@@ -461,11 +703,12 @@ docs/producto/lex_voice_contract.md
 La UI debe leer asi:
 
 1. estado de cuenta
-2. estado operativo
+2. salud operativa
 3. prioridad
 4. ultima actuacion
 5. evento o alerta
 6. responsable
+7. evidencia tecnica solo cuando se necesita
 
 No al reves.
 
@@ -577,11 +820,13 @@ La UI operativa de `app.lexcontrol.co` se considera bien encaminada cuando:
 1. tiene sidebar persistente
 2. tiene header por modulo
 3. separa claramente Inicio, Bandeja, Procesos, Equipo y Consultas
-4. la bandeja tiene ruta y comportamiento propios
-5. la cuenta muestra estado demo y capacidad
-6. Lex se integra como companion operativo
-7. desktop y mobile se sienten intencionales
-8. la experiencia se ve coherente con la promesa visual de la landing
+4. cada modulo tiene una funcion dominante clara
+5. la bandeja tiene ruta y comportamiento propios
+6. la cuenta muestra estado demo y capacidad
+7. Lex se integra como companion operativo
+8. desktop y mobile se sienten intencionales
+9. la experiencia se ve coherente con la promesa visual de la landing
+10. la app ya no se percibe como prototipo, consola tecnica ni pagina larga de bloques
 
 ---
 
@@ -602,4 +847,3 @@ Primero arquitectura de la interfaz.
 Luego refinamiento visual.
 Luego profundidad funcional.
 ```
-
