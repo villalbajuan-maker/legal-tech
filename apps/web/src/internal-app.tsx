@@ -5,6 +5,11 @@ import { Activity, House, Inbox, LogOut, Settings2 } from "lucide-react";
 import { isLikelyRadicado, normalizeRadicado } from "../../../packages/core/src";
 import { AppSidebar } from "@/components/shell/app-sidebar";
 import { PageHeader } from "@/components/shell/page-header";
+import { DetailSection } from "@/components/domain/detail-section";
+import { FilterBar } from "@/components/domain/filter-bar";
+import { OperationalBadge } from "@/components/domain/operational-badge";
+import { StateScreen } from "@/components/domain/state-screen";
+import { StatCard } from "@/components/domain/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -2320,18 +2325,17 @@ function DemoStatusPanel({
       </div>
 
       <section className="grid gap-3 md:grid-cols-3">
-        <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
-          <strong>{daysRemaining ?? "-"}</strong>
-          <span>Días restantes</span>
-        </article>
-        <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
-          <strong>{usage.processCount ?? "-"}</strong>
-          <span>{`${usage.processCount ?? "-"} / ${processLimit} procesos activos`}</span>
-        </article>
-        <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
-          <strong>{usage.memberCount ?? "-"}</strong>
-          <span>{`${usage.memberCount ?? "-"} / ${memberLimit} responsables`}</span>
-        </article>
+        <StatCard value={daysRemaining ?? "-"} label="Días restantes" className="bg-[var(--ds-color-surface-subtle)] shadow-none" />
+        <StatCard
+          value={usage.processCount ?? "-"}
+          label={`${usage.processCount ?? "-"} / ${processLimit} procesos activos`}
+          className="bg-[var(--ds-color-surface-subtle)] shadow-none"
+        />
+        <StatCard
+          value={usage.memberCount ?? "-"}
+          label={`${usage.memberCount ?? "-"} / ${memberLimit} responsables`}
+          className="bg-[var(--ds-color-surface-subtle)] shadow-none"
+        />
       </section>
 
       <div className="internalDemoStatusMeta">
@@ -2604,39 +2608,21 @@ function InternalProcessManager({
     return (
       <section className="space-y-6 px-6 py-6 lg:px-8">
         <section className="grid gap-4 md:grid-cols-3">
-          <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
-              Visibilidad
-            </span>
-            <strong className="mt-3 block text-3xl font-semibold text-[var(--ds-color-text)]">
-              {operationalSummary.total}
-            </strong>
-            <p className="mt-2 text-sm leading-6 text-[var(--ds-color-text-muted)]">
-              Procesos visibles hoy en la cuenta.
-            </p>
-          </article>
-          <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
-              Atención
-            </span>
-            <strong className="mt-3 block text-3xl font-semibold text-[var(--ds-color-text)]">
-              {operationalSummary.conNovedad}
-            </strong>
-            <p className="mt-2 text-sm leading-6 text-[var(--ds-color-text-muted)]">
-              Procesos con novedad operativa visible.
-            </p>
-          </article>
-          <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
-              Señal
-            </span>
-            <strong className="mt-3 block text-3xl font-semibold text-[var(--ds-color-text)]">
-              {alerts.length}
-            </strong>
-            <p className="mt-2 text-sm leading-6 text-[var(--ds-color-text-muted)]">
-              Alertas activas registradas para esta cuenta.
-            </p>
-          </article>
+          <StatCard
+            value={operationalSummary.total}
+            label="Visibilidad"
+            description="Procesos visibles hoy en la cuenta."
+          />
+          <StatCard
+            value={operationalSummary.conNovedad}
+            label="Atención"
+            description="Procesos con novedad operativa visible."
+          />
+          <StatCard
+            value={alerts.length}
+            label="Señal"
+            description="Alertas activas registradas para esta cuenta."
+          />
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)]">
@@ -2774,26 +2760,11 @@ function InternalProcessManager({
           </div>
 
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
-              <strong className="block text-2xl font-semibold text-[var(--ds-color-text)]">{operationalSummary.total}</strong>
-              <span className="mt-1 block text-sm text-[var(--ds-color-text-muted)]">Procesos visibles</span>
-            </article>
-            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
-              <strong className="block text-2xl font-semibold text-[var(--ds-color-text)]">{operationalSummary.conNovedad}</strong>
-              <span className="mt-1 block text-sm text-[var(--ds-color-text-muted)]">Con novedad</span>
-            </article>
-            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
-              <strong className="block text-2xl font-semibold text-[var(--ds-color-text)]">{operationalSummary.requiereRevision}</strong>
-              <span className="mt-1 block text-sm text-[var(--ds-color-text-muted)]">Requieren revisión</span>
-            </article>
-            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
-              <strong className="block text-2xl font-semibold text-[var(--ds-color-text)]">{operationalSummary.erroresFuente}</strong>
-              <span className="mt-1 block text-sm text-[var(--ds-color-text-muted)]">Errores de fuente</span>
-            </article>
-            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
-              <strong className="block text-2xl font-semibold text-[var(--ds-color-text)]">{operationalSummary.eventosActivos}</strong>
-              <span className="mt-1 block text-sm text-[var(--ds-color-text-muted)]">Eventos activos</span>
-            </article>
+            <StatCard value={operationalSummary.total} label="Procesos visibles" className="bg-[var(--ds-color-surface-subtle)] shadow-none" />
+            <StatCard value={operationalSummary.conNovedad} label="Con novedad" className="bg-[var(--ds-color-surface-subtle)] shadow-none" />
+            <StatCard value={operationalSummary.requiereRevision} label="Requieren revisión" className="bg-[var(--ds-color-surface-subtle)] shadow-none" />
+            <StatCard value={operationalSummary.erroresFuente} label="Errores de fuente" className="bg-[var(--ds-color-surface-subtle)] shadow-none" />
+            <StatCard value={operationalSummary.eventosActivos} label="Eventos activos" className="bg-[var(--ds-color-surface-subtle)] shadow-none" />
           </div>
 
           {isLoadingCases ? <p className="internalPanelEmpty">Cargando bandeja operativa...</p> : null}
@@ -2806,7 +2777,7 @@ function InternalProcessManager({
 
           {!isLoadingCases && !loadError && operationalRows.length > 0 ? (
             <>
-              <div className="mt-6 grid gap-4 rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4 lg:grid-cols-3">
+              <FilterBar>
                 <label className="space-y-2 text-sm font-medium text-[var(--ds-color-text-muted)]">
                   Estado operativo
                   <Select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
@@ -2840,7 +2811,7 @@ function InternalProcessManager({
                     <option value="low">Baja</option>
                   </Select>
                 </label>
-              </div>
+              </FilterBar>
 
               <div className={`internalTrayLayout mt-6 ${selectedCase ? "has-detail" : "is-idle"}`}>
                 <div className="internalCasesTable internalTrayTable">
@@ -2878,12 +2849,14 @@ function InternalProcessManager({
                         <span>{row.lastCheckedAt ? `Última consulta: ${formatCaseTimestamp(row.lastCheckedAt)}` : "Sin consulta aún"}</span>
                       </div>
                       <div className="internalTrayStack">
-                        <Badge variant={getBadgeVariantFromTone(getOperationalTone(row.operationalStatus))}>
-                          {formatOperationalStatus(row.operationalStatus)}
-                        </Badge>
-                        <Badge variant={getBadgeVariantFromTone(getSourceStatusTone(row.sourceStatus))}>
-                          {formatSourceStatus(row.sourceStatus)}
-                        </Badge>
+                        <OperationalBadge
+                          tone={getBadgeVariantFromTone(getOperationalTone(row.operationalStatus))}
+                          label={formatOperationalStatus(row.operationalStatus)}
+                        />
+                        <OperationalBadge
+                          tone={getBadgeVariantFromTone(getSourceStatusTone(row.sourceStatus))}
+                          label={formatSourceStatus(row.sourceStatus)}
+                        />
                       </div>
                       <div className="internalTrayStack">
                         <strong>{row.latestActionTitle || "Sin actuación resumida"}</strong>
@@ -2897,10 +2870,14 @@ function InternalProcessManager({
                       </div>
                       <div className="internalTrayStack">
                         <span>{row.responsible || "Sin responsable"}</span>
-                        <Badge variant={getBadgeVariantFromTone(getPriorityTone(row.priority))}>{formatPriorityLabel(row.priority)}</Badge>
-                        <Badge variant={getBadgeVariantFromTone(getAttentionTone(row.attentionLevel))}>
-                          {formatAttentionLevel(row.attentionLevel)}
-                        </Badge>
+                        <OperationalBadge
+                          tone={getBadgeVariantFromTone(getPriorityTone(row.priority))}
+                          label={formatPriorityLabel(row.priority)}
+                        />
+                        <OperationalBadge
+                          tone={getBadgeVariantFromTone(getAttentionTone(row.attentionLevel))}
+                          label={formatAttentionLevel(row.attentionLevel)}
+                        />
                         {row.attentionReason ? <span>{formatDerivedReason(row.attentionReason)}</span> : null}
                       </div>
                       <div className="internalTrayStack">
@@ -2974,11 +2951,10 @@ function InternalProcessManager({
                         </div>
                       </div>
 
-                      <div className="internalDetailSection">
-                        <div className="internalPanelHeader">
-                          <strong>Eventos jurídicos</strong>
-                          <span>{selectedEvents.length} activo{selectedEvents.length === 1 ? "" : "s"}</span>
-                        </div>
+                      <DetailSection
+                        title="Eventos jurídicos"
+                        meta={`${selectedEvents.length} activo${selectedEvents.length === 1 ? "" : "s"}`}
+                      >
                         {selectedEvents.length > 0 ? (
                           <div className="internalDetailList">
                             {selectedEvents.map((event) => (
@@ -2992,22 +2968,22 @@ function InternalProcessManager({
                         ) : (
                           <p className="internalPanelEmpty">No hay eventos activos para este proceso.</p>
                         )}
-                      </div>
+                      </DetailSection>
 
-                      <div className="internalDetailSection">
-                        <div className="internalPanelHeader">
-                          <strong>Alertas</strong>
-                          <span>{selectedAlerts.length} activa{selectedAlerts.length === 1 ? "" : "s"}</span>
-                        </div>
+                      <DetailSection
+                        title="Alertas"
+                        meta={`${selectedAlerts.length} activa${selectedAlerts.length === 1 ? "" : "s"}`}
+                      >
                         {selectedAlerts.length > 0 ? (
                           <div className="internalDetailList">
                             {selectedAlerts.map((alert) => (
                               <article key={alert.id}>
                                 <div className="internalDetailTitleLine">
                                   <strong>{alert.title}</strong>
-                                  <span className={`internalStatusBadge is-${getAlertTone(alert.severity)}`}>
-                                    {formatAlertType(alert.alert_type)}
-                                  </span>
+                                  <OperationalBadge
+                                    tone={getBadgeVariantFromTone(getAlertTone(alert.severity))}
+                                    label={formatAlertType(alert.alert_type)}
+                                  />
                                 </div>
                                 <span>{alert.message}</span>
                                 <span>{formatDateTimeLabel(alert.created_at)}</span>
@@ -3017,22 +2993,22 @@ function InternalProcessManager({
                         ) : (
                           <p className="internalPanelEmpty">No hay alertas activas para este proceso.</p>
                         )}
-                      </div>
+                      </DetailSection>
 
-                      <div className="internalDetailSection">
-                        <div className="internalPanelHeader">
-                          <strong>Historial de snapshots</strong>
-                          <span>{selectedSnapshots.length} registro{selectedSnapshots.length === 1 ? "" : "s"}</span>
-                        </div>
+                      <DetailSection
+                        title="Historial de snapshots"
+                        meta={`${selectedSnapshots.length} registro${selectedSnapshots.length === 1 ? "" : "s"}`}
+                      >
                         {selectedSnapshots.length > 0 ? (
                           <div className="internalDetailList">
                             {selectedSnapshots.slice(0, 12).map((snapshot) => (
                               <article key={snapshot.id}>
                                 <div className="internalDetailTitleLine">
                                   <strong>{formatDateTimeLabel(snapshot.fetched_at)}</strong>
-                                  <span className={`internalStatusBadge is-${getSnapshotStatusTone(snapshot.fetch_status)}`}>
-                                    {formatSnapshotStatus(snapshot.fetch_status)}
-                                  </span>
+                                  <OperationalBadge
+                                    tone={getBadgeVariantFromTone(getSnapshotStatusTone(snapshot.fetch_status))}
+                                    label={formatSnapshotStatus(snapshot.fetch_status)}
+                                  />
                                 </div>
                                 <span>
                                   {snapshot.duration_ms ? `${snapshot.duration_ms} ms` : "Sin duración reportada"}
@@ -3044,7 +3020,7 @@ function InternalProcessManager({
                         ) : (
                           <p className="internalPanelEmpty">No hay snapshots para este proceso.</p>
                         )}
-                      </div>
+                      </DetailSection>
                     </>
                   </aside>
                 ) : (
@@ -3080,18 +3056,9 @@ function InternalProcessManager({
     return (
       <section className="space-y-6 px-6 py-6 lg:px-8">
         <section className="grid gap-4 md:grid-cols-3">
-          <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
-            <strong className="block text-3xl font-semibold text-[var(--ds-color-text)]">{consultationSummary.sourcesTracked}</strong>
-            <p className="mt-2 text-sm leading-6 text-[var(--ds-color-text-muted)]">Fuentes rastreadas sobre procesos activos.</p>
-          </article>
-          <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
-            <strong className="block text-3xl font-semibold text-[var(--ds-color-text)]">{consultationSummary.snapshots}</strong>
-            <p className="mt-2 text-sm leading-6 text-[var(--ds-color-text-muted)]">Snapshots disponibles para trazabilidad.</p>
-          </article>
-          <article className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-5 shadow-[var(--ds-shadow-xs)]">
-            <strong className="block text-3xl font-semibold text-[var(--ds-color-text)]">{consultationSummary.alertas}</strong>
-            <p className="mt-2 text-sm leading-6 text-[var(--ds-color-text-muted)]">Alertas registradas por novedades o fallas.</p>
-          </article>
+          <StatCard value={consultationSummary.sourcesTracked} label="Fuentes rastreadas" description="Fuentes rastreadas sobre procesos activos." />
+          <StatCard value={consultationSummary.snapshots} label="Snapshots" description="Snapshots disponibles para trazabilidad." />
+          <StatCard value={consultationSummary.alertas} label="Alertas" description="Alertas registradas por novedades o fallas." />
         </section>
 
         <section className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-xs)]">
@@ -3106,18 +3073,9 @@ function InternalProcessManager({
           </div>
 
           <section className="grid gap-3 md:grid-cols-3">
-            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
-              <strong>{consultationSummary.fuentesActivas}</strong>
-              <span>Fuentes activas</span>
-            </article>
-            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
-              <strong>{consultationSummary.erroresFuente}</strong>
-              <span>Errores de fuente</span>
-            </article>
-            <article className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-subtle)] p-4">
-              <strong>{consultationSummary.bloqueosFuente}</strong>
-              <span>Fuentes bloqueadas</span>
-            </article>
+            <StatCard value={consultationSummary.fuentesActivas} label="Fuentes activas" className="bg-[var(--ds-color-surface-subtle)] shadow-none" />
+            <StatCard value={consultationSummary.erroresFuente} label="Errores de fuente" className="bg-[var(--ds-color-surface-subtle)] shadow-none" />
+            <StatCard value={consultationSummary.bloqueosFuente} label="Fuentes bloqueadas" className="bg-[var(--ds-color-surface-subtle)] shadow-none" />
           </section>
 
           <div className="internalDetailList">
@@ -3443,20 +3401,24 @@ function InternalAuthScreen() {
   }
 
   return (
-    <main className="internalAuthPage">
-      <section className="internalAuthCard">
-        <img className="internalAuthLogo" src={logoUrl} alt="LexControl" />
-        <span className="internalEyebrow">Acceso operativo</span>
-        <h1>Ingresa a tu cuenta de LexControl.</h1>
-        <p>
+    <main className="flex min-h-screen items-center justify-center bg-[var(--ds-color-background)] px-6 py-10">
+      <section className="w-full max-w-[560px] rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-white p-8 shadow-[var(--ds-shadow-md)]">
+        <img className="h-12 w-auto" src={logoUrl} alt="LexControl" />
+        <span className="mt-6 block text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ds-color-text-subtle)]">
+          Acceso operativo
+        </span>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-[var(--ds-color-text)]">
+          Ingresa a tu cuenta de LexControl.
+        </h1>
+        <p className="mt-4 text-sm leading-6 text-[var(--ds-color-text-muted)]">
           Este acceso está reservado para cuentas activadas. Aquí operas procesos,
           responsables y trazabilidad real.
         </p>
 
-        <form className="internalAuthForm" onSubmit={handleSubmit}>
-          <label>
+        <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+          <label className="block space-y-2 text-sm font-medium text-[var(--ds-color-text-muted)]">
             Correo
-            <input
+            <Input
               autoComplete="email"
               type="email"
               value={form.email}
@@ -3465,9 +3427,9 @@ function InternalAuthScreen() {
               required
             />
           </label>
-          <label>
+          <label className="block space-y-2 text-sm font-medium text-[var(--ds-color-text-muted)]">
             Contraseña
-            <input
+            <Input
               autoComplete="current-password"
               type="password"
               value={form.password}
@@ -3479,17 +3441,16 @@ function InternalAuthScreen() {
 
           {error ? <p className="internalAuthError">{error}</p> : null}
 
-          <button className="internalPrimaryButton" type="submit" disabled={isSubmitting}>
+          <Button className="w-full" type="submit" disabled={isSubmitting}>
             {isSubmitting ? "Ingresando..." : "Entrar"}
-          </button>
+          </Button>
         </form>
 
-        <div className="internalAuthHint">
-          <strong>Acceso seguro por cuenta</strong>
-          <span>
+        <DetailSection title="Acceso seguro por cuenta">
+          <p className="text-sm leading-6 text-[var(--ds-color-text-muted)]">
             Tu sesión queda aislada por organización y solo ve la operación de tu cuenta.
-          </span>
-        </div>
+          </p>
+        </DetailSection>
       </section>
     </main>
   );
@@ -3497,35 +3458,37 @@ function InternalAuthScreen() {
 
 function InternalConfigurationState() {
   return (
-    <main className="internalStatePage">
-      <section className="internalStateCard">
-        <span className="internalEyebrow">Configuración pendiente</span>
-        <h1>Faltan variables de Supabase en el frontend.</h1>
+    <StateScreen
+      eyebrow="Configuración pendiente"
+      title="Faltan variables de Supabase en el frontend."
+      description={
         <p>
           Para abrir la consola interna necesitamos `VITE_SUPABASE_URL` y
           `VITE_SUPABASE_ANON_KEY`. La landing puede vivir sin eso. La operación
           autenticada no.
         </p>
-      </section>
-    </main>
+      }
+    />
   );
 }
 
 function InternalNoMembershipState({ email }: { email: string | undefined }) {
   return (
-    <main className="internalStatePage">
-      <section className="internalStateCard">
-        <span className="internalEyebrow">Acceso en revisión</span>
-        <h1>Tu usuario aún no tiene una organización activa.</h1>
-        <p>
-          El inicio de sesión ya funcionó para <strong>{email ?? "tu cuenta"}</strong>,
-          pero todavía no existe una membresía activa en una cuenta.
-        </p>
-        <p>
-          El siguiente paso es asignar tu usuario a una organización y a un rol operativo.
-        </p>
-      </section>
-    </main>
+    <StateScreen
+      eyebrow="Acceso en revisión"
+      title="Tu usuario aún no tiene una organización activa."
+      description={
+        <>
+          <p>
+            El inicio de sesión ya funcionó para <strong>{email ?? "tu cuenta"}</strong>,
+            pero todavía no existe una membresía activa en una cuenta.
+          </p>
+          <p>
+            El siguiente paso es asignar tu usuario a una organización y a un rol operativo.
+          </p>
+        </>
+      }
+    />
   );
 }
 
