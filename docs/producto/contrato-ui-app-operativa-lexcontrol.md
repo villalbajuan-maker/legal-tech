@@ -5,6 +5,12 @@ Superficie: `app.lexcontrol.co`
 Version: v1.0  
 Estado: Congelado para implementacion
 
+Contrato complementario obligatorio:
+
+```text
+docs/producto/contrato-design-system-lexcontrol.md
+```
+
 ---
 
 ## 1. Decision Rectora
