@@ -2,6 +2,12 @@
 
 ## MVP SaaS - Sistema Operativo De Vigilancia Judicial
 
+Documento complementario obligatorio para narrativa de producto y direccion de negocio:
+
+```text
+docs/producto/problem-solution-fit-lexcontrol.md
+```
+
 ### 1. Decision De Producto
 
 Se decide construir una microSaaS de vigilancia judicial para abogados, firmas pequenas, operadores legales y equipos juridicos que necesitan monitorear procesos judiciales de forma recurrente.
