@@ -730,6 +730,8 @@ Contratos relacionados:
 - `docs/producto/contrato-reglas-atencion.md`
 - `docs/producto/contrato-reglas-notificaciones.md`
 - `docs/producto/contrato-reglas-escalamiento.md`
+- `docs/producto/contrato-reglas-asignacion.md`
+- `docs/producto/contrato-integrador-reglas-operativas.md`
 
 Contrato complementario futuro:
 
