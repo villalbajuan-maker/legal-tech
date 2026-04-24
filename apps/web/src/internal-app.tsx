@@ -2533,10 +2533,12 @@ function InternalProcessManager({
                         <span>{row.responsible || "Sin responsable"}</span>
                         <span className={`internalPriorityBadge is-${row.priority}`}>{formatPriorityLabel(row.priority)}</span>
                         <span>{formatAttentionLevel(row.attentionLevel)}</span>
+                        {row.attentionReason ? <span>{formatDerivedReason(row.attentionReason)}</span> : null}
                       </div>
                       <div className="internalTrayStack">
                         <span>{row.sourceName}</span>
                         <span>{row.legalEventsCount} evento{row.legalEventsCount === 1 ? "" : "s"}</span>
+                        {row.priorityReason ? <span>{formatDerivedReason(row.priorityReason)}</span> : null}
                         <span>{formatAssignmentOrigin(row.assignmentOrigin)}</span>
                       </div>
                     </article>
