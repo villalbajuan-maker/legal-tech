@@ -130,6 +130,11 @@ type TeamMembersResponse = {
   limit: number;
 };
 
+type AccountUsage = {
+  processCount: number;
+  memberCount: number;
+};
+
 type AppView = "inicio" | "bandeja" | "procesos" | "equipo" | "consultas";
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -196,6 +201,30 @@ async function createTeamMember(
   }
 
   return payload as TeamMembersResponse & { member?: TeamMemberRecord | null };
+}
+
+async function loadAccountUsage(organizationId: string, accessToken: string) {
+  if (!supabase) {
+    throw new Error("Supabase no está configurado.");
+  }
+
+  const [{ count: nextProcessCount, error: processError }, teamResponse] = await Promise.all([
+    supabase
+      .from("cases")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", organizationId)
+      .eq("status", "active"),
+    fetchTeamMembers(accessToken),
+  ]);
+
+  if (processError) {
+    throw processError;
+  }
+
+  return {
+    processCount: nextProcessCount ?? 0,
+    memberCount: teamResponse.activeCount,
+  } satisfies AccountUsage;
 }
 
 const internalModules = [
@@ -792,9 +821,11 @@ function getTeamMemberName(member: TeamMemberRecord) {
 function TeamManager({
   accessToken,
   canManage,
+  onDataChanged,
 }: {
   accessToken: string;
   canManage: boolean;
+  onDataChanged?: () => Promise<void> | void;
 }) {
   const [teamMembers, setTeamMembers] = useState<TeamMemberRecord[]>([]);
   const [activeCount, setActiveCount] = useState(0);
@@ -818,6 +849,7 @@ function TeamManager({
       setTeamMembers(next.team);
       setActiveCount(next.activeCount);
       setLimit(next.limit);
+      await onDataChanged?.();
     } catch (nextError) {
       setError(getErrorMessage(nextError, "No fue posible cargar los responsables."));
     } finally {
@@ -846,6 +878,7 @@ function TeamManager({
         email: "",
         password: "",
       });
+      await onDataChanged?.();
     } catch (submitError) {
       setError(getErrorMessage(submitError, "No fue posible crear el responsable."));
     } finally {
@@ -989,54 +1022,21 @@ function TeamManager({
 }
 
 function DemoStatusPanel({
-  accessToken,
   membership,
+  usage,
 }: {
-  accessToken: string;
   membership: MembershipRecord;
+  usage: {
+    processCount: number | null;
+    memberCount: number | null;
+    isLoading: boolean;
+    error: string | null;
+  };
 }) {
-  const [processCount, setProcessCount] = useState<number | null>(null);
-  const [memberCount, setMemberCount] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setLoading] = useState(true);
-
   const processLimit = membership.organization?.process_limit ?? 100;
   const memberLimit = membership.organization?.member_limit ?? 4;
   const demoEndsAt = membership.organization?.trial_ends_at ?? null;
   const daysRemaining = getDaysRemaining(demoEndsAt);
-
-  useEffect(() => {
-    async function loadUsage() {
-      if (!supabase) return;
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        const [{ count: nextProcessCount, error: processError }, teamResponse] = await Promise.all([
-          supabase
-            .from("cases")
-            .select("id", { count: "exact", head: true })
-            .eq("organization_id", membership.organization_id)
-            .eq("status", "active"),
-          fetchTeamMembers(accessToken),
-        ]);
-
-        if (processError) {
-          throw processError;
-        }
-
-        setProcessCount(nextProcessCount ?? 0);
-        setMemberCount(teamResponse.activeCount);
-      } catch (nextError) {
-        setError(getErrorMessage(nextError, "No fue posible cargar el estado de demo."));
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    void loadUsage();
-  }, [accessToken, membership.organization_id]);
 
   return (
     <section className="internalPanel internalDemoStatusPanel">
@@ -1056,12 +1056,12 @@ function DemoStatusPanel({
           <span>Días restantes</span>
         </article>
         <article>
-          <strong>{processCount ?? "-"}</strong>
-          <span>{`${processCount ?? "-"} / ${processLimit} procesos activos`}</span>
+          <strong>{usage.processCount ?? "-"}</strong>
+          <span>{`${usage.processCount ?? "-"} / ${processLimit} procesos activos`}</span>
         </article>
         <article>
-          <strong>{memberCount ?? "-"}</strong>
-          <span>{`${memberCount ?? "-"} / ${memberLimit} responsables`}</span>
+          <strong>{usage.memberCount ?? "-"}</strong>
+          <span>{`${usage.memberCount ?? "-"} / ${memberLimit} responsables`}</span>
         </article>
       </section>
 
@@ -1074,8 +1074,8 @@ function DemoStatusPanel({
         </span>
       </div>
 
-      {isLoading ? <p className="internalPanelEmpty">Actualizando capacidad de la cuenta...</p> : null}
-      {error ? <p className="internalAuthError">{error}</p> : null}
+      {usage.isLoading ? <p className="internalPanelEmpty">Actualizando capacidad de la cuenta...</p> : null}
+      {usage.error ? <p className="internalAuthError">{usage.error}</p> : null}
     </section>
   );
 }
@@ -1083,9 +1083,11 @@ function DemoStatusPanel({
 function InternalProcessManager({
   organizationId,
   view,
+  onDataChanged,
 }: {
   organizationId: string;
   view: AppView;
+  onDataChanged?: () => Promise<void> | void;
 }) {
   const [cases, setCases] = useState<InternalCaseRow[]>([]);
   const [operationalRows, setOperationalRows] = useState<OperationalCaseRow[]>([]);
@@ -1138,6 +1140,7 @@ function InternalProcessManager({
       setSelectedCaseId((current) =>
         current && nextOperationalRows.some((row) => row.caseId === current) ? current : null,
       );
+      await onDataChanged?.();
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : "No fue posible cargar los procesos.");
     } finally {
@@ -2119,6 +2122,17 @@ function InternalShell({
   }, [session.user.email, session.user.user_metadata.full_name, session.user.user_metadata.name]);
   const canManageTeam = membership.role === "account_admin" || membership.role === "platform_admin";
   const [activeView, setActiveView] = useState<AppView>(() => getViewFromHash(window.location.hash));
+  const [usage, setUsage] = useState<{
+    processCount: number | null;
+    memberCount: number | null;
+    isLoading: boolean;
+    error: string | null;
+  }>({
+    processCount: null,
+    memberCount: null,
+    isLoading: true,
+    error: null,
+  });
   const currentViewMeta = internalViewMeta[activeView];
   const primaryAction =
     activeView === "inicio"
@@ -2137,6 +2151,58 @@ function InternalShell({
     syncView();
     return () => window.removeEventListener("hashchange", syncView);
   }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function refreshUsage() {
+      setUsage((current) => ({ ...current, isLoading: true, error: null }));
+
+      try {
+        const nextUsage = await loadAccountUsage(membership.organization_id, session.access_token);
+        if (!active) return;
+        setUsage({
+          processCount: nextUsage.processCount,
+          memberCount: nextUsage.memberCount,
+          isLoading: false,
+          error: null,
+        });
+      } catch (nextError) {
+        if (!active) return;
+        setUsage((current) => ({
+          ...current,
+          isLoading: false,
+          error: getErrorMessage(nextError, "No fue posible cargar la capacidad de la cuenta."),
+        }));
+      }
+    }
+
+    void refreshUsage();
+
+    return () => {
+      active = false;
+    };
+  }, [membership.organization_id, session.access_token]);
+
+  async function refreshUsage() {
+    setUsage((current) => ({ ...current, isLoading: true, error: null }));
+
+    try {
+      const nextUsage = await loadAccountUsage(membership.organization_id, session.access_token);
+      setUsage({
+        processCount: nextUsage.processCount,
+        memberCount: nextUsage.memberCount,
+        isLoading: false,
+        error: null,
+      });
+    } catch (nextError) {
+      setUsage((current) => ({
+        ...current,
+        isLoading: false,
+        error: getErrorMessage(nextError, "No fue posible cargar la capacidad de la cuenta."),
+      }));
+    }
+  }
 
   function navigateTo(view: AppView) {
     const nextHash = buildViewHash(view);
@@ -2169,7 +2235,7 @@ function InternalShell({
             {getDaysRemaining(membership.organization?.trial_ends_at ?? null) ?? "-"} días
           </strong>
           <span>
-            {membership.organization?.process_limit ?? 100} procesos · {membership.organization?.member_limit ?? 4} responsables
+            {`${usage.processCount ?? "-"} / ${membership.organization?.process_limit ?? 100} procesos · ${usage.memberCount ?? "-"} / ${membership.organization?.member_limit ?? 4} responsables`}
           </span>
         </div>
 
@@ -2229,7 +2295,7 @@ function InternalShell({
 
         {activeView === "inicio" ? (
           <>
-            <DemoStatusPanel accessToken={session.access_token} membership={membership} />
+            <DemoStatusPanel membership={membership} usage={usage} />
             <section className="internalModuleList">
               <header>
                 <span className="internalEyebrow">Ruta actual</span>
@@ -2248,27 +2314,47 @@ function InternalShell({
                 ))}
               </div>
             </section>
-            <InternalProcessManager organizationId={membership.organization_id} view="inicio" />
+            <InternalProcessManager
+              organizationId={membership.organization_id}
+              view="inicio"
+              onDataChanged={refreshUsage}
+            />
           </>
         ) : null}
 
         {activeView === "equipo" ? (
           <>
-            <DemoStatusPanel accessToken={session.access_token} membership={membership} />
-            <TeamManager accessToken={session.access_token} canManage={canManageTeam} />
+            <DemoStatusPanel membership={membership} usage={usage} />
+            <TeamManager
+              accessToken={session.access_token}
+              canManage={canManageTeam}
+              onDataChanged={refreshUsage}
+            />
           </>
         ) : null}
 
         {activeView === "bandeja" ? (
-          <InternalProcessManager organizationId={membership.organization_id} view="bandeja" />
+          <InternalProcessManager
+            organizationId={membership.organization_id}
+            view="bandeja"
+            onDataChanged={refreshUsage}
+          />
         ) : null}
 
         {activeView === "procesos" ? (
-          <InternalProcessManager organizationId={membership.organization_id} view="procesos" />
+          <InternalProcessManager
+            organizationId={membership.organization_id}
+            view="procesos"
+            onDataChanged={refreshUsage}
+          />
         ) : null}
 
         {activeView === "consultas" ? (
-          <InternalProcessManager organizationId={membership.organization_id} view="consultas" />
+          <InternalProcessManager
+            organizationId={membership.organization_id}
+            view="consultas"
+            onDataChanged={refreshUsage}
+          />
         ) : null}
       </section>
     </main>
